@@ -17,6 +17,7 @@ import { Notas } from "./components/Notas";
 import { Remision } from "./components/Remision";
 import { PublicInvoiceViewer } from "./components/PublicInvoiceViewer";
 import { DocumentosAludev } from "./components/DocumentosAludev";
+import { GlobalSearch } from "./components/GlobalSearch";
 
 import {
   Wrench,
@@ -168,14 +169,20 @@ function MainAppContent() {
 
       {/* PRIMARY VIEWS CONTAINER */}
       <main className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
-        {/* Global Action Bar with business quick details */}
-        <div className="bg-white px-6 py-3.5 border-b border-slate-100 hidden sm:flex items-center justify-between text-xs text-slate-500">
-          <div className="flex items-center gap-4">
+        {/* Global Action Bar with search and business quick details */}
+        <div className="bg-white px-4 sm:px-6 py-3 border-b border-slate-100 flex flex-col md:flex-row gap-3 md:gap-4 items-center justify-between text-xs text-slate-500 shrink-0 shadow-sm">
+          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
             <span>Taller: <strong className="text-slate-700">{state.businessDetails.name || "AluMaster"}</strong></span>
-            <span>Unidad Principal: <strong className="text-slate-720">Métrico (cm)</strong></span>
+            <span className="hidden md:inline text-slate-200">|</span>
+            <span>Unidad Principal: <strong className="text-slate-700">Métrico (cm)</strong></span>
           </div>
-          <div className="flex items-center gap-3 font-mono text-[10px]">
-            <span className="text-emerald-500 font-semibold">• Local Database Conectada</span>
+          
+          <div className="w-full md:w-96 flex justify-center z-30">
+            <GlobalSearch onTabChange={setActiveTab} />
+          </div>
+
+          <div className="hidden lg:flex items-center gap-3 font-mono text-[10px]">
+            <span className="text-emerald-500 font-semibold animate-pulse">• Local Database Conectada</span>
             <span>v1.2.0</span>
           </div>
         </div>
