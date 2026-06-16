@@ -472,6 +472,55 @@ export const Remision: React.FC = () => {
                 Agregar Conceptos de Ensamblaje / Materiales a la Nota
               </h4>
               
+              {/* Quick Preset Buttons */}
+              <div className="flex flex-wrap items-center gap-1.5 pb-2">
+                <span className="text-slate-400 font-bold text-[9px] uppercase tracking-wider block mr-1 font-mono">⚡ Servicios Rápidos:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setItemText("Servicio de Mantenimiento Preventivo de Portón Automático. El control depende la marca y modelo.");
+                    setItemPrice(1500);
+                    setItemQty(1);
+                  }}
+                  className="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-250/80 text-[10px] font-bold py-1 px-2.5 rounded-lg transition"
+                >
+                  🔧 Mantenimiento Portón ($1,500)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setItemText("Servicio de Diagnóstico y Reparación de Pistones / Automatismo de Portón Eléctrico.");
+                    setItemPrice(1800);
+                    setItemQty(1);
+                  }}
+                  className="bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-[10px] font-bold py-1 px-2.5 rounded-lg transition"
+                >
+                  ⚙️ Reparación Automatismo ($1,800)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setItemText("Programación de Control Remoto Inalámbrico para Portón Eléctrico (Suministro y mano de obra).");
+                    setItemPrice(600);
+                    setItemQty(1);
+                  }}
+                  className="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-[10px] font-bold py-1 px-2.5 rounded-lg transition"
+                >
+                  🎮 Programar Control ($600)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setItemText("Servicio de Cambio de Carretillas, Alineación y Sellado Hermético de Cancelería de Aluminio.");
+                    setItemPrice(1200);
+                    setItemQty(1);
+                  }}
+                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-bold py-1 px-2.5 rounded-lg transition"
+                >
+                  🪜 Servicio Reparación Cancel ($1,200)
+                </button>
+              </div>
+              
               <div className="grid grid-cols-1 sm:grid-cols-6 gap-2">
                 <div className="sm:col-span-3">
                   <label className="block text-slate-400 text-[10px] mb-1">Descripción del Cancél / Servicio</label>
@@ -705,7 +754,7 @@ export const Remision: React.FC = () => {
                         onClick={() => setIsThermalTicket(true)}
                         className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1 ${
                           isThermalTicket
-                            ? "bg-amber-600 text-white shadow"
+                            ? "bg-slate-800 text-white shadow dark:bg-slate-700"
                             : "text-slate-600 hover:bg-slate-150"
                         }`}
                       >

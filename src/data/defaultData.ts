@@ -418,6 +418,55 @@ export const DEFAULT_FORMULAS: FormulaRule[] = [
       { accessoryId: "acc-roda", quantityFormula: "8" },
       { accessoryId: "acc-tornillo", quantityFormula: "150" }
     ]
+  },
+  {
+    id: "f-window-slide-3in-nacional",
+    name: "Ventana Corrediza 3″ Nacional (Aluminio Fácil)",
+    category: "ventanas",
+    variables: [
+      { name: "Ancho", description: "Ancho total en cm", defaultValue: 120 },
+      { name: "Alto", description: "Alto total en cm", defaultValue: 120 }
+    ],
+    profileEquations: [
+      { profileId: "prof-nat3-riel", name: "Riel Inferior Horizontal 3″", formula: "Ancho", quantity: 1, angle: "90/90" },
+      { profileId: "prof-nat3", name: "Cabezal/Chambrana Horizontal Superior 3″", formula: "Ancho", quantity: 1, angle: "90/90" },
+      { profileId: "prof-nat3-jamba", name: "Jambas Laterales Verticales 3″", formula: "Alto - 2.9", quantity: 2, angle: "90/90" },
+      { profileId: "prof-nat3-tras", name: "Traslapes Verticales Centrales 3″", formula: "Alto - 4.5", quantity: 2, angle: "90/90" },
+      { profileId: "prof-nat3-zoc", name: "Zoclo/Cabezal Horizontales 3″", formula: "(Ancho - 22.0) / 2", quantity: 4, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "(Ancho - 22.0) / 2 + 1.9",
+      formulaHeight: "Alto - 8.2",
+      quantity: 2
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-carretilla", quantityFormula: "2" },
+      { accessoryId: "acc-emb", quantityFormula: "Ancho * 2 + Alto * 4" },
+      { accessoryId: "acc-empaque", quantityFormula: "Ancho * 2 + Alto * 4" },
+      { accessoryId: "acc-tornillo", quantityFormula: "16" }
+    ]
+  },
+  {
+    id: "f-barandal-classico",
+    name: "Barandal de Aluminio y Vidrio Templado",
+    category: "barandales",
+    variables: [
+      { name: "Ancho", description: "Ancho del barandal en cm", defaultValue: 150 },
+      { name: "Alto", description: "Alto del barandal en cm", defaultValue: 90 }
+    ],
+    profileEquations: [
+      { profileId: "prof-tubo-cuad-2", name: "Postes de Soporte Verticales (Tubo 2″)", formula: "Alto", quantity: 3, angle: "90/90" },
+      { profileId: "prof-nat2", name: "Pasamanos Superior Horizontal", formula: "Ancho", quantity: 1, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "Ancho - 25",
+      formulaHeight: "Alto - 15",
+      quantity: 1
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-esq", quantityFormula: "4" },
+      { accessoryId: "acc-tornillo", quantityFormula: "12" }
+    ]
   }
 ];
 

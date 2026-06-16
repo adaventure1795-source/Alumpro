@@ -39,7 +39,7 @@ export interface FormulaVariable {
 export interface FormulaRule {
   id: string;
   name: string; // e.g. "Ventana Corrediza de 2 hojas"
-  category: "ventanas" | "puertas" | "canceles" | "fijos" | "portones";
+  category: "ventanas" | "puertas" | "canceles" | "fijos" | "portones" | "barandales";
   variables: FormulaVariable[];
   // Formulas written as strings that can be evaluated or calculated
   profileEquations: {

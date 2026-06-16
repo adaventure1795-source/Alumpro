@@ -52,9 +52,11 @@ function MainAppContent() {
   // UI States
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
-      return localStorage.getItem("aludev_darkmode") === "true";
+      const stored = localStorage.getItem("aludev_darkmode");
+      if (stored === null) return true; // Start with the beautiful dark/blue theme by default
+      return stored === "true";
     } catch {
-      return false;
+      return true;
     }
   });
   const [isOfflineMode, setIsOfflineMode] = useState<boolean>(() => {
@@ -87,7 +89,7 @@ function MainAppContent() {
       }
       setDeferredPrompt(null);
     } else {
-      alert("¡AluMaster ya está listo para trabajar sin conexión! Puedes guardarlo cómodamente en tu pantalla de inicio desde el menú de opciones de tu navegador web o presionando la opción 'Agregar a pantalla principal'.");
+      alert("¡Aludev ya está listo para trabajar sin conexión! Puedes guardarlo cómodamente en tu pantalla de inicio desde el menú de opciones de tu navegador web o presionando la opción 'Agregar a pantalla principal'.");
     }
   };
 
@@ -95,13 +97,13 @@ function MainAppContent() {
     localStorage.setItem("aludev_darkmode", String(isDarkMode));
     const root = document.documentElement;
     if (isDarkMode) {
-      root.classList.add("dark-theme");
-      document.body.classList.add("dark-theme");
-      document.body.style.backgroundColor = "#030712";
+      root.classList.add("dark", "dark-theme");
+      document.body.classList.add("dark", "dark-theme");
+      document.body.style.backgroundColor = "#0b1329";
       document.body.style.color = "#f1f5f9";
     } else {
-      root.classList.remove("dark-theme");
-      document.body.classList.remove("dark-theme");
+      root.classList.remove("dark", "dark-theme");
+      document.body.classList.remove("dark", "dark-theme");
       document.body.style.backgroundColor = "#f8fafc";
       document.body.style.color = "#0f172a";
     }
@@ -168,10 +170,10 @@ function MainAppContent() {
   ];
 
   return (
-    <div className={`min-h-screen flex flex-col md:flex-row font-sans transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 text-slate-100 dark-theme' : 'bg-slate-50 text-slate-900'}`} id="main-app-container">
+    <div className={`min-h-screen flex flex-col md:flex-row font-sans transition-all duration-300 ${isDarkMode ? 'bg-[#0b1329] text-slate-100 dark-theme' : 'bg-[#f8fafc] text-slate-900'}`} id="main-app-container">
       
-      {/* DESKTOP SIDEBAR PANEL (Hidden on mobile) */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-850 text-slate-300 flex-col justify-between shrink-0 hidden md:flex">
+      {/* DESKTOP SIDEBAR PANEL (Hidden on mobile) WITH MATCHING SOLID DARK BG */}
+      <aside className="w-64 bg-[#080d1d] border-r border-slate-800/80 text-slate-300 flex-col justify-between shrink-0 hidden md:flex">
         <div>
           {/* Logo Brand Brand */}
           <div className="p-6 border-b border-slate-850 flex items-center gap-3">
@@ -232,13 +234,13 @@ function MainAppContent() {
         </div>
       </aside>
 
-      {/* MOBILE HEADER BAR (Hidden on desktop) */}
-      <header className="bg-slate-900 border-b border-slate-850 px-4 py-3 flex items-center justify-between text-white shrink-0 md:hidden animate-fade-in">
+      {/* MOBILE HEADER BAR WITH SOLID THEME BG */}
+      <header className="bg-white dark:bg-[#080d1d] border-b border-slate-200 dark:border-slate-800/80 px-4 py-3 flex items-center justify-between text-slate-800 dark:text-white shrink-0 md:hidden animate-fade-in shadow-sm z-30">
         <div className="flex items-center gap-2.5">
-          <div className="bg-blue-600 p-1.5 rounded-lg shadow-md">
+          <div className="bg-blue-600 p-1.5 rounded-lg shadow-md text-white">
             <Grid size={16} />
           </div>
-          <span className="font-extrabold text-sm tracking-tight text-white uppercase font-sans">Aludev</span>
+          <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white uppercase font-sans">Aludev</span>
         </div>
         
         <div className="flex items-center gap-2.5">
@@ -303,8 +305,8 @@ function MainAppContent() {
         </div>
       </main>
 
-      {/* MOBILE BOTTOM NAV DOCK (Hidden on desktop) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-850 px-2 py-1.5 flex justify-around items-center text-slate-400 text-[10px] font-medium z-40 md:hidden" id="mobile-dock-nav">
+      {/* MOBILE BOTTOM NAV DOCK WITH INTEGRATED SOLID STYLING */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#080d1d] border-t border-slate-200 dark:border-slate-800/80 px-2 py-2 flex justify-around items-center text-slate-500 dark:text-slate-400 text-[10px] font-medium z-40 md:hidden shadow-lg pb-safe-bottom" id="mobile-dock-nav">
         {sidebarNavItems.slice(0, 3).map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -312,11 +314,11 @@ function MainAppContent() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition ${
-                isActive ? "text-blue-400 scale-105" : "hover:text-slate-200"
+              className={`flex flex-col items-center gap-1.5 px-3 py-1 rounded-xl transition-all duration-300 ${
+                isActive ? "text-blue-600 dark:text-blue-400 scale-105 font-bold" : "hover:text-slate-800 dark:hover:text-slate-100"
               }`}
             >
-              <Icon size={18} />
+              <Icon size={18} className={isActive ? "text-blue-600 dark:text-blue-400 stroke-[2.5]" : "text-slate-400 dark:text-slate-500"} />
               <span>{item.label.split(" ")[0]}</span>
             </button>
           );
@@ -329,11 +331,11 @@ function MainAppContent() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition ${
-                isActive ? "text-blue-400 scale-105" : "hover:text-slate-200"
+              className={`flex flex-col items-center gap-1.5 px-3 py-1 rounded-xl transition-all duration-300 ${
+                isActive ? "text-blue-600 dark:text-blue-400 scale-105 font-bold" : "hover:text-slate-800 dark:hover:text-slate-100"
               }`}
             >
-              <Icon size={18} />
+              <Icon size={18} className={isActive ? "text-blue-600 dark:text-blue-400 stroke-[2.5]" : "text-slate-400 dark:text-slate-500"} />
               <span>{item.label.split(" ")[0]}</span>
             </button>
           );

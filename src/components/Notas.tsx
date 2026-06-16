@@ -259,6 +259,10 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                     <option value="Cancel Corredizo Baño">Cancel Baño</option>
                     <option value="Fijo con Marco Bolsa">Fijo con Bolsa</option>
                     <option value="Vidrio Templado simple">Templado Directo</option>
+                    <option value="Cancelería de Aluminio">Cancelería de Aluminio</option>
+                    <option value="Barandales de Aluminio">Barandales de Aluminio</option>
+                    <option value="Portones de Aluminio">Portones de Aluminio</option>
+                    <option value="Portones Automáticos">Portones Automáticos</option>
                   </select>
                 </div>
               </div>
@@ -387,6 +391,10 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                       <option value="Puerta Batiente Pivotante">Puerta Batiente</option>
                       <option value="Cancel de Baño standard">Cancel de Baño</option>
                       <option value="Fijo con Marco">Fijo de Vidrio</option>
+                      <option value="Cancelería de Aluminio">Cancelería de Aluminio</option>
+                      <option value="Barandales de Aluminio">Barandales de Aluminio</option>
+                      <option value="Portones de Aluminio">Portones de Aluminio</option>
+                      <option value="Portones Automáticos">Portones Automáticos</option>
                     </select>
                   </div>
 

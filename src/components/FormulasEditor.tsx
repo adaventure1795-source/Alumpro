@@ -310,12 +310,14 @@ export const FormulasEditor: React.FC = () => {
                   <select
                     value={activeFormula.category}
                     onChange={(e) => updateFormula(activeFormula.id, { category: e.target.value as any })}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none font-semibold text-blue-800"
                   >
-                    <option value="ventanas">Ventanas</option>
-                    <option value="puertas">Puertas</option>
-                    <option value="canceles">Cancel de Baño</option>
-                    <option value="fijos">Fijos / Guillotinas</option>
+                    <option value="ventanas">🪟 Ventanas</option>
+                    <option value="puertas">🚪 Puertas</option>
+                    <option value="canceles">🚿 Cancel de Baño</option>
+                    <option value="fijos">🖼️ Fijos / Guillotinas</option>
+                    <option value="portones">🚗 Portones automáticos/manuales</option>
+                    <option value="barandales">🪜 Barandales de aluminio y vidrio</option>
                   </select>
                 </div>
               </div>

@@ -458,8 +458,8 @@ Generado automáticamente desde AluDev Inc México.`;
   const [clientProject, setClientProject] = useState<string>("");
 
   const [customConcepts, setCustomConcepts] = useState<
-    Array<{ id: string; description: string; qty: number; unitPrice: number }>
-  >([{ id: "1", description: "", qty: 1, unitPrice: 0 }]);
+    Array<{ id: string; description: string; qty: number; unitPrice: number; isRepair?: boolean; hours?: number; hourlyRate?: number }>
+  >([{ id: "1", description: "", qty: 1, unitPrice: 0, isRepair: false, hours: 2, hourlyRate: 220 }]);
 
   const [depositType, setDepositType] = useState<"percent" | "fixed">("percent");
   const [depositValue, setDepositValue] = useState<number>(70);
@@ -468,7 +468,7 @@ Generado automáticamente desde AluDev Inc México.`;
   const addCustomConceptRow = () => {
     setCustomConcepts((prev) => [
       ...prev,
-      { id: Date.now().toString(), description: "", qty: 1, unitPrice: 0 }
+      { id: Date.now().toString(), description: "", qty: 1, unitPrice: 0, isRepair: false, hours: 2, hourlyRate: state.businessDetails.laborRatePerHour || 220 }
     ]);
   };
 
@@ -483,6 +483,46 @@ Generado automáticamente desde AluDev Inc México.`;
       prev.map((item) => {
         if (item.id === id) {
           return { ...item, [field]: value };
+        }
+        return item;
+      })
+    );
+  };
+
+  const toggleConceptRepairType = (id: string) => {
+    setCustomConcepts((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const wasRepair = !item.isRepair;
+          const hours = item.hours || 2;
+          const hourlyRate = item.hourlyRate || state.businessDetails.laborRatePerHour || 220;
+          const unitPrice = wasRepair ? hours * hourlyRate : item.unitPrice;
+          const description = wasRepair && item.description === ""
+            ? `Servicio de reparación / mano de obra de cancelería (2 hrs)`
+            : item.description;
+          return {
+            ...item,
+            isRepair: wasRepair,
+            hours,
+            hourlyRate,
+            unitPrice,
+            description
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  const handleConceptRepairValChange = (id: string, field: "hours" | "hourlyRate", value: number) => {
+    setCustomConcepts((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const updated = { ...item, [field]: value };
+          if (updated.isRepair) {
+            updated.unitPrice = (updated.hours || 0) * (updated.hourlyRate || 0);
+          }
+          return updated;
         }
         return item;
       })
@@ -670,14 +710,14 @@ Generado automáticamente desde AluDev Inc México.`;
   return (
     <div className="space-y-6" id="dashboard_native_module">
       
-      {/* NATIVE APP TITLE BAR */}
-      <div className="flex justify-between items-center bg-slate-950/20 p-2.5 rounded-2xl border border-slate-200/50 dark:border-slate-800">
+      {/* NATIVE APP TITLE BAR WITH HIGH LEGIBILITY AND MODERN SLATE FINISH */}
+      <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-950/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm">
         <button
           onClick={() => setSubScreen("menu")}
-          className={`flex items-center gap-2 font-mono text-[11px] font-black uppercase py-2 px-4 rounded-xl transition ${
+          className={`flex items-center gap-2 font-mono text-[11px] font-bold uppercase py-2 px-4 rounded-xl transition ${
             subScreen !== "menu"
-              ? "bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-900/30"
-              : "text-slate-400 opacity-50 cursor-not-allowed"
+              ? "bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/20 active:scale-95"
+              : "text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-800 cursor-not-allowed opacity-50"
           }`}
           disabled={subScreen === "menu"}
         >
@@ -687,11 +727,11 @@ Generado automáticamente desde AluDev Inc México.`;
 
         <div className="flex items-center gap-2">
           {state.quotes.length > 0 && (
-            <span className="text-[10px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-1 rounded font-bold uppercase tracking-wider font-mono animate-pulse">
+            <span className="text-[10px] bg-amber-100 text-amber-850 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-300 dark:border-amber-800 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider font-mono animate-pulse">
               {state.quotes.length} Cotiz en Cola
             </span>
           )}
-          <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded font-bold uppercase tracking-wider font-mono">
+          <span className="text-[10px] bg-blue-100 text-blue-850 dark:bg-blue-950/30 dark:text-blue-400 border border-blue-300 dark:border-blue-800 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider font-mono">
             Versión Móvil 3.4
           </span>
         </div>
@@ -721,11 +761,11 @@ Generado automáticamente desde AluDev Inc México.`;
               </svg>
             </div>
 
-            <h1 className="text-3xl font-black text-slate-100 tracking-tight font-sans font-sans">
-              Perfilexacto Pro
+            <h1 className="text-3xl font-black text-slate-100 tracking-tight font-sans">
+              Aludev Pro
             </h1>
-            <p className="text-[#38bdf8] text-xs font-mono font-bold tracking-wider mt-1 uppercase">
-              Aluminio Residencial Perfilexacto
+            <p className="text-blue-400 text-xs font-mono font-bold tracking-wider mt-1 uppercase">
+              Cancelería & Portones de Aluminio
             </p>
 
             {/* Glowing PRO Active badge identical to the screenshot */}
@@ -735,128 +775,135 @@ Generado automáticamente desde AluDev Inc México.`;
             </div>
           </div>
 
-          {/* Interactive menus grid aligned with video */}
+          {/* Interactive menus grid - Clean, unified Aludev Corporate Blue branding with high-contrast readability */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
-            {/* Item 1: Nueva Cotizacion */}
+            {/* Item 1: Nueva Cotizacion - SPECIAL CROWN-JEWEL ACTION IN SOLID BLUE 💙 */}
             <button
               onClick={() => {
                 setGuideStep(1);
                 setSubScreen("nueva");
               }}
-              className="p-5 bg-gradient-to-br from-[#2a2421] to-[#1c1816] hover:from-[#342b27] hover:to-[#221c1a] border border-[#443831] hover:border-[#52443b] text-left rounded-2xl flex items-start gap-4 transition shadow-lg group"
+              className="p-5 bg-gradient-to-r from-blue-700 to-blue-600 dark:from-blue-600 dark:to-blue-500 hover:from-blue-600 hover:to-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-[0.98] border border-blue-800 dark:border-blue-500/50 group cursor-pointer"
+              id="special-nueva-cotizacion-trigger"
             >
-              <div className="bg-[#fb923c] text-[#3c1800] p-3.5 rounded-2xl shadow-lg ring-1 ring-[#ffae66]/20 group-hover:scale-105 transition">
-                <FileText size={20} />
+              <div className="bg-white/10 dark:bg-white/15 text-white p-3.5 rounded-2xl shadow-inner border border-white/10 group-hover:bg-white group-hover:text-blue-600 transition-all duration-300">
+                <FileText size={20} className="stroke-[2.5]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-amber-50 text-base">Nueva Cotización</h4>
-                <p className="text-[#a89993] text-xs leading-normal mt-1">Estructura medidas de marcos, hojas, duelas y vidrio con planos guiados.</p>
+                <h4 className="font-extrabold text-white text-base tracking-wide flex items-center gap-1.5 uppercase text-[15px]">
+                  Nueva Cotización 
+                  <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono font-bold tracking-normal leading-none">PRO</span>
+                </h4>
+                <p className="text-blue-100/90 text-xs leading-normal mt-1.5 font-medium">Estructura medidas de marcos, hojas, duelas y vidrio con planos guiados en 2D.</p>
               </div>
             </button>
 
             {/* Item 2: Cotizacion Rapida */}
             <button
               onClick={() => setSubScreen("rapida")}
-              className="p-5 bg-gradient-to-br from-[#231f13] to-[#17140d] hover:from-[#2e291a] hover:to-[#1e1a11] border border-[#3e341f] hover:border-[#4d4026] text-left rounded-2xl flex items-start gap-4 transition shadow-lg group"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-[#facc15] text-[#342200] p-3.5 rounded-2xl shadow-lg ring-1 ring-[#ffea66]/20 group-hover:scale-105 transition">
-                <Zap size={20} className="fill-current animate-pulse" />
+              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <Zap size={20} className="fill-current animate-pulse stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-yellow-50 text-base">Cotización Rápida</h4>
-                <p className="text-[#a19985] text-xs leading-normal mt-1">Sugerencias y estimados instantáneos por metro y color en 2 segundos.</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Cotización Rápida</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Sugerencias y estimados instantáneos por metro y color en 2 segundos.</p>
               </div>
             </button>
 
             {/* Item 3: Presupuesto Personalizado */}
             <button
               onClick={() => setSubScreen("personalizado")}
-              className="p-5 bg-gradient-to-br from-[#1d1627] to-[#130f1a] hover:from-[#271e35] hover:to-[#1a1424] border border-[#35254a] hover:border-[#432f5e] text-left rounded-2xl flex items-start gap-4 transition shadow-lg group"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-[#c084fc] text-[#3b006f] p-3.5 rounded-2xl shadow-lg ring-1 ring-[#dda6ff]/20 group-hover:scale-105 transition">
-                <Sliders size={20} />
+              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <Sliders size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-purple-50 text-base">Presupuesto Personalizado</h4>
-                <p className="text-[#a499b1] text-xs leading-normal mt-1">Redacta conceptos manuales, añade anticipos y condiciones al PDF.</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Presupuesto Personalizado</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Redacta conceptos manuales, añade anticipos y condiciones al PDF.</p>
               </div>
             </button>
 
             {/* Item 4: Historial */}
             <button
               onClick={() => setSubScreen("historial")}
-              className="p-5 bg-gradient-to-br from-[#1a1b1d] to-[#111213] hover:from-[#232427] hover:to-[#17181a] border border-[#2d2f33] hover:border-[#383b40] text-left rounded-2xl flex items-start gap-4 transition shadow-lg group"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-slate-400 text-slate-900 p-3.5 rounded-2xl shadow-lg ring-1 ring-slate-300/20 group-hover:scale-105 transition">
-                <History size={20} />
+              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <History size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-slate-200 text-base">Historial</h4>
-                <p className="text-slate-400 text-xs leading-normal mt-1">Ficheros de cotizaciones en curso y notas de cobro archivadas.</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Historial</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Ficheros de cotizaciones en curso y notas de cobro archivadas.</p>
               </div>
             </button>
 
             {/* Item 5: Optimizador de Cortes */}
             <button
               onClick={() => setTab("optimizador")}
-              className="p-5 bg-gradient-to-br from-[#15231c] to-[#0e1713] hover:from-[#1d3127] hover:to-[#13211a] border border-[#21372c] hover:border-[#2a4638] text-left rounded-2xl flex items-start gap-4 transition shadow-lg group"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-[#34d399] text-[#003c20] p-3.5 rounded-2xl shadow-lg ring-1 ring-[#6bf8bf]/25 group-hover:scale-105 transition">
-                <Scissors size={20} />
+              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <Scissors size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-emerald-50 text-base">Optimizador de Cortes</h4>
-                <p className="text-[#96a99e] text-xs leading-normal mt-1">Reduce el desperdicio de barras de 6.10m ingresando tus medidas.</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Optimizador de Cortes</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Reduce el desperdicio de barras de 6.10m ingresando tus medidas.</p>
               </div>
             </button>
 
             {/* Item 6: Peso de Vidrio */}
             <button
               onClick={() => setSubScreen("peso")}
-              className="p-5 bg-gradient-to-br from-[#151f28] to-[#0e141a] hover:from-[#1e2b38] hover:to-[#141d26] border border-[#1e303f] hover:border-[#263c4e] text-left rounded-2xl flex items-start gap-4 transition shadow-lg group"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-[#38bdf8] text-[#003651] p-3.5 rounded-2xl shadow-lg ring-1 ring-[#7dd3fc]/20 group-hover:scale-105 transition">
-                <Scale size={20} />
+              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <Scale size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-sky-50 text-base">Peso de Vidrio</h4>
-                <p className="text-[#98a6b1] text-xs leading-normal mt-1">Multiplica metros cuadrados por espesor de hoja al instante.</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Peso de Vidrio</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Multiplica metros cuadrados por espesor de hoja al instante.</p>
               </div>
             </button>
 
-            {/* Item 7: Calculadora AluDev (Fórmulas y Descuentos del Vídeo) */}
+            {/* Item 7: Calculadora AluDev - SPECIAL BLUE HIGHLIGHT 💙 */}
             <button
               onClick={() => setSubScreen("alucalculadora")}
-              className="p-5 bg-gradient-to-br from-[#0c202d] to-[#06111a] hover:from-[#123145] hover:to-[#0a1b28] border border-[#1b435c] hover:border-[#225575] text-left rounded-2xl flex items-start gap-4 transition shadow-lg group animate-pulse-slow"
+              className="p-5 bg-gradient-to-r from-blue-600/10 to-blue-700/20 dark:from-blue-950/40 dark:to-blue-900/30 hover:from-blue-600/20 hover:to-blue-700/30 border border-blue-200 dark:border-blue-900/60 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
               id="alucalculadora-dashboard-trigger"
             >
-              <div className="bg-[#0284c7] text-[#e0f2fe] p-3.5 rounded-2xl shadow-lg ring-1 ring-[#0284c7]/20 group-hover:scale-105 transition sm:animate-bounce">
-                <Wrench size={20} />
+              <div className="bg-blue-600 text-white p-3.5 rounded-2xl shadow-md border border-blue-500/30 group-hover:bg-blue-700 transition-all duration-300">
+                <Wrench size={20} className="stroke-[2.5]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-sky-100 text-base font-sans">Calculadora AluDev</h4>
-                <p className="text-slate-400 text-xs leading-normal mt-1">Generador de descuentos por perfiles de corte y cotizaciones rápidas tal como en el vídeo.</p>
+                <h4 className="font-bold text-blue-700 dark:text-blue-400 text-[15px] group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors flex items-center gap-1.5 uppercase tracking-wide">
+                  Calculadora AluDev
+                  <span className="text-[9px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded font-mono font-bold leading-none uppercase">Fórmulas</span>
+                </h4>
+                <p className="text-slate-600 dark:text-slate-300 text-xs leading-normal mt-1.5 font-medium">Generador de descuentos por perfiles de corte y cotizaciones de taller.</p>
               </div>
             </button>
 
             {/* Item 8: Configuración */}
             <button
               onClick={() => setSubScreen("config")}
-              className="p-5 bg-gradient-to-br from-[#1d1d1f] to-[#121213] hover:from-[#262629] hover:to-[#19191b] border border-[#2e2e31] hover:border-[#39393d] text-left rounded-2xl flex items-start gap-4 transition shadow-lg group"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group"
             >
-              <div className="bg-[#a1a1aa] text-[#1f1f23] p-3.5 rounded-2xl shadow-lg ring-1 ring-[#d4d4d8]/20 group-hover:scale-105 transition">
-                <Settings size={20} />
+              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <Settings size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-zinc-100 text-base font-sans font-medium">Configuración</h4>
-                <p className="text-zinc-400 text-xs leading-normal mt-1">Tabuladores de precios para perfiles de 2 y 3 pulgadas, planchas, vinil, herrajes y notas PDF.</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Configuración</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5 font-sans">Tabuladores de precios para perfiles de 2 y 3 pulgadas, planchas, vinil, herrajes y notas PDF.</p>
               </div>
             </button>
 
           </div>
 
-          {/* LOWER ACTION RAIL AND STATUS INDICATORS matching Perfilexacto Pro style */}
+          {/* LOWER ACTION RAIL AND STATUS INDICATORS matching Aludev style */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 pb-1 border-t border-slate-800">
             {/* ID hardware serial plate block */}
             <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs font-mono">
@@ -865,7 +912,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
               <span className="text-slate-400 font-medium">LICENCIA PRO:</span>
-              <span className="text-emerald-400 font-bold tracking-wider">ID: PX-BE9C-787D</span>
+              <span className="text-emerald-400 font-bold tracking-wider">ID: AD-BE9C-787D</span>
             </div>
 
             {/* Green help messenger bubble button */}
@@ -2262,7 +2309,33 @@ Generado automáticamente desde AluDev Inc México.`;
                       <Trash2 size={13} />
                     </button>
 
-                    <span className="text-[10px] font-bold font-mono text-slate-500">CONCEPTO {index + 1}</span>
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span className="text-[10px] font-bold font-mono text-slate-500">CONCEPTO {index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => toggleConceptRepairType(item.id)}
+                        className={`text-[9.5px] px-2 py-0.5 rounded-md font-bold transition flex items-center gap-1 ${
+                          item.isRepair
+                            ? "bg-emerald-600/25 text-emerald-400 border border-emerald-500/30 font-sans"
+                            : "bg-slate-800 text-slate-400 hover:bg-slate-750 border border-slate-700/60 font-sans"
+                        }`}
+                      >
+                        {item.isRepair ? "🛠️ Modo Reparación: Activo" : "🛠️ Calcular por Horas"}
+                      </button>
+                      {item.isRepair && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const desc = `Servicio de reparación de cancelería y estructuras de aluminio (${item.hours || 2} horas a $${item.hourlyRate || 220}/hr)`;
+                            handleConceptChange(item.id, "description", desc);
+                          }}
+                          className="text-[9px] bg-sky-950 text-sky-400 border border-sky-800/40 hover:bg-sky-900 px-1.5 py-0.5 rounded transition font-sans"
+                          title="Sugerir descripción de reparación"
+                        >
+                          🪄 Sugerir Descripción
+                        </button>
+                      )}
+                    </div>
 
                     <div>
                       <input
@@ -2274,9 +2347,38 @@ Generado automáticamente desde AluDev Inc México.`;
                       />
                     </div>
 
+                    {item.isRepair && (
+                      <div className="grid grid-cols-2 gap-3 pb-1 bg-slate-950/45 p-2 rounded-xl border border-slate-850/60 transition-all">
+                        <div>
+                          <label className="block text-[8.5px] text-slate-400 font-bold uppercase font-mono mb-0.5 text-left">Horas Estimadas (Trabajo)</label>
+                          <input
+                            type="number"
+                            min="0.5"
+                            step="0.5"
+                            placeholder="2"
+                            value={item.hours}
+                            onChange={(e) => handleConceptRepairValChange(item.id, "hours", Number(e.target.value))}
+                            className="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-lg py-1 px-2.5 font-bold font-mono text-center focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[8.5px] text-slate-400 font-bold uppercase font-mono mb-0.5 text-left">Precio por Hora ($)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            step="10"
+                            placeholder="220"
+                            value={item.hourlyRate}
+                            onChange={(e) => handleConceptRepairValChange(item.id, "hourlyRate", Number(e.target.value))}
+                            className="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-lg py-1 px-2.5 font-bold font-mono text-center focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-3.5">
                       <div>
-                        <label className="block text-[9px] text-slate-500 font-bold uppercase font-mono">Cant</label>
+                        <label className="block text-[9px] text-slate-500 font-bold uppercase font-mono text-left">Cant</label>
                         <input
                           type="number"
                           placeholder="1"
@@ -2287,13 +2389,16 @@ Generado automáticamente desde AluDev Inc México.`;
                       </div>
 
                       <div>
-                        <label className="block text-[9px] text-slate-500 font-bold uppercase font-mono">P. Unitario ($):</label>
+                        <label className="block text-[9px] text-slate-500 font-bold uppercase font-mono text-left">P. Unitario ($):</label>
                         <input
                           type="number"
                           placeholder="0.00"
+                          disabled={item.isRepair}
                           value={item.unitPrice}
                           onChange={(e) => handleConceptChange(item.id, "unitPrice", Number(e.target.value))}
-                          className="w-full bg-slate-950 border border-slate-850 text-xs text-white rounded-xl py-1.5 px-3 font-mono text-center"
+                          className={`w-full border text-xs text-white rounded-xl py-1.5 px-3 font-mono text-center ${
+                            item.isRepair ? "bg-emerald-950/40 border-emerald-900/60 text-emerald-400 cursor-not-allowed" : "bg-slate-950 border-slate-850"
+                          }`}
                         />
                       </div>
                     </div>

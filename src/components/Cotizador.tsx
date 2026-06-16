@@ -56,7 +56,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
   
   // Custom state modes for manual vs. calculated pricing
   const [isCalculatedMode, setIsCalculatedMode] = useState<boolean>(true);
-  const [customPrice, setCustomPrice] = useState<number>(1500);
+  const [customPrice, setCustomPrice] = useState<number | "">(1500);
   
   // Costing & markup controls
   const [profitMargin, setProfitMargin] = useState<number>(30); // 30% default profit margin markup
@@ -65,20 +65,167 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
   // Custom single item settings
   const [label, setLabel] = useState<string>("");
-  const [width, setWidth] = useState<number>(120);
-  const [height, setHeight] = useState<number>(100);
+  const [width, setWidth] = useState<number | "">(120);
+  const [height, setHeight] = useState<number | "">(100);
   const [line, setLine] = useState<string>("Nacional 2″");
   const [color, setColor] = useState<string>("Anodizado Natural");
   const [selectedGlassId, setSelectedGlassId] = useState<string>(
     state.glasses[0]?.id || ""
   );
-  const [qty, setQty] = useState<number>(1);
-  const [laborMinutes, setLaborMinutes] = useState<number>(120);
+  const [qty, setQty] = useState<number | "">(1);
+  const [laborMinutes, setLaborMinutes] = useState<number | "">(120);
+
+  // Manual / Freequote customized details
+  const [manualHasGlass, setManualHasGlass] = useState<boolean>(true);
+  const [manualGlassTone, setManualGlassTone] = useState<string>("Claro");
+  const [manualAluColor, setManualAluColor] = useState<string>("Natural (Anodizado)");
+  const [manualMaterialIncluded, setManualMaterialIncluded] = useState<boolean>(true);
   
   // Quote item text-editor states:
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
   const [editName, setEditName] = useState<string>("");
   const [editDescription, setEditDescription] = useState<string>("");
+  const [editQty, setEditQty] = useState<number | "">(1);
+
+  // Helper to adjust quantity on the fly and trigger full recalculated pricing despiece
+  const changeBasketItemQuantity = (qId: string, newQty: number) => {
+    if (newQty < 1) return;
+    const q = state.quotes.find((item) => item.id === qId);
+    if (!q) return;
+
+    if (!q.formulaRuleId) {
+      // Manual / Concepto libre
+      const originalUnitPrice = q.calculated.total / q.quantity;
+      const newTotal = originalUnitPrice * newQty;
+      updateQuoteItem(qId, {
+        quantity: newQty,
+        calculated: {
+          ...q.calculated,
+          total: newTotal
+        }
+      });
+      return;
+    }
+
+    // Calculated template item
+    const formulaRule = state.formulas.find((f) => f.id === q.formulaRuleId);
+    const glass = state.glasses.find((g) => g.id === q.glassId);
+    if (!formulaRule || !glass) {
+      const originalTotal = q.calculated.total / q.quantity;
+      updateQuoteItem(qId, {
+        quantity: newQty,
+        calculated: {
+          ...q.calculated,
+          total: originalTotal * newQty
+        }
+      });
+      return;
+    }
+
+    const variables = {
+      Ancho: q.widthCm,
+      Alto: q.heightCm,
+      Cantidad: newQty
+    };
+
+    const line = q.line;
+    const wastePercentage = q.calculated.wastePercent ?? 10;
+    const profitMargin = q.calculated.profitMarginPercent ?? 30;
+    const includeIva = q.calculated.includeIva ?? false;
+    const laborMinutesPerPiece = (q.calculated.laborCost ? q.calculated.laborMinutes / q.quantity : 120) || 120;
+
+    let subtotalProfiles = 0;
+    const computedProfiles = formulaRule.profileEquations.map((eq) => {
+      let matchingProfile = state.profiles.find(
+        (p) => p.line === line && p.id === eq.profileId
+      );
+      if (!matchingProfile) {
+        matchingProfile = state.profiles.find((p) => p.line === line) || state.profiles[0];
+      }
+
+      const cutSizeCm = evaluateEquation(eq.formula, variables);
+      const totalMetersPerPiece = (cutSizeCm / 100) * eq.quantity;
+      const totalMeters = totalMetersPerPiece * newQty;
+      const priceMeter = matchingProfile ? matchingProfile.pricePerMeter : 45;
+      const cost = totalMeters * priceMeter;
+      subtotalProfiles += cost;
+
+      return {
+        name: matchingProfile?.name || `Perfil ${line}`,
+        label: eq.name,
+        meters: totalMeters,
+        cost,
+        cuts: [
+          {
+            sizeCm: Number(cutSizeCm.toFixed(1)),
+            qty: eq.quantity * newQty,
+            angle: eq.angle
+          }
+        ]
+      };
+    });
+
+    const glassWidthCm = evaluateEquation(formulaRule.glassEquation.formulaWidth, variables);
+    const glassHeightCm = evaluateEquation(formulaRule.glassEquation.formulaHeight, variables);
+    const areaM2PerPiece = (glassWidthCm / 100) * (glassHeightCm / 100) * formulaRule.glassEquation.quantity;
+    const totalAreaM2 = areaM2PerPiece * newQty;
+    const glassCost = totalAreaM2 * glass.pricePerM2;
+
+    const computedGlasses = [
+      {
+        thickness: glass.thickness,
+        areaM2: Number(totalAreaM2.toFixed(3)),
+        cost: glassCost,
+        widthCm: Number(glassWidthCm.toFixed(1)),
+        heightCm: Number(glassHeightCm.toFixed(1)),
+        qty: formulaRule.glassEquation.quantity * newQty
+      }
+    ];
+
+    let subtotalAccessories = 0;
+    const computedAccessories = formulaRule.accessoryEquations.map((eq) => {
+      const matchAcc = state.accessories.find((a) => a.id === eq.accessoryId) || state.accessories[0];
+      const contextVars = { ...variables, Vidrios: formulaRule.glassEquation.quantity * newQty };
+      const rawQty = evaluateEquation(eq.quantityFormula, contextVars);
+      const accessoryQty = Math.ceil(rawQty);
+      const itemCost = matchAcc ? matchAcc.pricePerUnit : 10;
+      const cost = accessoryQty * itemCost;
+      subtotalAccessories += cost;
+
+      return {
+        name: matchAcc?.name || "Herraje / Accesorio",
+        qty: accessoryQty,
+        cost
+      };
+    });
+
+    const laborHourRate = state.businessDetails.laborRatePerHour || 220;
+    const laborCost = (laborMinutesPerPiece / 60) * laborHourRate * newQty;
+
+    const subtotalProfilesWithWaste = subtotalProfiles * (1 + wastePercentage / 100);
+    const baseCost = subtotalProfilesWithWaste + glassCost + subtotalAccessories + laborCost;
+    const priceWithMargin = baseCost * (1 + profitMargin / 100);
+    const finalTotal = includeIva ? priceWithMargin * 1.16 : priceWithMargin;
+
+    updateQuoteItem(qId, {
+      quantity: newQty,
+      calculated: {
+        profiles: computedProfiles,
+        glasses: computedGlasses,
+        accessories: computedAccessories,
+        subtotalProfiles: subtotalProfilesWithWaste,
+        subtotalGlasses: glassCost,
+        subtotalAccessories,
+        laborMinutes: laborMinutesPerPiece * newQty,
+        laborCost,
+        baseCost,
+        profitMarginPercent: profitMargin,
+        wastePercent: wastePercentage,
+        includeIva,
+        total: finalTotal
+      }
+    });
+  };
 
   // PDF download configurations:
   const [clientNameForPdf, setClientNameForPdf] = useState<string>("");
@@ -118,6 +265,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     activeCategory === "canceles" ? "🚿 Canceles de Baño" :
     activeCategory === "portones" ? "🚗 Portones y Garajes" :
     activeCategory === "fijos" ? "🖼️ Fijos Perimetrales" :
+    activeCategory === "barandales" ? "🪜 Barandales" :
     "Estructura";
 
   useEffect(() => {
@@ -242,10 +390,26 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
   // Perform calculation of active inputs
   useEffect(() => {
+    const normQty = Number(qty) || 1;
+    const normLaborMinutes = Number(laborMinutes) || 120;
+    const normCustomPrice = Number(customPrice) || 0;
+    const normWidth = Number(width) || 120;
+    const normHeight = Number(height) || 100;
+
     if (!isCalculatedMode) {
       setPreviewResult({
         profiles: [],
-        glasses: [],
+        glasses: manualHasGlass ? [
+          {
+            thickness: manualGlassTone,
+            areaM2: 0,
+            cost: 0,
+            widthCm: 0,
+            heightCm: 0,
+            qty: normQty,
+            id: "glass-custom-" + manualGlassTone
+          }
+        ] : [],
         accessories: [],
         subtotalProfiles: 0,
         subtotalGlasses: 0,
@@ -253,7 +417,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
         subtotalHardware: 0,
         laborMinutes: 0,
         laborCost: 0,
-        total: customPrice * qty
+        total: normCustomPrice * normQty
       });
       return;
     }
@@ -264,9 +428,9 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     if (!formulaRule || !glass) return;
 
     const variables = {
-      Ancho: width,
-      Alto: height,
-      Cantidad: qty
+      Ancho: normWidth,
+      Alto: normHeight,
+      Cantidad: normQty
     };
 
     // Calculate profiles cuts
@@ -284,7 +448,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
       const cutSizeCm = evaluateEquation(eq.formula, variables);
       const totalMetersPerPiece = (cutSizeCm / 100) * eq.quantity;
-      const totalMeters = totalMetersPerPiece * qty;
+      const totalMeters = totalMetersPerPiece * normQty;
       const priceMeter = matchingProfile ? matchingProfile.pricePerMeter : 45;
       const cost = totalMeters * priceMeter;
       subtotalProfiles += cost;
@@ -297,7 +461,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
         cuts: [
           {
             sizeCm: Number(cutSizeCm.toFixed(1)),
-            qty: eq.quantity * qty,
+            qty: eq.quantity * normQty,
             angle: eq.angle
           }
         ]
@@ -308,7 +472,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     const glassWidthCm = evaluateEquation(formulaRule.glassEquation.formulaWidth, variables);
     const glassHeightCm = evaluateEquation(formulaRule.glassEquation.formulaHeight, variables);
     const areaM2PerPiece = (glassWidthCm / 100) * (glassHeightCm / 100) * formulaRule.glassEquation.quantity;
-    const totalAreaM2 = areaM2PerPiece * qty;
+    const totalAreaM2 = areaM2PerPiece * normQty;
     const glassCost = totalAreaM2 * glass.pricePerM2;
 
     const computedGlasses = [
@@ -318,7 +482,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
         cost: glassCost,
         widthCm: Number(glassWidthCm.toFixed(1)),
         heightCm: Number(glassHeightCm.toFixed(1)),
-        qty: formulaRule.glassEquation.quantity * qty
+        qty: formulaRule.glassEquation.quantity * normQty
       }
     ];
 
@@ -328,7 +492,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
       const matchAcc = state.accessories.find((a) => a.id === eq.accessoryId) || state.accessories[0];
       
       // We can evaluate formulas like "4" or "2 * Vidrios" => replace Variables
-      const contextVars = { ...variables, Vidrios: formulaRule.glassEquation.quantity * qty };
+      const contextVars = { ...variables, Vidrios: formulaRule.glassEquation.quantity * normQty };
       const rawQty = evaluateEquation(eq.quantityFormula, contextVars);
       const accessoryQty = Math.ceil(rawQty);
 
@@ -345,7 +509,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
     // Labor cost calculation
     const laborHourRate = state.businessDetails.laborRatePerHour;
-    const laborCost = (laborMinutes / 60) * laborHourRate * qty;
+    const laborCost = (normLaborMinutes / 60) * laborHourRate * normQty;
 
     // Apply waste/merma percentage on raw profiles
     const subtotalProfilesWithWaste = subtotalProfiles * (1 + wastePercentage / 100);
@@ -366,7 +530,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
       subtotalProfiles: subtotalProfilesWithWaste,
       subtotalGlasses: glassCost,
       subtotalAccessories,
-      laborMinutes: laborMinutes * qty,
+      laborMinutes: normLaborMinutes * normQty,
       laborCost,
       baseCost,
       profitMarginPercent: profitMargin,
@@ -391,7 +555,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     customPrice,
     profitMargin,
     includeIva,
-    wastePercentage
+    wastePercentage,
+    manualHasGlass,
+    manualGlassTone,
+    manualAluColor,
+    manualMaterialIncluded
   ]);
 
   // Handle adding computed configuration to quote list
@@ -402,12 +570,12 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
       id: "quote-" + Date.now(),
       name: label || (isCalculatedMode ? "Cancel Desconocido" : "Concepto Libre"),
       formulaRuleId: isCalculatedMode ? selectedFormulaId : undefined,
-      widthCm: isCalculatedMode ? width : 0,
-      heightCm: isCalculatedMode ? height : 0,
-      line: isCalculatedMode ? line : "Manual",
-      color: isCalculatedMode ? color : "Manual",
-      glassId: isCalculatedMode ? selectedGlassId : "",
-      quantity: qty,
+      widthCm: isCalculatedMode ? (Number(width) || 120) : 0,
+      heightCm: isCalculatedMode ? (Number(height) || 100) : 0,
+      line: isCalculatedMode ? line : (manualMaterialIncluded ? "Manual (Con Material)" : "Mano de Obra / Servicio"),
+      color: isCalculatedMode ? color : manualAluColor,
+      glassId: isCalculatedMode ? selectedGlassId : (manualHasGlass ? "glass-custom-" + manualGlassTone : "glass-none"),
+      quantity: Number(qty) || 1,
       calculated: previewResult
     };
 
@@ -982,6 +1150,184 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     doc.save(`Cotizacion_${quoteCode}_${sanitizedClientName}.pdf`);
   };
 
+  // Generate and Download Clients POS Receipt for Thermal Printers
+  const handleDownloadTicketPDF = () => {
+    if (state.quotes.length === 0) {
+      alert("El carro está vacío. Añade piezas al proyecto antes de generar el ticket.");
+      return;
+    }
+
+    const ticketWidth = 80; // Standard thermal 80mm
+    // Height is calculated dynamically based on number of items to make it a continuous ticket!
+    const itemRowsCount = state.quotes.length;
+    const ticketHeight = Math.max(160, 75 + itemRowsCount * 22 + 55); 
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: [ticketWidth, ticketHeight]
+    });
+
+    const margin = 5;
+    const contentWidth = ticketWidth - (margin * 2);
+    let y = 8;
+
+    // Helper: draw dotted line
+    const drawDottedLine = (currentY: number) => {
+      doc.setFont("courier", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text("------------------------------------------", ticketWidth / 2, currentY, { align: "center" });
+      return currentY + 4;
+    };
+
+    // Header Branding
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text(state.businessDetails.name.split("-")[0] || "ALUDEV CANCELERÍA", ticketWidth / 2, y, { align: "center" });
+    y += 4.5;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(71, 85, 105);
+    doc.text(state.businessDetails.address || "Taller de Aluminio y Vidrio", ticketWidth / 2, y, { align: "center" });
+    y += 3.5;
+    doc.text(`Tel: ${state.businessDetails.phone || "S/N"}`, ticketWidth / 2, y, { align: "center" });
+    y += 4.5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("TICKET DE COTIZACIÓN", ticketWidth / 2, y, { align: "center" });
+    y += 4;
+
+    y = drawDottedLine(y);
+
+    // Client and metadata info
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`Cliente: ${clientNameForPdf.trim() || "Público General"}`, margin, y);
+    y += 3.5;
+    
+    const dateStr = new Date().toLocaleDateString("es-MX", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const ticketCode = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
+    doc.text(`Fecha: ${dateStr}`, margin, y);
+    y += 3.5;
+    doc.text(`Folio: ${ticketCode}`, margin, y);
+    y += 4.5;
+
+    y = drawDottedLine(y);
+
+    // Itemized table header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.text("CANT DESCRIPCIÓN MEDIDAS          IMPORTE", margin, y);
+    y += 4;
+    
+    y = drawDottedLine(y);
+
+    // Items
+    doc.setFont("helvetica", "normal");
+    state.quotes.forEach((q) => {
+      // Formatted single row representation
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      
+      const titleText = `${q.quantity} pz x ${q.name}`;
+      doc.text(titleText, margin, y);
+      
+      // Calculate individual item total
+      const totalCostFormatted = `$${Math.round(q.calculated.total).toLocaleString("es-MX")}`;
+      doc.text(totalCostFormatted, ticketWidth - margin, y, { align: "right" });
+      y += 3.5;
+
+      // Dim and glass specifications
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(71, 85, 105);
+      
+      // Handle 0x0 values for manual concepts by omitting dimensions if 0
+      const dims = q.widthCm > 0 && q.heightCm > 0 ? `${q.widthCm}x${q.heightCm} cm` : "Concepto Libre/Servicio";
+      const dimsText = `Medidas: ${dims} | Línea: ${q.line}`;
+      doc.text(dimsText, margin + 2, y);
+      y += 3;
+
+      let specText = `Aluminio: ${q.color}`;
+      if (q.calculated.glasses[0]) {
+        specText += ` | Vidrio: ${q.calculated.glasses[0].thickness}`;
+      }
+      doc.text(specText, margin + 2, y);
+      y += 4.5;
+    });
+
+    y = drawDottedLine(y);
+
+    // Totals Section
+    const totalProjectPriceLocal = state.quotes.reduce((sum, q) => sum + q.calculated.total, 0);
+    const sub = Math.round(totalProjectPriceLocal / (includeIva ? 1.16 : 1));
+    const ivaValue = includeIva ? Math.round(totalProjectPriceLocal - sub) : 0;
+    const finalTot = Math.round(totalProjectPriceLocal);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(15, 23, 42);
+
+    if (includeIva) {
+      doc.text("Subtotal:", margin, y);
+      doc.text(`$${sub.toLocaleString("es-MX")}`, ticketWidth - margin, y, { align: "right" });
+      y += 3.5;
+      doc.text("I.V.A. (16%):", margin, y);
+      doc.text(`$${ivaValue.toLocaleString("es-MX")}`, ticketWidth - margin, y, { align: "right" });
+      y += 4.5;
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("TOTAL NETO:", margin, y);
+    doc.text(`$${finalTot.toLocaleString("es-MX")} MXN`, ticketWidth - margin, y, { align: "right" });
+    y += 5.5;
+
+    y = drawDottedLine(y);
+
+    // Dotted terms & conditions
+    if (notesForPdf) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.text("CONDICIONES:", margin, y);
+      y += 3;
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6);
+      doc.setTextColor(71, 85, 105);
+      
+      const wrappedNotes = doc.splitTextToSize(notesForPdf, contentWidth);
+      wrappedNotes.forEach((lineText: string) => {
+        doc.text(lineText, margin, y);
+        y += 2.6;
+      });
+      y += 2;
+    }
+
+    y = drawDottedLine(y);
+
+    // Ticket Footer
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text("¡GRACIAS POR SU PREFERENCIA!", ticketWidth / 2, y, { align: "center" });
+    y += 3.5;
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(100, 116, 139);
+    doc.text("ALUDEV Cancelería & Portones de Aluminio", ticketWidth / 2, y, { align: "center" });
+
+    // Save File
+    const sanitizedClientName = (clientNameForPdf.trim() || "Publico_General").replace(/[^a-zA-Z0-9]/g, "_");
+    doc.save(`Ticket_${ticketCode}_${sanitizedClientName}.pdf`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1060,6 +1406,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       activeCategory === "puertas" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" :
                       activeCategory === "canceles" ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300" :
                       activeCategory === "portones" ? "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300" :
+                      activeCategory === "barandales" ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300" :
                       "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                     }`}>
                       {selectedCategoryLabel}
@@ -1111,6 +1458,13 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           </option>
                         ))}
                       </optgroup>
+                      <optgroup label="🪜 Barandales">
+                        {state.formulas.filter(f => f.category === "barandales").map((form) => (
+                          <option key={form.id} value={form.id}>
+                            {form.name}
+                          </option>
+                        ))}
+                      </optgroup>
                     </select>
                   </div>
 
@@ -1134,7 +1488,10 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       <input
                         type="number"
                         value={width}
-                        onChange={(e) => setWidth(Number(e.target.value))}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setWidth(val === "" ? "" : Number(val));
+                        }}
                         className="w-20 bg-white border border-slate-200 rounded px-2 py-0.5 text-right font-mono text-xs text-slate-800 font-bold"
                       />
                     </div>
@@ -1142,7 +1499,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       type="range"
                       min="30"
                       max="300"
-                      value={width}
+                      value={width === "" ? 30 : width}
                       onChange={(e) => setWidth(Number(e.target.value))}
                       className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                     />
@@ -1159,7 +1516,10 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       <input
                         type="number"
                         value={height}
-                        onChange={(e) => setHeight(Number(e.target.value))}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setHeight(val === "" ? "" : Number(val));
+                        }}
                         className="w-20 bg-white border border-slate-200 rounded px-2 py-0.5 text-right font-mono text-xs text-slate-800 font-bold"
                       />
                     </div>
@@ -1167,7 +1527,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       type="range"
                       min="30"
                       max="300"
-                      value={height}
+                      value={height === "" ? 30 : height}
                       onChange={(e) => setHeight(Number(e.target.value))}
                       className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                     />
@@ -1310,9 +1670,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       <label className="block text-xs font-medium text-slate-500 mb-1">Cantidad piezas</label>
                       <input
                         type="number"
-                        min="1"
                         value={qty}
-                        onChange={(e) => setQty(Math.max(1, Number(e.target.value)))}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setQty(val === "" ? "" : Number(val));
+                        }}
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-center font-bold"
                       />
                     </div>
@@ -1320,9 +1682,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       <label className="block text-xs font-medium text-slate-500 mb-1">Mano Obra (Min/pz)</label>
                       <input
                         type="number"
-                        min="1"
                         value={laborMinutes}
-                        onChange={(e) => setLaborMinutes(Math.max(1, Number(e.target.value)))}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setLaborMinutes(val === "" ? "" : Number(val));
+                        }}
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-center font-mono text-xs"
                       />
                     </div>
@@ -1409,9 +1773,9 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
             ) : (
               // MODAL MANUAL / LIBRE FLOW (OLD HERO LAYOUT)
               <>
-                <div className="border-l-4 border-amber-500 pl-3 py-1 bg-amber-50/50 rounded-r-lg pr-2">
-                  <h3 className="text-xs font-bold text-amber-800 uppercase">Configuración de Concepto Manual Libre</h3>
-                  <p className="text-[10px] text-amber-700">Igual al generador original. Ingresa los datos exactos que quieres reflejar.</p>
+                <div className="border-l-4 border-amber-500 pl-3 py-1 bg-amber-50/50 dark:bg-amber-950/20 rounded-r-lg pr-2">
+                  <h3 className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase">Configuración de Concepto Manual Libre</h3>
+                  <p className="text-[10px] text-amber-700 dark:text-amber-300">Ingresa los datos del concepto personalizado, reparaciones o servicios de taller.</p>
                 </div>
 
                 <div className="space-y-4">
@@ -1434,9 +1798,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                         <input
                           type="number"
                           placeholder="0.00"
-                          min="0"
                           value={customPrice}
-                          onChange={(e) => setCustomPrice(Math.max(0, Number(e.target.value)))}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomPrice(val === "" ? "" : Number(val));
+                          }}
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2 text-slate-800 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-mono"
                         />
                       </div>
@@ -1447,19 +1813,96 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       <input
                         type="number"
                         placeholder="1"
-                        min="1"
                         value={qty}
-                        onChange={(e) => setQty(Math.max(1, Number(e.target.value)))}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setQty(val === "" ? "" : Number(val));
+                        }}
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-slate-800 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-sans text-center"
                       />
                     </div>
                   </div>
 
+                  {/* Custom manual selections */}
+                  <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/85 dark:border-slate-800/80 space-y-3.5">
+                    <span className="block text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider font-mono">
+                      🛠️ Personalizar Especificaciones de Concepto:
+                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Checkboxes */}
+                      <div className="space-y-4 pt-1">
+                        <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={manualHasGlass}
+                            onChange={(e) => setManualHasGlass(e.target.checked)}
+                            className="rounded text-amber-600 focus:ring-amber-400 bg-white dark:bg-slate-950 border-slate-300 h-4 w-4 mt-0.5"
+                          />
+                          <div>
+                            <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">¿Lleva Cristal / Vidrio?</span>
+                            <span className="block text-[9.5px] text-slate-400">Tildar si el concepto incluye cristal instalado</span>
+                          </div>
+                        </label>
+
+                        <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={manualMaterialIncluded}
+                            onChange={(e) => setManualMaterialIncluded(e.target.checked)}
+                            className="rounded text-amber-600 focus:ring-amber-400 bg-white dark:bg-slate-950 border-slate-300 h-4 w-4 mt-0.5"
+                          />
+                          <div>
+                            <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">¿Con material incluido?</span>
+                            <span className="block text-[9.5px] text-slate-400">Desmarcar para cotizar sólo mano de obra o reparación</span>
+                          </div>
+                        </label>
+                      </div>
+
+                      {/* Select Selectors */}
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-[9.5px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Color / Tono de Aluminio:</label>
+                          <select
+                            value={manualAluColor}
+                            onChange={(e) => setManualAluColor(e.target.value)}
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          >
+                            <option value="Blanco (Pintado)">Blanco (Pintado)</option>
+                            <option value="Natural (Anodizado)">Natural (Anodizado)</option>
+                            <option value="Negro">Negro</option>
+                            <option value="Bronce">Bronce</option>
+                            <option value="Champagne">Champagne</option>
+                            <option value="Nogal (Madera)">Nogal (Madera)</option>
+                            <option value="Sin Aluminio (Solo Servicio/Reparación)">Sin Aluminio (Solo Servicio)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[9.5px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Tono de Cristal:</label>
+                          <select
+                            value={manualGlassTone}
+                            onChange={(e) => setManualGlassTone(e.target.value)}
+                            disabled={!manualHasGlass}
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-slate-100 disabled:dark:bg-slate-900 disabled:text-slate-400 disabled:cursor-not-allowed"
+                          >
+                            <option value="Claro">Claro</option>
+                            <option value="Filtrasol">Filtrasol</option>
+                            <option value="Tintex">Tintex</option>
+                            <option value="Esmerilado">Esmerilado</option>
+                            <option value="Reflectivo">Reflectivo</option>
+                            <option value="Humo / Satinado">Humo / Satinado</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Optional decorative helper */}
-                  <div className="bg-slate-50 hover:bg-slate-100/70 py-2.5 px-3.5 rounded-xl border border-dashed border-slate-200 text-[10px] text-slate-500 flex items-start gap-2">
+                  <div className="bg-slate-50 dark:bg-slate-900/20 hover:bg-slate-100/70 py-2.5 px-3.5 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 flex items-start gap-2">
                     <span className="text-amber-500 font-bold">ℹ️</span>
                     <div>
-                      Este concepto se sumará directamente a los subtotales del proyecto. Tus notas de remisión se generarán automáticamente vinculando este renglón sin afectar base de cortes del taller.
+                      Este concepto se sumará directamente a los subtotales de la cotización actual, respetando los datos de color de aluminio, cristal y tipo de servicio seleccionados para el PDF final.
                     </div>
                   </div>
                 </div>
@@ -1684,6 +2127,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                                 setEditingQuoteId(q.id);
                                 setEditName(q.name);
                                 setEditDescription(q.customDescription || "");
+                                setEditQty(q.quantity);
                               }}
                               className="text-slate-400 hover:text-blue-600 transition"
                               title="Editar texto de cotización"
@@ -1713,21 +2157,41 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                             
                             {/* Saved Custom Description */}
                             {q.customDescription ? (
-                              <div className="mt-2 p-2 bg-sky-50/50 text-slate-600 rounded-lg text-[11px] border border-sky-100/60 leading-relaxed font-sans italic">
-                                <span className="font-bold text-sky-800 not-italic block text-[9px] uppercase tracking-wider mb-0.5">Descripción para cliente:</span>
-                                "{q.customDescription}"
-                              </div>
+                                <div className="mt-2 p-2 bg-sky-50/50 text-slate-600 rounded-lg text-[11px] border border-sky-100/60 leading-relaxed font-sans italic">
+                                  <span className="font-bold text-sky-800 not-italic block text-[9px] uppercase tracking-wider mb-0.5">Descripción para cliente:</span>
+                                  "{q.customDescription}"
+                                </div>
                             ) : (
                               <p className="text-[10px] text-slate-400 mt-1 italic">
                                 Usando desglose técnico automático.
                               </p>
                             )}
 
-                            <div className="mt-2.5 flex flex-wrap gap-1.5">
-                              <span className="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-mono font-medium">
-                                {q.quantity} pz
-                              </span>
-                              <span className="text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-mono font-medium">
+                            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                              {/* Quantity Stepper Editor */}
+                              <div className="flex items-center bg-slate-200 border border-slate-300 rounded-lg overflow-hidden shrink-0 shadow-sm">
+                                <button
+                                  type="button"
+                                  onClick={() => changeBasketItemQuantity(q.id, q.quantity - 1)}
+                                  className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-extrabold transition font-mono"
+                                  title="Disminuir cantidad"
+                                >
+                                  -
+                                </button>
+                                <span className="px-2.5 py-0.5 text-xs font-bold font-mono text-slate-800">
+                                  {q.quantity} pz
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => changeBasketItemQuantity(q.id, q.quantity + 1)}
+                                  className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-extrabold transition font-mono"
+                                  title="Aumentar cantidad"
+                                >
+                                  +
+                                </button>
+                              </div>
+
+                              <span className="text-[9px] bg-blue-105 text-blue-800 px-1.5 py-1 rounded font-mono font-medium">
                                 {q.calculated.glasses[0]?.id === "glass-none" ? "Sin vidrio" : q.calculated.glasses[0]?.thickness}
                               </span>
                             </div>
@@ -1736,7 +2200,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       ) : (
                         <div className="space-y-3">
                           <div className="flex justify-between items-center pb-1 border-b border-slate-200/50">
-                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Editando Texto</span>
+                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Editando Renglón</span>
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => {
@@ -1744,6 +2208,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                                     name: editName,
                                     customDescription: editDescription.trim() || undefined
                                   });
+                                  changeBasketItemQuantity(q.id, Number(editQty) || 1);
                                   setEditingQuoteId(null);
                                 }}
                                 className="flex items-center gap-1 text-[10px] bg-emerald-600 hover:bg-emerald-500 text-white py-1 px-2.5 rounded-lg transition font-medium"
@@ -1762,14 +2227,26 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           </div>
 
                           <div className="space-y-2">
-                            <div>
-                              <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Nombre Corto de Pieza</label>
-                              <input
-                                type="text"
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                              />
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="col-span-2">
+                                <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Nombre Corto de Pieza</label>
+                                <input
+                                  type="text"
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                  className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Cantidad (pz)</label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={editQty}
+                                  onChange={(e) => { const val = e.target.value; setEditQty(val === "" ? "" : Number(val)); }}
+                                  className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs text-center font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
+                                />
+                              </div>
                             </div>
                             
                             <div>
@@ -2009,13 +2486,25 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       </label>
                     </div>
 
-                    <button
-                      onClick={handleDownloadPDF}
-                      className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition shadow-md hover:shadow-lg hover:shadow-emerald-900/10 active:scale-[0.99]"
-                    >
-                      <Download size={13} />
-                      Descargar PDF de Cotización
-                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      <button
+                        onClick={handleDownloadPDF}
+                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11.5px] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-[0.98]"
+                        title="Cotización formal en PDF tamaño carta"
+                      >
+                        <FileText size={13} />
+                        Formato Carta
+                      </button>
+                      
+                      <button
+                        onClick={handleDownloadTicketPDF}
+                        className="w-full py-2.5 bg-slate-850 hover:bg-slate-750 text-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-750 dark:border-slate-700 font-bold text-[11.5px] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-[0.98]"
+                        title="Formato simplificado para ticket térmico de 80mm"
+                      >
+                        <Printer size={13} className="text-blue-400" />
+                        Ticket Térmico (80mm)
+                      </button>
+                    </div>
                   </div>
                 </div>
 
