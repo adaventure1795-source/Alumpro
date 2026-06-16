@@ -78,6 +78,17 @@ export const WorkshopProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }
         });
 
+        // Auto-merge new glasses
+        if (!parsed.glasses) {
+          parsed.glasses = INITIAL_CONFIG.glasses;
+        } else {
+          INITIAL_CONFIG.glasses.forEach(defGlass => {
+            if (!parsed.glasses.some((g: any) => g.id === defGlass.id)) {
+              parsed.glasses.push(defGlass);
+            }
+          });
+        }
+
         // Auto-merge business details if defaults were Toluca
         if (parsed.businessDetails && (parsed.businessDetails.name.includes("Toluca") || parsed.businessDetails.name === "")) {
           parsed.businessDetails = INITIAL_CONFIG.businessDetails;

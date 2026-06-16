@@ -437,7 +437,7 @@ export const DocumentosAludev: React.FC = () => {
                       Cancelería y Portones Automáticos
                     </p>
                     <p className="text-[10px] text-slate-500 mt-1 max-w-sm">
-                      Av. Ejército Mexicano #408, Boca del Río, Veracruz
+                      Francisco Javier mina 50, Veracruz, Veracruz
                       <br />
                       Cel: 229-684-6549 | Email: contacto@aludev.mx
                     </p>
@@ -478,7 +478,7 @@ export const DocumentosAludev: React.FC = () => {
                       <div>
                         <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Contratista (Fabricante)</h4>
                         <p className="font-bold text-slate-800 text-[13px] mt-0.5">ALUDEV Representaciones</p>
-                        <p className="text-slate-500 text-[11px] mt-0.5">📍 Boca del Río, Veracruz</p>
+                        <p className="text-slate-500 text-[11px] mt-0.5">📍 Veracruz, Veracruz</p>
                         <p className="text-slate-500 text-[11px]">📞 229-684-6549</p>
                       </div>
                     </div>

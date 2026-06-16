@@ -1,1 +1,218 @@
 @import "tailwindcss";
+
+/* ==========================================================================
+   ALUMASTER PREMIUM OBSIDIAN DARK THEME CONFIG
+   ========================================================================== */
+
+.dark-theme {
+  --background-color: #030712;
+  --card-bg: #090e1a;
+  --subcard-bg: #0d1324;
+  --border-color: #162035;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ensure root viewport and full document background are unified dark when active */
+html.dark-theme,
+body.dark-theme {
+  background-color: #030712 !important;
+  color: #f8fafc !important;
+}
+
+.dark-theme #main-app-container,
+.dark-theme#main-app-container {
+  background-color: #030712 !important;
+  color: #f8fafc !important;
+}
+
+/* Sidebar and Header overrides */
+.dark-theme aside {
+  background-color: #060a15 !important;
+  border-color: #111a2e !important;
+}
+
+.dark-theme header {
+  background-color: #060a15 !important;
+  border-color: #111a2e !important;
+}
+
+/* Dynamic Global Overrides for White, Slate, and Amber backgrounds in Dark-Theme */
+.dark-theme main div[class*="bg-white"],
+.dark-theme div[class*="bg-white"],
+.dark-theme main form[class*="bg-white"],
+.dark-theme main section[class*="bg-white"] {
+  background-color: #090e1a !important;
+  border-color: #162035 !important;
+  color: #f8fafc !important;
+}
+
+.dark-theme main div[class*="bg-slate-50"],
+.dark-theme div[class*="bg-slate-50"] {
+  background-color: #060a15 !important;
+  border-color: #111a2e !important;
+  color: #f1f5f9 !important;
+}
+
+.dark-theme main div[class*="bg-slate-100"],
+.dark-theme div[class*="bg-slate-100"],
+.dark-theme main nav[class*="bg-slate-100"],
+.dark-theme nav[class*="bg-slate-100"] {
+  background-color: #0b1120 !important;
+  border-color: #16223b !important;
+  color: #f1f5f9 !important;
+}
+
+.dark-theme main div[class*="bg-slate-200"],
+.dark-theme div[class*="bg-slate-200"] {
+  background-color: #101930 !important;
+  border-color: #1e2c4d !important;
+  color: #f8fafc !important;
+}
+
+/* Warnings and highlights backdrops forced dark */
+.dark-theme main div[class*="bg-amber-50"],
+.dark-theme div[class*="bg-amber-50"],
+.dark-theme main div[class*="bg-amber-50/20"],
+.dark-theme div[class*="bg-amber-50/20"] {
+  background-color: #131109 !important;
+  border-color: #3b280b !important;
+  color: #fed7aa !important;
+}
+
+/* Global Border Correction to eliminate bright margins and silver borders */
+.dark-theme [class*="border-slate-50"],
+.dark-theme [class*="border-slate-100"],
+.dark-theme [class*="border-slate-150"],
+.dark-theme [class*="border-slate-200"],
+.dark-theme [class*="border-slate-300"],
+.dark-theme [class*="border-gray-100"],
+.dark-theme [class*="border-gray-200"],
+.dark-theme [class*="border-gray-300"] {
+  border-color: #152038 !important;
+}
+
+/* Solid Obsidian Styling for Inputs, Select element and Textareas */
+.dark-theme select,
+.dark-theme input[type="text"],
+.dark-theme input[type="number"],
+.dark-theme input[type="email"],
+.dark-theme input[type="password"],
+.dark-theme textarea {
+  background-color: #050811 !important;
+  border-color: #16223b !important;
+  color: #f8fafc !important;
+}
+
+.dark-theme select:focus,
+.dark-theme input:focus {
+  border-color: #2563eb !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Ensure dropdown select values are highly readable */
+.dark-theme select option {
+  background-color: #090e1a !important;
+  color: #f8fafc !important;
+}
+
+.dark-theme select optgroup {
+  background-color: #060a15 !important;
+  color: #94a3b8 !important;
+  font-weight: 700;
+}
+
+/* Sliding Toggle Switches & Active states inside dark mode */
+.dark-theme [class*="bg-white"].shadow,
+.dark-theme button[class*="bg-white"].shadow,
+.dark-theme .bg-white.shadow {
+  background-color: #1d293d !important;
+  border-color: #2b3d5c !important;
+  color: #ffffff !important;
+}
+
+/* Overriding typography styles to dynamic warm-whites */
+.dark-theme main [class*="text-slate-800"],
+.dark-theme main [class*="text-slate-900"],
+.dark-theme [class*="text-slate-800"],
+.dark-theme [class*="text-slate-900"],
+.dark-theme main h2,
+.dark-theme main h3 {
+  color: #f8fafc !important;
+}
+
+.dark-theme main [class*="text-slate-700"],
+.dark-theme [class*="text-slate-700"] {
+  color: #e2e8f0 !important;
+}
+
+.dark-theme main [class*="text-slate-600"],
+.dark-theme main [class*="text-slate-500"],
+.dark-theme [class*="text-slate-600"],
+.dark-theme [class*="text-slate-500"] {
+  color: #94a3b8 !important;
+}
+
+/* Unified premium controls */
+.dark-theme main [class*="bg-blue-600"] {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+.dark-theme main [class*="border-blue-600"] {
+  border-color: #2563eb !important;
+}
+.dark-theme main [class*="text-blue-600"] {
+  color: #60a5fa !important;
+}
+
+/* SVG blueprint viewer customization for deep obsidian background integration */
+.dark-theme svg {
+  background-color: #050811 !important;
+  border-color: #111a2e !important;
+}
+
+.dark-theme svg rect[fill="#ffffff"],
+.dark-theme svg rect[fill="none"] {
+  stroke: #16223b !important;
+}
+
+.dark-theme svg rect[fill="#ffffff"] {
+  fill: #090e1a !important;
+}
+
+.dark-theme svg text {
+  fill: #94a3b8 !important;
+}
+
+.dark-theme svg rect[fill*="url(#aluminum-texture)"] {
+  opacity: 0.7;
+}
+
+.dark-theme svg rect[stroke*="#94a3b8"] {
+  stroke: #334155 !important;
+}
+
+.dark-theme svg g[stroke="#64748b"] {
+  stroke: #334155 !important;
+}
+
+/* Custom modern scrollbars in Dark Mode */
+.dark-theme ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dark-theme ::-webkit-scrollbar-track {
+  background: #030712;
+}
+.dark-theme ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}

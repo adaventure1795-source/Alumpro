@@ -63,6 +63,7 @@ export interface FormulaRule {
 export interface QuoteItem {
   id: string;
   name: string; // Custom label for this item inside quote (e.g., "Ventana Baño principal")
+  customDescription?: string; // Non-technical user-edited description to simplify quote
   formulaRuleId?: string; // If based on a template FormulaRule
   widthCm: number;
   heightCm: number;

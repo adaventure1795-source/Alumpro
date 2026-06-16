@@ -72,15 +72,128 @@ export const DEFAULT_ACCESSORIES: AccessoryItem[] = [
 ];
 
 export const DEFAULT_GLASSES: GlassItem[] = [
-  { id: "glass-3s", thickness: "3mm Sencillo Claro", pricePerM2: 120, stockM2: 85, minStockM2: 15 },
-  { id: "glass-4s", thickness: "4mm Sencillo Claro", pricePerM2: 140, stockM2: 70, minStockM2: 15 },
-  { id: "glass-5s", thickness: "5mm Sencillo Filtrasol", pricePerM2: 160, stockM2: 55, minStockM2: 12 },
-  { id: "glass-6t", thickness: "6mm Templado Profesional", pricePerM2: 210, stockM2: 40, minStockM2: 10 },
-  { id: "glass-duo", thickness: "Vidrio Doble (Duo) 6+1/4+6", pricePerM2: 320, stockM2: 35, minStockM2: 8 },
-  { id: "glass-44d", thickness: "Doble Cristal Acústico Lami 4+4", pricePerM2: 280, stockM2: 25, minStockM2: 5 }
+  { id: "glass-none", thickness: "Sin cristal (Solo Estructura / Perfilería)", pricePerM2: 0, stockM2: 9999, minStockM2: 0 },
+  { id: "glass-3s", thickness: "3mm Claro Sencillo", pricePerM2: 120, stockM2: 85, minStockM2: 15 },
+  { id: "glass-4s", thickness: "4mm Claro Sencillo", pricePerM2: 140, stockM2: 70, minStockM2: 15 },
+  { id: "glass-5s", thickness: "5mm Filtrasol Sencillo", pricePerM2: 165, stockM2: 55, minStockM2: 12 },
+  { id: "glass-6t", thickness: "6mm Claro Templado", pricePerM2: 240, stockM2: 40, minStockM2: 10 },
+  { id: "glass-esmerilado", thickness: "6mm Esmerilado Privacidad", pricePerM2: 280, stockM2: 50, minStockM2: 10 },
+  { id: "glass-filtrasol-plus", thickness: "6mm Filtrasol Plus Templado", pricePerM2: 295, stockM2: 45, minStockM2: 10 },
+  { id: "glass-reflecta", thickness: "6mm Reflecta Plata", pricePerM2: 320, stockM2: 30, minStockM2: 5 },
+  { id: "glass-reflecta-verde", thickness: "6mm Reflecta Verde", pricePerM2: 340, stockM2: 30, minStockM2: 5 },
+  { id: "glass-reflecta-azul", thickness: "6mm Reflecta Azul", pricePerM2: 350, stockM2: 30, minStockM2: 5 },
+  { id: "glass-duo", thickness: "Vidrio Doble (Duo) 6+1/4+6", pricePerM2: 420, stockM2: 35, minStockM2: 8 },
+  { id: "glass-44d", thickness: "Doble Cristal Acústico Lami 4+4", pricePerM2: 380, stockM2: 25, minStockM2: 5 },
+  { id: "glass-policarbonato", thickness: "Policarbonato Celular (6mm) - Cancel Baño", pricePerM2: 190, stockM2: 120, minStockM2: 20 },
+  { id: "glass-panel-al", thickness: "Panel de Aluminio (Alucobond / 3mm) - Cancel/Puerta", pricePerM2: 260, stockM2: 80, minStockM2: 15 },
+  { id: "glass-plastico", thickness: "Plástico Translúcido (Acrílico) - Cancel Baño", pricePerM2: 140, stockM2: 110, minStockM2: 15 }
 ];
 
 export const DEFAULT_FORMULAS: FormulaRule[] = [
+  {
+    id: "f-window-slide-2in-nacional",
+    name: "Ventana Corrediza 2″ Nacional (Aluminio Fácil)",
+    category: "ventanas",
+    variables: [
+      { name: "Ancho", description: "Ancho total en cm", defaultValue: 100 },
+      { name: "Alto", description: "Alto total en cm", defaultValue: 100 }
+    ],
+    profileEquations: [
+      { profileId: "prof-nat2-riel", name: "Riel Inferior Horizontal", formula: "Ancho", quantity: 1, angle: "90/90" },
+      { profileId: "prof-nat2", name: "Cabezal/Chambrana Horizontal Superior", formula: "Ancho", quantity: 1, angle: "90/90" },
+      { profileId: "prof-nat2-jamba", name: "Jambas Laterales Verticales", formula: "Alto - 2.7", quantity: 2, angle: "90/90" },
+      { profileId: "prof-nat2-cerco", name: "Poste Liso Vertical de Hojas", formula: "Alto - 4.0", quantity: 2, angle: "90/90" },
+      { profileId: "prof-nat2-tras", name: "Traslapes Verticales Centrales", formula: "Alto - 4.0", quantity: 2, angle: "90/90" },
+      { profileId: "prof-nat2-zoclo", name: "Zoclo/Cabezal Horizontales", formula: "(Ancho - 15.9) / 2", quantity: 4, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "(Ancho - 15.9) / 2 + 1.7",
+      formulaHeight: "Alto - 7.3",
+      quantity: 2
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-carretilla", quantityFormula: "2" },
+      { accessoryId: "acc-emb", quantityFormula: "Ancho * 2 + Alto * 4" },
+      { accessoryId: "acc-empaque", quantityFormula: "Ancho * 2 + Alto * 4" },
+      { accessoryId: "acc-tornillo", quantityFormula: "16" }
+    ]
+  },
+  {
+    id: "f-bath-encl-semilujo",
+    name: "Cancel de Baño Semi Lujo (Aluminio Fácil)",
+    category: "canceles",
+    variables: [
+      { name: "Ancho", description: "Ancho total de pared a pared en cm", defaultValue: 100 },
+      { name: "Alto", description: "Alto total del cancel en cm", defaultValue: 180 }
+    ],
+    profileEquations: [
+      { profileId: "prof-nat2-riel", name: "Riel Superior Horizontal", formula: "Ancho - 0.2", quantity: 1, angle: "90/90" },
+      { profileId: "prof-canal-18081", name: "Guía Inferior Horizontal", formula: "Ancho - 0.7", quantity: 1, angle: "90/90" },
+      { profileId: "prof-nat2-jamba", name: "Jambas Verticales Laterales", formula: "Alto - 2.8", quantity: 2, angle: "90/90" },
+      { profileId: "prof-nat2-cerco", name: "Marco Vertical Hojas (Semi Lujo 45°)", formula: "Alto - 4.5", quantity: 4, angle: "45/45" },
+      { profileId: "prof-nat2-cerco", name: "Marco Horizontal Hojas (Semi Lujo 45°)", formula: "(Ancho / 2) + 2.2", quantity: 4, angle: "45/45" }
+    ],
+    glassEquation: {
+      formulaWidth: "(Ancho / 2) + 2.0",
+      formulaHeight: "Alto - 6.5",
+      quantity: 2
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-esq", quantityFormula: "8" },
+      { accessoryId: "acc-carretilla", quantityFormula: "4" },
+      { accessoryId: "acc-jaladera", quantityFormula: "4" },
+      { accessoryId: "acc-empaque", quantityFormula: "Ancho * 2 + Alto * 4" },
+      { accessoryId: "acc-tornillo", quantityFormula: "32" }
+    ]
+  },
+  {
+    id: "f-fixed-2in-nacional",
+    name: "Ventana Fija 2″ Nacional (Aluminio Fácil)",
+    category: "fijos",
+    variables: [
+      { name: "Ancho", description: "Ancho total de ventana en cm", defaultValue: 100 },
+      { name: "Alto", description: "Alto total de ventana en cm", defaultValue: 100 }
+    ],
+    profileEquations: [
+      { profileId: "prof-fija-2-bolsa", name: "Bolsas Verticales Laterales", formula: "Alto", quantity: 2, angle: "90/90" },
+      { profileId: "prof-fija-2-bolsa", name: "Bolsa Horizontal Superior", formula: "Ancho - 6.4", quantity: 1, angle: "90/90" },
+      { profileId: "prof-fija-2-tapa", name: "Escalonado Horizontal Inferior", formula: "Ancho - 6.4", quantity: 1, angle: "90/90" },
+      { profileId: "prof-fija-2-junq", name: "Junquillo Horizontal", formula: "Ancho - 6.4", quantity: 1, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "Ancho - 5.4",
+      formulaHeight: "Alto - 6.6",
+      quantity: 1
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-tornillo", quantityFormula: "8" },
+      { accessoryId: "acc-empaque", quantityFormula: "Ancho * 2 + Alto * 2" }
+    ]
+  },
+  {
+    id: "f-fixed-3in-nacional",
+    name: "Ventana Fija 3″ Nacional (Aluminio Fácil)",
+    category: "fijos",
+    variables: [
+      { name: "Ancho", description: "Ancho total de ventana en cm", defaultValue: 100 },
+      { name: "Alto", description: "Alto total de ventana en cm", defaultValue: 100 }
+    ],
+    profileEquations: [
+      { profileId: "prof-fija-3-bolsa", name: "Bolsas Verticales Laterales 3″", formula: "Alto", quantity: 2, angle: "90/90" },
+      { profileId: "prof-fija-3-bolsa", name: "Bolsa Horizontal Superior 3″", formula: "Ancho - 8.8", quantity: 1, angle: "90/90" },
+      { profileId: "prof-fija-3-tapa", name: "Tapa Bolsa Horizontal Inferior 3″", formula: "Ancho - 8.8", quantity: 1, angle: "90/90" },
+      { profileId: "prof-fija-3-junq", name: "Junquillo Horizontal 3″", formula: "Ancho - 8.8", quantity: 1, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "Ancho - 7.8",
+      formulaHeight: "Alto - 9.0",
+      quantity: 1
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-tornillo", quantityFormula: "12" },
+      { accessoryId: "acc-empaque", quantityFormula: "Ancho * 2 + Alto * 2" }
+    ]
+  },
   {
     id: "f-window-slide",
     name: "Ventana Corrediza Clásica (2 Hojas)",
@@ -103,7 +216,7 @@ export const DEFAULT_FORMULAS: FormulaRule[] = [
     accessoryEquations: [
       { accessoryId: "acc-roda", quantityFormula: "4" },
       { accessoryId: "acc-tornillo", quantityFormula: "24" },
-      { accessoryId: "acc-felpa", quantityFormula: "Ancho * 2 + Alto * 4" }
+      { accessoryId: "acc-emb", quantityFormula: "Ancho * 2 + Alto * 4" }
     ]
   },
   {
@@ -128,50 +241,6 @@ export const DEFAULT_FORMULAS: FormulaRule[] = [
       { accessoryId: "acc-esq", quantityFormula: "4" },
       { accessoryId: "acc-emb", quantityFormula: "(Ancho * 2 + Alto * 2) * 1.05" },
       { accessoryId: "acc-jaladera", quantityFormula: "1" }
-    ]
-  },
-  {
-    id: "f-bath-encl",
-    name: "Cancel de Baño Corredizo standard",
-    category: "canceles",
-    variables: [
-      { name: "Ancho", description: "Ancho de pared a pared en cm", defaultValue: 140 },
-      { name: "Alto", description: "Alto cancel de baño en cm", defaultValue: 180 }
-    ],
-    profileEquations: [
-      { profileId: "prof-nat2", name: "Riel Superior (Ancho)", formula: "Ancho", quantity: 1, angle: "90/90" },
-      { profileId: "prof-nat2-jamba", name: "Jambas Laterales (Alto)", formula: "Alto", quantity: 2, angle: "90/90" },
-      { profileId: "prof-nat2-cerco", name: "Perfiles Guía (Alto - 2)", formula: "Alto - 2", quantity: 2, angle: "90/90" }
-    ],
-    glassEquation: {
-      formulaWidth: "(Ancho / 2) + 2",
-      formulaHeight: "Alto - 6",
-      quantity: 2
-    },
-    accessoryEquations: [
-      { accessoryId: "acc-roda", quantityFormula: "4" },
-      { accessoryId: "acc-tornillo", quantityFormula: "16" }
-    ]
-  },
-  {
-    id: "f-fixed",
-    name: "Fijo de Vidrio de alta resistencia",
-    category: "fijos",
-    variables: [
-      { name: "Ancho", description: "Ancho del fijo en cm", defaultValue: 100 },
-      { name: "Alto", description: "Alto del fijo en cm", defaultValue: 150 }
-    ],
-    profileEquations: [
-      { profileId: "prof-nat2-jamba", name: "Marco bolsa perimetral", formula: "Ancho * 2 + Alto * 2", quantity: 1, angle: "45/45" }
-    ],
-    glassEquation: {
-      formulaWidth: "Ancho - 1.5",
-      formulaHeight: "Alto - 1.5",
-      quantity: 1
-    },
-    accessoryEquations: [
-      { accessoryId: "acc-emb", quantityFormula: "(Ancho * 2 + Alto * 2) * 2" },
-      { accessoryId: "acc-tornillo", quantityFormula: "12" }
     ]
   },
   {
@@ -246,6 +315,109 @@ export const DEFAULT_FORMULAS: FormulaRule[] = [
       { accessoryId: "acc-emb", quantityFormula: "(Ancho * 2 + Alto * 2) * 1.05" },
       { accessoryId: "acc-tornillo", quantityFormula: "20" }
     ]
+  },
+  {
+    id: "f-window-guillotine",
+    name: "Ventana de Guillotina Standard",
+    category: "ventanas",
+    variables: [
+      { name: "Ancho", description: "Ancho total en cm", defaultValue: 100 },
+      { name: "Alto", description: "Alto total en cm", defaultValue: 140 }
+    ],
+    profileEquations: [
+      { profileId: "prof-nat2", name: "Cabezal Horizontal Superior", formula: "Ancho", quantity: 1, angle: "90/90" },
+      { profileId: "prof-nat2-riel", name: "Riel Inferior Horizontal", formula: "Ancho", quantity: 1, angle: "90/90" },
+      { profileId: "prof-nat2-jamba", name: "Jambas Laterales de Guillotina (Guías)", formula: "Alto", quantity: 2, angle: "90/90" },
+      { profileId: "prof-nat2-cerco", name: "Cerco Hoja Superior e Inferior", formula: "Ancho - 5.5", quantity: 4, angle: "90/90" },
+      { profileId: "prof-nat2-tras", name: "Hojas Laterales Interiores Montantes", formula: "(Alto / 2) - 3", quantity: 4, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "(Ancho - 12) / 2",
+      formulaHeight: "(Alto / 2) - 6",
+      quantity: 2
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-roda", quantityFormula: "4" },
+      { accessoryId: "acc-emb", quantityFormula: "Ancho * 4 + Alto * 4" },
+      { accessoryId: "acc-empaque", quantityFormula: "Ancho * 4 + Alto * 4" },
+      { accessoryId: "acc-tornillo", quantityFormula: "24" }
+    ]
+  },
+  {
+    id: "f-window-projection-standard",
+    name: "Ventana de Proyección Standard (Proyectable)",
+    category: "ventanas",
+    variables: [
+      { name: "Ancho", description: "Ancho total en cm", defaultValue: 80 },
+      { name: "Alto", description: "Alto total en cm", defaultValue: 80 }
+    ],
+    profileEquations: [
+      { profileId: "prof-nat2-jamba", name: "Chambrana de Vano Perimetral", formula: "Ancho * 2 + Alto * 2 - 4", quantity: 1, angle: "45/45" },
+      { profileId: "prof-nat2-cerco", name: "Cerco Hoja Proyectable", formula: "Ancho * 2 + Alto * 2 - 16", quantity: 1, angle: "45/45" }
+    ],
+    glassEquation: {
+      formulaWidth: "Ancho - 14",
+      formulaHeight: "Alto - 14",
+      quantity: 1
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-bisagra-heavy", quantityFormula: "2" },
+      { accessoryId: "acc-jaladera", quantityFormula: "1" },
+      { accessoryId: "acc-empaque", quantityFormula: "Ancho * 2 + Alto * 2" },
+      { accessoryId: "acc-tornillo", quantityFormula: "12" }
+    ]
+  },
+  {
+    id: "f-door-monumental",
+    name: "Puerta Monumental Premium",
+    category: "puertas",
+    variables: [
+      { name: "Ancho", description: "Ancho total de entrada en cm", defaultValue: 120 },
+      { name: "Alto", description: "Alto monumental en cm", defaultValue: 240 }
+    ],
+    profileEquations: [
+      { profileId: "prof-puerta-pes-cab", name: "Cerco Portante de Pivot / Batiente", formula: "Ancho", quantity: 1, angle: "45/45" },
+      { profileId: "prof-puerta-pes-chapa", name: "Jambas Laterales Monumentales", formula: "Alto", quantity: 2, angle: "45/45" },
+      { profileId: "prof-puerta-pes-cab", name: "Cerco Superior de Hoja Monumental", formula: "Ancho - 12", quantity: 1, angle: "90/90" },
+      { profileId: "prof-puerta-pes-zoc", name: "Zoclo Inferior Reforzado (2 Ventilas Heavy)", formula: "Ancho - 12", quantity: 1, angle: "90/90" },
+      { profileId: "prof-puerta-pes-chapa", name: "Cercos Verticales Laterales Hoja", formula: "Alto - 6", quantity: 2, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "Ancho - 22",
+      formulaHeight: "Alto - 28",
+      quantity: 1
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-bisagra-heavy", quantityFormula: "4" },
+      { accessoryId: "acc-chapa-seg", quantityFormula: "1" },
+      { accessoryId: "acc-jaladera", quantityFormula: "1" },
+      { accessoryId: "acc-emb", quantityFormula: "Ancho * 4 + Alto * 4" },
+      { accessoryId: "acc-tornillo", quantityFormula: "32" }
+    ]
+  },
+  {
+    id: "f-porton-ascendiendo-4",
+    name: "Portón Ascendente de Aluminio (4 Módulos / Seccional)",
+    category: "portones",
+    variables: [
+      { name: "Ancho", description: "Ancho total de garaje en cm", defaultValue: 300 },
+      { name: "Alto", description: "Alto total de garaje en cm", defaultValue: 240 }
+    ],
+    profileEquations: [
+      { profileId: "prof-porton-hoja", name: "Cerco Perimetral Módulos Seccionales", formula: "Ancho * 4 * 2 + Alto * 4 * 2", quantity: 1, angle: "45/45" },
+      { profileId: "prof-duela-lisa", name: "Relleno Duela Lisa Estructural Sec", formula: "(Ancho - 12) * (Alto / 10)", quantity: 1, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "0",
+      formulaHeight: "0",
+      quantity: 0
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-motor", quantityFormula: "1" },
+      { accessoryId: "acc-bisagra-heavy", quantityFormula: "10" },
+      { accessoryId: "acc-roda", quantityFormula: "8" },
+      { accessoryId: "acc-tornillo", quantityFormula: "150" }
+    ]
   }
 ];
 
@@ -304,10 +476,10 @@ export const INITIAL_CONFIG: WorkshopConfig = {
     {
       id: "inv-1",
       invoiceNumber: "REM-2601",
-      businessName: "Cancelería y Perfiles 'Alumitec'",
-      businessPhone: "555-430-1282",
-      businessAddress: "Av. de las Industrias 402, Col. Obrera, CDMX",
-      businessRFC: "ALU950212HA8",
+      businessName: "ALUDEV - Aluminios de Veracruz",
+      businessPhone: "229-684-6549",
+      businessAddress: "Francisco Javier mina 50, Veracruz, Veracruz",
+      businessRFC: "ALU230611HAA",
       clientName: "Ignacio Martínez",
       clientPhone: "553-912-4021",
       clientAddress: "Calle Del Río 24, Int 4, San Angel",
@@ -330,7 +502,7 @@ export const INITIAL_CONFIG: WorkshopConfig = {
   businessDetails: {
     name: "ALUDEV - Cancelería y Portones",
     phone: "229-684-6549",
-    address: "Av. Ejército Mexicano #408, Boca del Río, Veracruz",
+    address: "Francisco Javier mina 50, Veracruz, Veracruz",
     rfc: "ALU230611HAA",
     laborRatePerHour: 220, // $ per hour
     defaultBarLengthCm: 610 // standard commercial length is 6.1m (610 cm)

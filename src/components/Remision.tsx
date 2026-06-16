@@ -37,6 +37,9 @@ export const Remision: React.FC = () => {
   // Custom print theme setting
   const [invoiceTheme, setInvoiceTheme] = useState<"blue" | "dark" | "emerald" | "steel">("blue");
 
+  // Thermal tickets print toggle
+  const [isThermalTicket, setIsThermalTicket] = useState<boolean>(false);
+
   // Form inputs for new invoice item
   const [clientName, setClientName] = useState<string>("");
   const [clientPhone, setClientPhone] = useState<string>("");
@@ -186,6 +189,161 @@ export const Remision: React.FC = () => {
     const url = `https://api.whatsapp.com/send?phone=${cleanPhone ? "52" + cleanPhone : ""}&text=${encoded}`;
     
     window.open(url, "_blank");
+  };
+
+  // Thermal Portables 58mm/80mm Print handler
+  const handlePrintThermalTicket = (inv: DeliveryInvoice) => {
+    const printWindow = window.open("", "_blank", "width=320,height=600");
+    if (!printWindow) {
+      alert("Por favor habilita las ventanas emergentes (popups) para poder imprimir la nota de remisión en tu terminal térmica.");
+      return;
+    }
+
+    const formattedDate = new Date(inv.date).toLocaleDateString("es-MX");
+    const formattedDue = new Date(inv.dueDate).toLocaleDateString("es-MX");
+
+    const itemsRows = inv.items.map(item => `
+      <tr>
+        <td colspan="2" style="font-weight: bold; padding-top: 6px;">${item.description}</td>
+      </tr>
+      <tr style="border-bottom: 1px dashed #ddd;">
+        <td style="padding-bottom: 4px;">${item.quantity} pz x $${item.unitPrice.toLocaleString("es-MX")}</td>
+        <td style="text-align: right; font-weight: bold; padding-bottom: 4px;">$${item.total.toLocaleString("es-MX")}</td>
+      </tr>
+    `).join("");
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ticket ${inv.invoiceNumber}</title>
+  <style>
+    @gpage { margin: 0; }
+    body {
+      width: 260px;
+      margin: 0 auto;
+      padding: 10px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      color: #000;
+      background: #fff;
+      line-height: 1.35;
+    }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .bold { font-weight: bold; }
+    .header-title {
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 9px;
+      margin-top: 3px;
+      margin-bottom: 6px;
+    }
+    .divider {
+      border-top: 1px dashed #000;
+      margin: 8px 0;
+    }
+    .table-totals {
+      width: 100%;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+    .table-totals td {
+      padding: 2px 0;
+    }
+    .signature-box {
+      margin-top: 35px;
+      text-align: center;
+      font-size: 9px;
+    }
+    .signature-line {
+      border-top: 1px solid #000;
+      width: 140px;
+      margin: 30px auto 3px auto;
+    }
+  </style>
+</head>
+<body onload="window.print(); setTimeout(function(){ window.close(); }, 800);">
+  <div class="text-center">
+    <div class="header-title">${inv.businessName.toUpperCase()}</div>
+    <div style="font-size: 9px; margin-top: 1px; font-weight: bold;">ALUMINIOS DE VERACRUZ</div>
+    <div class="subtitle">
+      ${inv.businessAddress}<br>
+      Tel: ${inv.businessPhone}<br>
+      RFC: ${inv.businessRFC || "S/R"}
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div style="font-size: 10.5px;">
+    <strong>Nº TICKET :</strong> ${inv.invoiceNumber}<br/>
+    <strong>FECHA    :</strong> ${formattedDate}<br/>
+    <strong>CLIENTE  :</strong> ${inv.clientName}<br/>
+    ${inv.clientPhone ? `<strong>TELÉFONO :</strong> ${inv.clientPhone}<br/>` : ''}
+    <strong>ENTREGA  :</strong> ${formattedDue}
+  </div>
+
+  <div class="divider"></div>
+  <div class="text-center" style="font-size: 9px; font-weight: bold; letter-spacing: 1px;">[[ CONCEPTOS COTIZADOS ]]</div>
+
+  <table style="width: 100%; font-size: 10.5px; border-collapse: collapse;">
+    ${itemsRows}
+  </table>
+
+  <div class="divider"></div>
+
+  <table class="table-totals">
+    <tr>
+      <td>SUBTOTAL:</td>
+      <td style="text-align: right;">$${inv.subtotal.toLocaleString("es-MX")}</td>
+    </tr>
+    <tr>
+      <td>IVA (${inv.ivaPercent}%):</td>
+      <td style="text-align: right;">$${Math.round(inv.subtotal * (inv.ivaPercent / 100)).toLocaleString("es-MX")}</td>
+    </tr>
+    <tr style="font-weight: bold; font-size: 11.5px;">
+      <td>TOTAL GENERAL:</td>
+      <td style="text-align: right;">$${inv.total.toLocaleString("es-MX")} MXN</td>
+    </tr>
+    <tr style="color: #000; font-style: italic;">
+      <td>ANTICIPO RECIBIDO:</td>
+      <td style="text-align: right;">-$${inv.advancePayment.toLocaleString("es-MX")}</td>
+    </tr>
+    <tr style="font-weight: bold; font-size: 12px; border-top: 1px solid #000; border-bottom: 2px double #000; background-color: #eee;">
+      <td>SALDO PENDIENTE:</td>
+      <td style="text-align: right; padding: 2px;">$${inv.pendingBalance.toLocaleString("es-MX")} MXN</td>
+    </tr>
+  </table>
+
+  <div style="margin-top: 12px; font-size: 8.5px; line-height: 1.35; border: 1px solid #000; padding: 5px;">
+    <strong>Condiciones y Garantía:</strong><br/>
+    ${inv.notes || "Garantía de fábrica en perfiles de aluminio y herrajes defectuosos. No cubre roturas accidentales de cristales."}
+  </div>
+
+  <div class="signature-box">
+    <div class="signature-line"></div>
+    RECIBÍ DE CONFORMIDAD<br/>
+    Firma del Cliente
+  </div>
+
+  <div class="divider" style="margin-top: 20px;"></div>
+  <div class="text-center" style="font-size: 8px; margin-top: 4px;">
+    ¡Gracias por su preferencia!<br>
+    Soporte Técnico de Impresión Aludev
+  </div>
+</body>
+</html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   };
 
   // Quick helper to change status lists
@@ -474,7 +632,7 @@ export const Remision: React.FC = () => {
                         e.stopPropagation();
                         handleDeleteInvoice(inv.id);
                       }}
-                      className="absolute top-4 right-4 text-slate-350 hover:text-red-500 transition"
+                      className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition"
                       title="Borrar Nota"
                     >
                       <Trash2 size={13} />
@@ -528,19 +686,49 @@ export const Remision: React.FC = () => {
               <div className="space-y-4">
                 {/* Visual control settings bar */}
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap justify-between items-center gap-2 text-xs">
-                  <div className="flex items-center gap-1">
-                    <Palette size={14} className="text-slate-500" />
-                    <span>Estilo Imprenta:</span>
-                    <select
-                      value={invoiceTheme}
-                      onChange={(e) => setInvoiceTheme(e.target.value as any)}
-                      className="bg-white border text-xs px-2 py-0.5 rounded font-semibold"
-                    >
-                      <option value="blue">Azul Cancelador (#2C5F8D)</option>
-                      <option value="dark">Negro Mate Cromado (#1E1E1E)</option>
-                      <option value="emerald">Verde Bosque (#022C22)</option>
-                      <option value="steel">Gris Metálico Acero (#475569)</option>
-                    </select>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-500">Diseño Nota:</span>
+                    <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-white">
+                      <button
+                        type="button"
+                        onClick={() => setIsThermalTicket(false)}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1 ${
+                          !isThermalTicket
+                            ? "bg-blue-600 text-white shadow"
+                            : "text-slate-600 hover:bg-slate-150"
+                        }`}
+                      >
+                        📄 Carta / PDF
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsThermalTicket(true)}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1 ${
+                          isThermalTicket
+                            ? "bg-amber-600 text-white shadow"
+                            : "text-slate-600 hover:bg-slate-150"
+                        }`}
+                      >
+                        📟 Ticket Térmico
+                      </button>
+                    </div>
+
+                    {!isThermalTicket && (
+                      <div className="flex items-center gap-1 ml-2 border-l pl-3 border-slate-205">
+                        <Palette size={13} className="text-slate-400" />
+                        <span>Color:</span>
+                        <select
+                          value={invoiceTheme}
+                          onChange={(e) => setInvoiceTheme(e.target.value as any)}
+                          className="bg-white border text-xs px-1.5 py-0.5 rounded font-semibold"
+                        >
+                          <option value="blue">Azul</option>
+                          <option value="dark">Negro</option>
+                          <option value="emerald">Verde</option>
+                          <option value="steel">Gris</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -566,150 +754,237 @@ export const Remision: React.FC = () => {
                     </button>
                     
                     <button
-                      onClick={() => window.print()}
-                      className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded flex items-center gap-1 transition shadow font-mono"
+                      onClick={() => isThermalTicket ? handlePrintThermalTicket(activeInvoice) : window.print()}
+                      className={`px-2.5 py-1 text-white text-xs font-semibold rounded flex items-center gap-1 transition shadow font-mono ${
+                        isThermalTicket ? "bg-amber-600 hover:bg-amber-500 shadow-amber-900/10" : "bg-slate-800 hover:bg-slate-700"
+                      }`}
                     >
                       <Printer size={12} />
-                      Imprimir
+                      {isThermalTicket ? "Imprimir Ticket" : "Imprimir Carta"}
                     </button>
                   </div>
                 </div>
 
                 {/* THE PHYSICALLY RENDERED COMPLETED INVOICE SLIP PAPER */}
-                <div
-                  className="bg-white p-8 rounded-2xl border border-slate-205 shadow-lg print:border-none print:shadow-none font-sans relative overflow-hidden"
-                  id="printable-remision-sheet"
-                >
-                  {/* Watermark theme accent line */}
-                  <div className={`h-2.5 w-full absolute top-0 left-0 ${selectedTheme.primary}`} />
-
-                  {/* Header Title block */}
-                  <div className="flex justify-between items-start gap-4 pb-4 border-b border-slate-150">
-                    <div className="space-y-1">
-                      <h4 className="text-xl font-black text-slate-800 tracking-tight">
-                        {activeInvoice.businessName}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 leading-tight max-w-sm">
-                        {activeInvoice.businessAddress}
-                        <br />
-                        Atención: <strong>{activeInvoice.businessPhone}</strong>
-                        {activeInvoice.businessRFC && (
-                          <> | RFC: <strong className="font-mono">{activeInvoice.businessRFC}</strong></>
-                        )}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <span className={`px-3 py-1 font-mono text-[10px] uppercase font-black text-white rounded shrink-0 ${selectedTheme.primary}`}>
-                        Nota de Remisión
-                      </span>
-                      <h3 className="text-xl font-bold font-mono text-slate-700 mt-1.5">
-                        {activeInvoice.invoiceNumber}
-                      </h3>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-                        Emisión: {new Date(activeInvoice.date).toLocaleDateString("es-MX")}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Customer and Due date info */}
-                  <div className="grid grid-cols-2 gap-4 py-4 text-xs">
-                    <div className="space-y-1 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                      <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono">DENTINATARIO (CLIENTE):</span>
-                      <p className="font-bold text-slate-850 text-sm leading-tight">{activeInvoice.clientName}</p>
-                      {activeInvoice.clientPhone && (
-                        <p className="text-slate-500 font-mono">Cel: {activeInvoice.clientPhone}</p>
-                      )}
-                      {activeInvoice.clientAddress && (
-                        <p className="text-slate-400 leading-tight">{activeInvoice.clientAddress}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5 bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-right">
-                      <div>
-                        <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">VENCIMIENTO DE ENTREGA:</span>
-                        <strong className="text-slate-800 font-mono text-sm block mt-0.5">
-                          {new Date(activeInvoice.dueDate).toLocaleDateString("es-MX")}
-                        </strong>
-                      </div>
-                      <div>
-                        <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">SALDO ESTADO:</span>
-                        <span className="text-xs bg-red-100 text-red-800 font-mono font-black px-2 py-0.5 rounded border border-red-200 uppercase inline-block">
-                          {activeInvoice.status.toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Items list Table */}
-                  <table className="w-full text-left border-collapse text-xs my-3">
-                    <thead>
-                      <tr className={`text-white text-[10px] uppercase font-mono ${selectedTheme.primary}`}>
-                        <th className="p-2.5 rounded-l">Descripción del Cancél / Ventana</th>
-                        <th className="p-2.5 text-center">Cant</th>
-                        <th className="p-2.5 text-right flex-nowrap">Precio Unit.</th>
-                        <th className="p-2.5 text-right rounded-r">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {activeInvoice.items.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/40">
-                          <td className="p-2.5 font-medium text-slate-800">{item.description}</td>
-                          <td className="p-2.5 text-center text-slate-700 font-mono font-bold">{item.quantity}</td>
-                          <td className="p-2.5 text-right text-slate-600 font-mono">${item.unitPrice.toLocaleString()}</td>
-                          <td className="p-2.5 text-right text-slate-850 font-bold font-mono">${item.total.toLocaleString()}</td>
-                        </tr>
+                {isThermalTicket ? (
+                  /* SIMULATED THERMAL TICKET (58mm/80mm Style) */
+                  <div 
+                    className="max-w-[325px] mx-auto bg-zinc-50 border border-zinc-200 dark:bg-zinc-100 p-5 rounded-md shadow-xl font-mono text-zinc-900 overflow-hidden relative select-none animate-fade-in"
+                    id="printable-remision-sheet"
+                  >
+                    {/* Top Torn/Serrated Roll paper effect */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 flex justify-between overflow-hidden opacity-30 pointer-events-none">
+                      {Array.from({ length: 32 }).map((_, i) => (
+                        <span key={i} className="w-2 h-2 bg-slate-400 rounded-full -mt-2 shrink-0 -mx-0.5"></span>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
 
-                  {/* Calculations breakdown block */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pt-4 border-t border-slate-150 text-xs">
+                    <div className="text-center pt-3">
+                      <h3 className="text-xs font-black tracking-wider text-zinc-950 uppercase">{activeInvoice.businessName}</h3>
+                      <p className="text-[9px] text-zinc-500 mt-0.5 uppercase tracking-tight">ALUMINIOS DE VERACRUZ</p>
+                      <p className="text-[9px] text-zinc-500">{activeInvoice.businessAddress}</p>
+                      <p className="text-[9px] text-zinc-500">Tel: {activeInvoice.businessPhone}</p>
+                      <p className="text-[9px] text-zinc-500">RFC: {activeInvoice.businessRFC || "Sin RFC"}</p>
+                    </div>
+
+                    <div className="text-[10px] my-3 border-t border-b border-dashed border-zinc-400 py-2 space-y-0.5 text-zinc-800 leading-tight">
+                      <div><strong>Nº TICKET :</strong> {activeInvoice.invoiceNumber}</div>
+                      <div><strong>EMISIÓN   :</strong> {new Date(activeInvoice.date).toLocaleDateString("es-MX")}</div>
+                      <div><strong>CLIENTE   :</strong> {activeInvoice.clientName}</div>
+                      {activeInvoice.clientPhone && <div><strong>CEL      :</strong> {activeInvoice.clientPhone}</div>}
+                      <div><strong>ENTREGA   :</strong> {new Date(activeInvoice.dueDate).toLocaleDateString("es-MX")}</div>
+                    </div>
+
+                    <div className="text-[9px] font-bold text-center tracking-wider text-zinc-500 mb-2">== DETALLE DE CONCEPTOS ==</div>
                     
-                    {/* Legal Notes / Conditions */}
-                    <div className="max-w-sm text-[10px] text-slate-400 leading-normal bg-slate-50 p-3 rounded-lg border border-slate-100">
-                      <strong className="text-slate-550 block mb-0.5 uppercase tracking-wide">Acuerdo de Servicio:</strong>
-                      {activeInvoice.notes}
+                    <div className="divide-y divide-dashed divide-zinc-200 text-[10px] space-y-1.5 font-mono">
+                      {activeInvoice.items.map((item, idx) => (
+                        <div key={idx} className="pt-2">
+                          <div className="font-bold text-zinc-900 leading-tight">{item.description}</div>
+                          <div className="flex justify-between text-zinc-600 mt-0.5">
+                            <span>{item.quantity} pz x ${item.unitPrice.toLocaleString("es-MX")}</span>
+                            <span className="font-bold text-zinc-900">${item.total.toLocaleString("es-MX")}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
-                    {/* Numeric values box */}
-                    <div className="w-full sm:w-60 text-right space-y-1.5 font-mono text-xs">
-                      <div className="flex justify-between text-slate-500">
-                        <span>Subtotal:</span>
-                        <span>${activeInvoice.subtotal.toLocaleString()}</span>
+                    <div className="my-3 border-t border-dashed border-zinc-400 pt-2 space-y-1 text-[10px] font-mono">
+                      <div className="flex justify-between text-zinc-700">
+                        <span>SUBTOTAL:</span>
+                        <span>${activeInvoice.subtotal.toLocaleString("es-MX")}</span>
                       </div>
-                      <div className="flex justify-between text-slate-500 border-b border-dashed border-slate-200 pb-1">
-                        <span>IVA gravado ({activeInvoice.ivaPercent}%):</span>
-                        <span>${Math.round(activeInvoice.subtotal * (activeInvoice.ivaPercent / 100)).toLocaleString()}</span>
+                      <div className="flex justify-between text-zinc-700">
+                        <span>IVA ({activeInvoice.ivaPercent}%):</span>
+                        <span>${Math.round(activeInvoice.subtotal * (activeInvoice.ivaPercent / 100)).toLocaleString("es-MX")}</span>
                       </div>
-                      <div className="flex justify-between text-slate-800 font-bold text-sm">
-                        <span>Importe Total:</span>
-                        <span>${activeInvoice.total.toLocaleString()} MXN</span>
+                      <div className="flex justify-between text-zinc-950 font-black text-[11px] pt-1 border-t border-dashed border-zinc-350">
+                        <span>TOTAL GENERAL:</span>
+                        <span>${activeInvoice.total.toLocaleString("es-MX")} MXN</span>
                       </div>
-                      <div className="flex justify-between text-emerald-600 font-serif text-xs">
-                        <span>Anticipo liquidado:</span>
-                        <span>-${activeInvoice.advancePayment.toLocaleString()}</span>
+                      <div className="flex justify-between text-emerald-700 italic font-bold">
+                        <span>ANTICIPO RECIBIDO:</span>
+                        <span>-${activeInvoice.advancePayment.toLocaleString("es-MX")}</span>
                       </div>
-                      <div className={`flex justify-between font-black text-sm p-1.5 rounded ${selectedTheme.accent} ${selectedTheme.text}`}>
-                        <span>PAGO PENDIENTE:</span>
-                        <span>${activeInvoice.pendingBalance.toLocaleString()} MXN</span>
+                      <div className="flex justify-between text-red-700 font-bold bg-amber-100 p-1.5 rounded mt-1 border border-amber-205 text-[10.5px]">
+                        <span>SALDO PENDIENTE:</span>
+                        <span>${activeInvoice.pendingBalance.toLocaleString("es-MX")} MXN</span>
+                      </div>
+                    </div>
+
+                    {activeInvoice.notes && (
+                      <div className="text-[9px] text-zinc-650 leading-normal bg-zinc-200/50 p-2 rounded border border-zinc-250 my-4">
+                        <span className="font-bold block uppercase text-zinc-600 tracking-wider mb-0.5">Condiciones:</span>
+                        {activeInvoice.notes}
+                      </div>
+                    )}
+
+                    <div className="text-center pt-4 my-3 text-zinc-400">
+                      <div className="border-t border-zinc-300 w-32 mx-auto pt-1 text-[8px] uppercase">
+                        Firma del Cliente
+                      </div>
+                    </div>
+
+                    <div className="text-center text-[9px] text-zinc-400 mt-6 border-t border-dashed border-zinc-205 pt-3">
+                      ¡Agradecemos su preferencia!<br />
+                      Aludev Aluminios de Veracruz
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="bg-white p-8 rounded-2xl border border-slate-205 shadow-lg print:border-none print:shadow-none font-sans relative overflow-hidden"
+                    id="printable-remision-sheet"
+                  >
+                    {/* Watermark theme accent line */}
+                    <div className={`h-2.5 w-full absolute top-0 left-0 ${selectedTheme.primary}`} />
+
+                    {/* Header Title block */}
+                    <div className="flex justify-between items-start gap-4 pb-4 border-b border-slate-150">
+                      <div className="space-y-1">
+                        <h4 className="text-xl font-black text-slate-800 tracking-tight">
+                          {activeInvoice.businessName}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 leading-tight max-w-sm">
+                          {activeInvoice.businessAddress}
+                          <br />
+                          Atención: <strong>{activeInvoice.businessPhone}</strong>
+                          {activeInvoice.businessRFC && (
+                            <> | RFC: <strong className="font-mono">{activeInvoice.businessRFC}</strong></>
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <span className={`px-3 py-1 font-mono text-[10px] uppercase font-black text-white rounded shrink-0 ${selectedTheme.primary}`}>
+                          Nota de Remisión
+                        </span>
+                        <h3 className="text-xl font-bold font-mono text-slate-700 mt-1.5">
+                          {activeInvoice.invoiceNumber}
+                        </h3>
+                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                          Emisión: {new Date(activeInvoice.date).toLocaleDateString("es-MX")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Customer and Due date info */}
+                    <div className="grid grid-cols-2 gap-4 py-4 text-xs">
+                      <div className="space-y-1 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                        <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono">DENTINATARIO (CLIENTE):</span>
+                        <p className="font-bold text-slate-850 text-sm leading-tight">{activeInvoice.clientName}</p>
+                        {activeInvoice.clientPhone && (
+                          <p className="text-slate-500 font-mono">Cel: {activeInvoice.clientPhone}</p>
+                        )}
+                        {activeInvoice.clientAddress && (
+                          <p className="text-slate-400 leading-tight">{activeInvoice.clientAddress}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5 bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-right">
+                        <div>
+                          <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">VENCIMIENTO DE ENTREGA:</span>
+                          <strong className="text-slate-800 font-mono text-sm block mt-0.5">
+                            {new Date(activeInvoice.dueDate).toLocaleDateString("es-MX")}
+                          </strong>
+                        </div>
+                        <div>
+                          <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">SALDO ESTADO:</span>
+                          <span className="text-xs bg-red-100 text-red-800 font-mono font-black px-2 py-0.5 rounded border border-red-200 uppercase inline-block">
+                            {activeInvoice.status.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Items list Table */}
+                    <table className="w-full text-left border-collapse text-xs my-3">
+                      <thead>
+                        <tr className={`text-white text-[10px] uppercase font-mono ${selectedTheme.primary}`}>
+                          <th className="p-2.5 rounded-l">Descripción del Cancél / Ventana</th>
+                          <th className="p-2.5 text-center">Cant</th>
+                          <th className="p-2.5 text-right flex-nowrap">Precio Unit.</th>
+                          <th className="p-2.5 text-right rounded-r">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {activeInvoice.items.map((item, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50/40">
+                            <td className="p-2.5 font-medium text-slate-800">{item.description}</td>
+                            <td className="p-2.5 text-center text-slate-700 font-mono font-bold">{item.quantity}</td>
+                            <td className="p-2.5 text-right text-slate-600 font-mono">${item.unitPrice.toLocaleString()}</td>
+                            <td className="p-2.5 text-right text-slate-800 font-bold font-mono">${item.total.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    {/* Calculations breakdown block */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pt-4 border-t border-slate-150 text-xs">
+                      
+                      {/* Legal Notes / Conditions */}
+                      <div className="max-w-sm text-[10px] text-slate-400 leading-normal bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <strong className="text-slate-500 block mb-0.5 uppercase tracking-wide">Acuerdo de Servicio:</strong>
+                        {activeInvoice.notes}
+                      </div>
+
+                      {/* Numeric values box */}
+                      <div className="w-full sm:w-60 text-right space-y-1.5 font-mono text-xs">
+                        <div className="flex justify-between text-slate-500">
+                          <span>Subtotal:</span>
+                          <span>${activeInvoice.subtotal.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-500 border-b border-dashed border-slate-200 pb-1">
+                          <span>IVA gravado ({activeInvoice.ivaPercent}%):</span>
+                          <span>${Math.round(activeInvoice.subtotal * (activeInvoice.ivaPercent / 100)).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-800 font-bold text-sm">
+                          <span>Importe Total:</span>
+                          <span>${activeInvoice.total.toLocaleString()} MXN</span>
+                        </div>
+                        <div className="flex justify-between text-emerald-700 font-serif text-xs">
+                          <span>Anticipo liquidado:</span>
+                          <span>-${activeInvoice.advancePayment.toLocaleString()}</span>
+                        </div>
+                        <div className={`flex justify-between font-black text-sm p-1.5 rounded ${selectedTheme.accent} ${selectedTheme.text}`}>
+                          <span>PAGO PENDIENTE:</span>
+                          <span>${activeInvoice.pendingBalance.toLocaleString()} MXN</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dual signature lines for formal validity */}
+                    <div className="grid grid-cols-2 gap-12 pt-16 text-center text-[10px] text-slate-400 font-mono print:pt-14">
+                      <div className="border-t border-slate-300 pt-1.5 max-w-[180px] mx-auto">
+                        ENTREGÓ CONFORME
+                        <span className="block text-[8px] text-slate-300 mt-1">Sello del Taller</span>
+                      </div>
+                      <div className="border-t border-slate-300 pt-1.5 max-w-[180px] mx-auto">
+                        RECIBIÓ DE CONFORMIDAD
+                        <span className="block text-[8px] text-slate-300 mt-1">Firma del Cliente</span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Dual signature lines for formal validity */}
-                  <div className="grid grid-cols-2 gap-12 pt-16 text-center text-[10px] text-slate-400 font-mono print:pt-14">
-                    <div className="border-t border-slate-300 pt-1.5 max-w-[180px] mx-auto">
-                      ENTREGÓ CONFORME
-                      <span className="block text-[8px] text-slate-300 mt-1">Sello del Taller</span>
-                    </div>
-                    <div className="border-t border-slate-300 pt-1.5 max-w-[180px] mx-auto">
-                      RECIBIÓ DE CONFORMIDAD
-                      <span className="block text-[8px] text-slate-300 mt-1">Firma del Cliente</span>
-                    </div>
-                  </div>
-
-                </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-24 text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 leading-relaxed max-w-sm mx-auto space-y-3">

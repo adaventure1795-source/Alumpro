@@ -486,7 +486,7 @@ export const Optimizador: React.FC<{
               })}
 
               {optimizedResults.length === 0 && (
-                <div className="text-center py-24 text-slate-350 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                <div className="text-center py-24 text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
                   <Scissors size={44} className="mx-auto text-slate-300" />
                   <p className="text-sm font-bold text-slate-500">Planificador de Corte Listo</p>
                   <p className="text-xs text-slate-400 max-w-[320px] mx-auto leading-relaxed">

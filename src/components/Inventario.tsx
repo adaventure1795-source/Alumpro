@@ -281,7 +281,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={p.pricePerMeter}
                             onChange={(e) => updateProfile(p.id, { pricePerMeter: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-350 focus:border-blue-500 text-right text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-right text-xs"
                           />
                         </td>
                         <td className="p-3 text-center font-mono">
@@ -289,7 +289,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={p.stockMeters}
                             onChange={(e) => updateProfile(p.id, { stockMeters: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-350 focus:border-blue-500 text-center text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-center text-xs"
                           />
                           m
                         </td>
@@ -446,7 +446,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={a.pricePerUnit}
                             onChange={(e) => updateAccessory(a.id, { pricePerUnit: Number(e.target.value) })}
-                            className="w-12 bg-transparent border-b border-slate-100 hover:border-slate-350 focus:border-blue-500 text-right text-xs"
+                            className="w-12 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-right text-xs"
                           />
                         </td>
                         <td className="p-3 text-center font-mono">
@@ -454,7 +454,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={a.stockUnits}
                             onChange={(e) => updateAccessory(a.id, { stockUnits: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-350 focus:border-blue-500 text-center text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-center text-xs"
                           />
                           pz
                         </td>
@@ -578,7 +578,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={g.pricePerM2}
                             onChange={(e) => updateGlass(g.id, { pricePerM2: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-350 focus:border-blue-500 text-right text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-right text-xs"
                           />
                         </td>
                         <td className="p-3 text-center font-mono">
@@ -586,7 +586,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={g.stockM2}
                             onChange={(e) => updateGlass(g.id, { stockM2: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-350 focus:border-blue-500 text-center text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-center text-xs"
                           />
                           m²
                         </td>

@@ -255,7 +255,7 @@ export const PublicInvoiceViewer: React.FC<PublicInvoiceViewerProps> = ({ encode
                   <td className="p-3 text-right text-slate-600 font-mono">
                     ${item.u.toLocaleString("es-MX")}
                   </td>
-                  <td className="p-3 text-right text-slate-850 font-bold font-mono">
+                  <td className="p-3 text-right text-slate-800 font-bold font-mono">
                     ${item.t.toLocaleString("es-MX")}
                   </td>
                 </tr>
@@ -268,7 +268,7 @@ export const PublicInvoiceViewer: React.FC<PublicInvoiceViewerProps> = ({ encode
         <div className="flex flex-col md:flex-row justify-between items-start gap-6 pt-4 border-t border-slate-150 text-xs">
           
           <div className="max-w-md text-[10px] text-slate-400 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 w-full">
-            <strong className="text-slate-550 block mb-1 uppercase tracking-wide">
+            <strong className="text-slate-500 block mb-1 uppercase tracking-wide">
               Contrato de Adhesión & Términos:
             </strong>
             <p className="whitespace-pre-line">{invoice.not}</p>
@@ -279,7 +279,7 @@ export const PublicInvoiceViewer: React.FC<PublicInvoiceViewerProps> = ({ encode
               <span>Subtotal:</span>
               <span>${invoice.s.toLocaleString("es-MX")} MXN</span>
             </div>
-            <div className="flex justify-between text-slate-500 border-b border-dashed border-slate-205 pb-1.5">
+            <div className="flex justify-between text-slate-500 border-b border-dashed border-slate-200 pb-1.5">
               <span>IVA gravado ({invoice.iv}%):</span>
               <span>${Math.round(invoice.s * (invoice.iv / 100)).toLocaleString("es-MX")} MXN</span>
             </div>
