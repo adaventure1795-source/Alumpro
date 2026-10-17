@@ -180,7 +180,7 @@ export const DynamicWindowPreview: React.FC<DynamicWindowPreviewProps> = ({
               strokeWidth="0.5"
               strokeDasharray="2"
             />
-            <text x={canvasWidth / 2} y={paddingY + drawHeight / 2 + 3} fill="#ffffff" textAnchor="middle" className="text-[7px] tracking-widest font-semibold uppercase opacity-90 drop-shadow">TEMPLADO SEGURIDAD</text>
+            <text x={canvasWidth / 2} y={paddingY + drawHeight / 2 + 3} fill="#ffffff" textAnchor="middle" className="text-[7px] tracking-widest font-semibold uppercase opacity-90 drop-shadow-sm">TEMPLADO SEGURIDAD</text>
           </>
         );
 
@@ -318,7 +318,7 @@ export const DynamicWindowPreview: React.FC<DynamicWindowPreviewProps> = ({
               strokeWidth="2.5"
             />
             
-            <text x={canvasWidth / 2} y={paddingY + drawHeight - 15} fill="#4f46e5" textAnchor="middle" className="text-[8px] font-bold tracking-wide uppercase bg-slate-100 rounded px-1">Sección de Duelas de Aluminio</text>
+            <text x={canvasWidth / 2} y={paddingY + drawHeight - 15} fill="#4f46e5" textAnchor="middle" className="text-[8px] font-bold tracking-wide uppercase bg-slate-100 dark:bg-slate-700 rounded px-1">Sección de Duelas de Aluminio</text>
           </>
         );
 
@@ -342,10 +342,10 @@ export const DynamicWindowPreview: React.FC<DynamicWindowPreviewProps> = ({
   const glassHighlightOpacity = hasNoGlass ? "0.02" : "0.55";
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center relative shadow-inner overflow-hidden">
+    <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center relative shadow-inner overflow-hidden">
       
       {/* Absolute Badge for aluminum specs */}
-      <span className="absolute top-3 left-3 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
+      <span className="absolute top-3 left-3 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
         {currentAlum.label}
       </span>
       

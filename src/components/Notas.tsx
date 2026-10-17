@@ -193,11 +193,11 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-800 font-sans tracking-tight flex items-center gap-2">
-            <BookOpen size={22} className="text-blue-600" />
+          <h1 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 font-sans tracking-tight flex items-center gap-2">
+            <BookOpen size={22} className="text-blue-600 dark:text-blue-300" />
             Libreta de Campo e Historial de Mediciones
           </h1>
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-500 dark:text-slate-400 text-xs">
             Registra medidas directamente en la obra. Activa el "Modo Campo" para un teclado de números gigantes apto para pantallas táctiles rugosas.
           </p>
         </div>
@@ -207,8 +207,8 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
             onClick={() => setIsFieldMode(!isFieldMode)}
             className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition shadow-sm ${
               isFieldMode
-                ? "bg-slate-900 border border-slate-800 text-emerald-400"
-                : "bg-emerald-600 hover:bg-emerald-500 text-white"
+                ? "bg-slate-900 dark:bg-slate-950 border border-slate-800 text-emerald-400"
+                : "bg-emerald-600 hover:bg-emerald-50 dark:bg-emerald-900/400 text-white"
             }`}
             id="toggle-field-mode"
           >
@@ -225,13 +225,13 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
         <div className="lg:col-span-3">
           {isFieldMode ? (
             /* SPECIAL FIELD MODE: GIANT NUMERICAL PADS */
-            <div className="bg-slate-900 text-slate-100 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+            <div className="bg-slate-900 dark:bg-slate-950 text-slate-100 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
               <div className="flex justify-between items-center border-b border-slate-800 pb-3">
                 <span className="text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5">
                   <Smartphone size={14} className="animate-bounce" />
                   Modo Campo Inteligente (Altas Dimensiones)
                 </span>
-                <span className="text-[10px] text-slate-500 font-mono">Presiona los campos para editar</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Presiona los campos para editar</span>
               </div>
 
               {/* Input targets display */}
@@ -244,7 +244,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                     placeholder="Escribe cliente..."
                     value={client}
                     onChange={(e) => setClient(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-705 p-3 text-slate-100 placeholder-slate-500 rounded-xl text-sm focus:outline-none"
+                    className="w-full bg-slate-800 dark:bg-slate-950 border border-slate-705 p-3 text-slate-100 placeholder-slate-500 rounded-xl text-sm focus:outline-none"
                   />
                 </div>
                 <div>
@@ -252,7 +252,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                   <select
                     value={noteType}
                     onChange={(e) => setNoteType(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-705 p-3 text-slate-100 rounded-xl text-sm focus:outline-none"
+                    className="w-full bg-slate-800 dark:bg-slate-950 border border-slate-705 p-3 text-slate-100 rounded-xl text-sm focus:outline-none"
                   >
                     <option value="Ventana Corrediza">Ventana Corrediza</option>
                     <option value="Puerta Batiente">Puerta Batiente</option>
@@ -274,7 +274,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                   className={`p-4 rounded-xl border text-center transition ${
                     activeNumpadField === "width"
                       ? "bg-blue-950 border-blue-500 text-blue-200 ring-2 ring-blue-900"
-                      : "bg-slate-800/60 border-slate-700 text-slate-300"
+                      : "bg-slate-800 border-slate-700 text-slate-300"
                   }`}
                 >
                   <span className="block text-[10px] uppercase text-slate-400">ANCHO (cm)</span>
@@ -288,7 +288,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                   className={`p-4 rounded-xl border text-center transition ${
                     activeNumpadField === "height"
                       ? "bg-blue-950 border-blue-500 text-blue-200 ring-2 ring-blue-900"
-                      : "bg-slate-800/60 border-slate-700 text-slate-300"
+                      : "bg-slate-800 border-slate-700 text-slate-300"
                   }`}
                 >
                   <span className="block text-[10px] uppercase text-slate-400">ALTO (cm)</span>
@@ -304,7 +304,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                   <button
                     key={digit}
                     onClick={() => handleNumpadClick(digit)}
-                    className="h-16 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-100 text-2xl font-black rounded-xl border border-slate-705 transition flex items-center justify-center shadow"
+                    className="h-16 bg-slate-800 dark:bg-slate-950 hover:bg-slate-700 active:bg-slate-600 text-slate-100 text-2xl font-black rounded-xl border border-slate-705 transition flex items-center justify-center shadow-sm"
                   >
                     {digit}
                   </button>
@@ -313,7 +313,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                 {/* Clear Button */}
                 <button
                   onClick={handleNumpadClear}
-                  className="h-16 bg-rose-955/40 hover:bg-rose-950 text-rose-300 text-xl font-bold rounded-xl border border-rose-900/40 transition flex items-center justify-center shadow"
+                  className="h-16 bg-rose-955/40 hover:bg-rose-950 text-rose-300 text-xl font-bold rounded-xl border border-rose-900/40 transition flex items-center justify-center shadow-sm"
                 >
                   CLR
                 </button>
@@ -321,7 +321,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                 {/* Zero Button */}
                 <button
                   onClick={() => handleNumpadClick("0")}
-                  className="h-16 bg-slate-800 hover:bg-slate-700 text-slate-100 text-2xl font-black rounded-xl border border-slate-705 transition flex items-center justify-center shadow"
+                  className="h-16 bg-slate-800 dark:bg-slate-950 hover:bg-slate-700 text-slate-100 text-2xl font-black rounded-xl border border-slate-705 transition flex items-center justify-center shadow-sm"
                 >
                   0
                 </button>
@@ -329,7 +329,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                 {/* Backspace Button */}
                 <button
                   onClick={handleNumpadBackspace}
-                  className="h-16 bg-slate-800 hover:bg-slate-700 text-slate-100 text-xl font-bold rounded-xl border border-slate-705 transition flex items-center justify-center shadow"
+                  className="h-16 bg-slate-800 dark:bg-slate-950 hover:bg-slate-700 text-slate-100 text-xl font-bold rounded-xl border border-slate-705 transition flex items-center justify-center shadow-sm"
                 >
                   &larr;
                 </button>
@@ -338,7 +338,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
               {/* Actions */}
               <button
                 onClick={() => handleSubmitNote()}
-                className="w-full mt-4 py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-base font-extrabold rounded-2xl flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-950/20"
+                className="w-full mt-4 py-4 bg-emerald-600 hover:bg-emerald-50 dark:bg-emerald-900/400 text-white text-base font-extrabold rounded-2xl flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-950/20"
                 id="submit-field-note"
               >
                 <CheckCircle size={20} />
@@ -347,45 +347,45 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
             </div>
           ) : (
             /* CLASSIC FORM LAYOUT */
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <Plus size={16} className="text-blue-600" />
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                <Plus size={16} className="text-blue-600 dark:text-blue-300" />
                 Registrar Nueva Medida clásica
               </h3>
 
               <form onSubmit={handleSubmitNote} className="space-y-3 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-500 mb-1">Nombre del Cliente</label>
+                    <label className="block text-slate-500 dark:text-slate-400 mb-1">Nombre del Cliente</label>
                     <input
                       type="text"
                       required
                       placeholder="ej: Ignacio Martínez"
                       value={client}
                       onChange={(e) => setClient(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-500 mb-1">Referencia del Proyecto (Opcional)</label>
+                    <label className="block text-slate-500 dark:text-slate-400 mb-1">Referencia del Proyecto (Opcional)</label>
                     <input
                       type="text"
                       placeholder="ej: Casas Lomas Verdes"
                       value={project}
                       onChange={(e) => setProject(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-slate-500 mb-1">Estructura</label>
+                    <label className="block text-slate-500 dark:text-slate-400 mb-1">Estructura</label>
                     <select
                       value={noteType}
                       onChange={(e) => setNoteType(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-slate-800 focus:outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-slate-800 dark:text-slate-100 focus:outline-none"
                     >
                       <option value="Ventana Corrediza 2 Hojas">Ventana Corrediza</option>
                       <option value="Puerta Batiente Pivotante">Puerta Batiente</option>
@@ -399,40 +399,40 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                   </div>
 
                   <div>
-                    <label className="block text-slate-500 mb-1">Ancho (cm)</label>
+                    <label className="block text-slate-500 dark:text-slate-400 mb-1">Ancho (cm)</label>
                     <input
                       type="number"
                       value={widthStr}
                       onChange={(e) => setWidthStr(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-center text-slate-800 font-mono font-bold"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-center text-slate-800 dark:text-slate-100 font-mono font-bold"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-500 mb-1">Alto (cm)</label>
+                    <label className="block text-slate-500 dark:text-slate-400 mb-1">Alto (cm)</label>
                     <input
                       type="number"
                       value={heightStr}
                       onChange={(e) => setHeightStr(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-center text-slate-800 font-mono font-bold"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-center text-slate-800 dark:text-slate-100 font-mono font-bold"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-500 mb-1">Observaciones / Comentarios en Obra</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Observaciones / Comentarios en Obra</label>
                   <textarea
                     rows={3}
                     placeholder="Describir color de aluminio, texturas, si requiere remoción de vidrios viejos, etc..."
                     value={observations}
                     onChange={(e) => setObservations(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full mt-2 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition"
+                  className="w-full mt-2 py-2.5 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold rounded-xl transition"
                 >
                   + Agregar Nota de Medidas
                 </button>
@@ -443,10 +443,10 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
 
         {/* LIST OF REGISTERED NOTES (Col span 2) */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-full min-h-[480px]">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm flex flex-col justify-between h-full min-h-[480px]">
             <div>
-              <div className="border-b border-slate-100 pb-3 mb-4 space-y-3">
-                <h3 className="font-bold text-slate-800 text-sm">Mediciones Guardadas</h3>
+              <div className="border-b border-slate-100 dark:border-slate-700/50 pb-3 mb-4 space-y-3">
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Mediciones Guardadas</h3>
                 
                 {/* Search / Filters tools */}
                 <div className="flex gap-2 text-xs">
@@ -457,13 +457,13 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                       placeholder="Buscar por cliente/nota..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none"
                     />
                   </div>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 text-xs"
+                    className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs"
                   >
                     <option value="all">Filtro Estado</option>
                     <option value="pendiente">Pendientes</option>
@@ -478,7 +478,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                 {filteredNotes.map((note) => (
                   <div
                     key={note.id}
-                    className="p-4 bg-slate-50/50 hover:bg-slate-50 border border-slate-150 rounded-xl space-y-3 relative group"
+                    className="p-4 bg-slate-50 hover:bg-slate-50 dark:bg-slate-800 border border-slate-150 rounded-xl space-y-3 relative group"
                   >
                     {/* Delete note button */}
                     <button
@@ -491,7 +491,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
 
                     <div className="space-y-1">
                       <div className="flex items-baseline gap-2">
-                        <strong className="text-sm text-slate-800 font-sans">{note.clientName}</strong>
+                        <strong className="text-sm text-slate-800 dark:text-slate-100 font-sans">{note.clientName}</strong>
                         <span className="text-[10px] text-slate-400 font-mono">{note.date}</span>
                       </div>
                       
@@ -499,21 +499,21 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                         <span className="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase font-mono border border-indigo-100">
                           {note.type}
                         </span>
-                        <span className="text-[9px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold font-mono border border-blue-100">
+                        <span className="text-[9px] bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold font-mono border border-blue-100 dark:border-blue-800/40">
                           {note.measurements}
                         </span>
                       </div>
                     </div>
 
-                    <p className="text-slate-600 text-xs leading-relaxed italic">{note.text}</p>
+                    <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed italic">{note.text}</p>
 
                     {/* Footer Actions: convert, archive */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
                       <span className={`text-[10px] font-mono font-bold uppercase ${
                         note.status === "pendiente"
-                          ? "text-amber-500"
+                          ? "text-blue-500 dark:text-blue-300"
                           : note.status === "cotizado"
-                          ? "text-emerald-500"
+                          ? "text-emerald-500 dark:text-emerald-400"
                           : "text-slate-400"
                       }`}>
                         {note.status}
@@ -523,7 +523,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                         {note.status === "pendiente" && (
                           <button
                             onClick={() => handleExportToQuote(note)}
-                            className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded flex items-center gap-1 cursor-pointer transition shadow"
+                            className="bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white text-[10px] font-bold px-3 py-1 rounded flex items-center gap-1 cursor-pointer transition shadow-sm"
                           >
                             <Calculator size={11} />
                             Cotizar
@@ -532,14 +532,14 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
                         {note.status !== "archivado" ? (
                           <button
                             onClick={() => handleArchiveNote(note.id)}
-                            className="text-slate-400 hover:text-slate-600 text-[10px] font-medium"
+                            className="text-slate-400 hover:text-slate-600 dark:text-slate-300 text-[10px] font-medium"
                           >
                             Archivar
                           </button>
                         ) : (
                           <button
                             onClick={() => handleUnarchiveNote(note.id)}
-                            className="text-slate-400 hover:text-slate-600 text-[10px] font-medium"
+                            className="text-slate-400 hover:text-slate-600 dark:text-slate-300 text-[10px] font-medium"
                           >
                             Desarchivar
                           </button>
@@ -559,7 +559,7 @@ export const Notas: React.FC<{ setTab: (tab: string) => void }> = ({ setTab }) =
             </div>
 
             {state.notes.length > 0 && (
-              <p className="text-[10px] text-slate-400 font-mono text-center pt-2 border-t border-slate-100">
+              <p className="text-[10px] text-slate-400 font-mono text-center pt-2 border-t border-slate-100 dark:border-slate-700/50">
                 Sincronización de mediciones automáticas activa en iCloud/Drive.
               </p>
             )}

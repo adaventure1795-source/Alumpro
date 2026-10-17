@@ -39,7 +39,7 @@ export interface FormulaVariable {
 export interface FormulaRule {
   id: string;
   name: string; // e.g. "Ventana Corrediza de 2 hojas"
-  category: "ventanas" | "puertas" | "canceles" | "fijos" | "portones" | "barandales";
+  category: "ventanas" | "puertas" | "canceles" | "fijos" | "portones" | "barandales" | "rejas";
   variables: FormulaVariable[];
   // Formulas written as strings that can be evaluated or calculated
   profileEquations: {
@@ -64,6 +64,8 @@ export interface QuoteItem {
   id: string;
   name: string; // Custom label for this item inside quote (e.g., "Ventana Baño principal")
   customDescription?: string; // Non-technical user-edited description to simplify quote
+  designImageUrl?: string; // Optional custom sketch or reference image for the quote item
+  previewImageUrl?: string; // Auto-generated visual project preview base64 image
   formulaRuleId?: string; // If based on a template FormulaRule
   widthCm: number;
   heightCm: number;

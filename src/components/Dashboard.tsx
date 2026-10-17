@@ -53,7 +53,7 @@ import { DynamicWindowPreview } from "./DynamicWindowPreview";
 const CustomChartTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-950/95 border border-slate-800 p-3 rounded-xl shadow-2xl text-[11px] font-mono">
+      <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl shadow-2xl text-[11px] font-mono">
         <p className="text-slate-400 font-sans font-bold border-b border-slate-850 pb-1 mb-1.5">{label}</p>
         <p className="text-[#38bdf8]">
           Cotizado: <span className="font-sans font-bold text-white">${payload[0].value.toLocaleString("es-MX")}</span>
@@ -62,7 +62,7 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
           Materiales: <span className="font-sans font-bold text-white">${payload[1].value.toLocaleString("es-MX")}</span>
         </p>
         <p className="text-slate-400 mt-1 pt-1 border-t border-slate-850/50">
-          Utilidad Est: <span className="font-sans font-bold text-amber-500">${(payload[0].value - payload[1].value).toLocaleString("es-MX")}</span>
+          Utilidad Est: <span className="font-sans font-bold text-blue-500 dark:text-blue-300">${(payload[0].value - payload[1].value).toLocaleString("es-MX")}</span>
         </p>
       </div>
     );
@@ -82,6 +82,7 @@ export const Dashboard: React.FC<{
     addInvoice,
     updateBusinessDetails,
     updateProfile,
+    addProfile,
     updateAccessory,
     updateGlass,
     resetToDefault
@@ -95,9 +96,12 @@ export const Dashboard: React.FC<{
 
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
   const [showAyudaDialog, setShowAyudaDialog] = useState<boolean>(false);
+  const [showQuickAddModal, setShowQuickAddModal] = useState<boolean>(false);
+  const [quickAddProfileName, setQuickAddProfileName] = useState<string>("");
+  const [quickAddProfileLength, setQuickAddProfileLength] = useState<number | string>("");
 
   // -------------------------------------------------------------
-  // STATE FOR ALU-CALCULADORA (VÍDEO STYLE STYLE)
+  // STATE FOR ALU-CALCULADORA (TALLER STYLE STYLE)
   // -------------------------------------------------------------
   const [aluWidth, setAluWidth] = useState<number>(159);
   const [aluHeight, setAluHeight] = useState<number>(147);
@@ -105,7 +109,7 @@ export const Dashboard: React.FC<{
   const [aluActiveTab, setAluActiveTab] = useState<"descuentos" | "cotizacion">("descuentos");
   const [aluGlassType, setAluGlassType] = useState<string>("glass-6t"); // Claro 6mm template
   
-  // Custom price overrides to match video perfectly
+  // Custom price overrides to personalizar
   const [aluGlassPrice, setAluGlassPrice] = useState<number>(750); // $750/m2 per Claro 6mm
   const [aluJambaPrice, setAluJambaPrice] = useState<number>(180);
   const [aluRielPrice, setAluRielPrice] = useState<number>(150);
@@ -115,7 +119,7 @@ export const Dashboard: React.FC<{
   const [aluAccessoryPrice, setAluAccessoryPrice] = useState<number>(327.90);
   const [aluLaborPrice, setAluLaborPrice] = useState<number>(420.19);
 
-  // States for custom formulas editing to match video ("pueden ustedes modificar la formula")
+  // States for custom formulas editing to match taller ("pueden ustedes modificar la formula")
   const [formulaJamba1, setFormulaJamba1] = useState<string>("W");
   const [formulaJamba2, setFormulaJamba2] = useState<string>("H - 2.7");
   const [formulaRiel, setFormulaRiel] = useState<string>("W");
@@ -711,13 +715,13 @@ Generado automáticamente desde AluDev Inc México.`;
     <div className="space-y-6" id="dashboard_native_module">
       
       {/* NATIVE APP TITLE BAR WITH HIGH LEGIBILITY AND MODERN SLATE FINISH */}
-      <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-950/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm">
+      <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm">
         <button
           onClick={() => setSubScreen("menu")}
           className={`flex items-center gap-2 font-mono text-[11px] font-bold uppercase py-2 px-4 rounded-xl transition ${
             subScreen !== "menu"
-              ? "bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/20 active:scale-95"
-              : "text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-800 cursor-not-allowed opacity-50"
+              ? "bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white shadow-md shadow-blue-500/20 active:scale-95"
+              : "text-slate-400 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-800 cursor-not-allowed opacity-50"
           }`}
           disabled={subScreen === "menu"}
         >
@@ -731,7 +735,7 @@ Generado automáticamente desde AluDev Inc México.`;
               {state.quotes.length} Cotiz en Cola
             </span>
           )}
-          <span className="text-[10px] bg-blue-100 text-blue-850 dark:bg-blue-950/30 dark:text-blue-400 border border-blue-300 dark:border-blue-800 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider font-mono">
+          <span className="text-[10px] bg-blue-100 text-blue-850 dark:bg-blue-950/30 dark:text-blue-300 border border-blue-300 dark:border-blue-800 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider font-mono">
             Versión Móvil 3.4
           </span>
         </div>
@@ -741,12 +745,12 @@ Generado automáticamente desde AluDev Inc México.`;
           MAIN VIEW ROUTER PORTION
       ------------------------------------------------------------- */}
 
-      {/* VIEW S0: landing menu structure matching video */}
+      {/* VIEW S0: landing menu structure personalizar */}
       {subScreen === "menu" && (
         <div className="space-y-6 animate-fade-in relative">
           
           {/* Welcome Branding Hero Panel mimicking Perfilexacto Pro screenshots */}
-          <div className="flex flex-col items-center justify-center text-center bg-slate-900 border border-slate-800 rounded-3xl p-8 relative overflow-hidden shadow-2xl mb-4">
+          <div className="flex flex-col items-center justify-center text-center bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-3xl p-8 relative overflow-hidden shadow-2xl mb-4">
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#0a213a] rounded-full blur-3xl pointer-events-none"></div>
             
             {/* Round Medallion Brand Logo inspired by Perfilexacto Pro */}
@@ -764,7 +768,7 @@ Generado automáticamente desde AluDev Inc México.`;
             <h1 className="text-3xl font-black text-slate-100 tracking-tight font-sans">
               Aludev Pro
             </h1>
-            <p className="text-blue-400 text-xs font-mono font-bold tracking-wider mt-1 uppercase">
+            <p className="text-blue-400 dark:text-blue-300 text-xs font-mono font-bold tracking-wider mt-1 uppercase">
               Cancelería & Portones de Aluminio
             </p>
 
@@ -781,76 +785,75 @@ Generado automáticamente desde AluDev Inc México.`;
             {/* Item 1: Nueva Cotizacion - SPECIAL CROWN-JEWEL ACTION IN SOLID BLUE 💙 */}
             <button
               onClick={() => {
-                setGuideStep(1);
-                setSubScreen("nueva");
+                setTab("cotizador");
               }}
               className="p-5 bg-gradient-to-r from-blue-700 to-blue-600 dark:from-blue-600 dark:to-blue-500 hover:from-blue-600 hover:to-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-[0.98] border border-blue-800 dark:border-blue-500/50 group cursor-pointer"
               id="special-nueva-cotizacion-trigger"
             >
-              <div className="bg-white/10 dark:bg-white/15 text-white p-3.5 rounded-2xl shadow-inner border border-white/10 group-hover:bg-white group-hover:text-blue-600 transition-all duration-300">
+              <div className="bg-white dark:bg-slate-800 dark:bg-white dark:bg-slate-800 text-white p-3.5 rounded-2xl shadow-inner border border-white/10 group-hover:bg-white dark:bg-slate-900 group-hover:text-blue-600 dark:text-blue-300 transition-all duration-300">
                 <FileText size={20} className="stroke-[2.5]" />
               </div>
               <div className="flex-1">
                 <h4 className="font-extrabold text-white text-base tracking-wide flex items-center gap-1.5 uppercase text-[15px]">
                   Nueva Cotización 
-                  <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono font-bold tracking-normal leading-none">PRO</span>
+                  <span className="text-[10px] bg-white dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold tracking-normal leading-none">PRO</span>
                 </h4>
                 <p className="text-blue-100/90 text-xs leading-normal mt-1.5 font-medium">Estructura medidas de marcos, hojas, duelas y vidrio con planos guiados en 2D.</p>
               </div>
             </button>
 
-            {/* Item 2: Cotizacion Rapida */}
+            {/* Item 2: Concepto Manual (Rápido) */}
             <button
-              onClick={() => setSubScreen("rapida")}
-              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
+              onClick={() => setTab("cotizador")}
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+              <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-500/20 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Zap size={20} className="fill-current animate-pulse stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Cotización Rápida</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Sugerencias y estimados instantáneos por metro y color en 2 segundos.</p>
-              </div>
-            </button>
-
-            {/* Item 3: Presupuesto Personalizado */}
-            <button
-              onClick={() => setSubScreen("personalizado")}
-              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
-            >
-              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                <Sliders size={20} className="stroke-[2]" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Presupuesto Personalizado</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Redacta conceptos manuales, añade anticipos y condiciones al PDF.</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 dark:text-blue-300 transition-colors uppercase tracking-wide">Concepto Manual Libre</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Añade conceptos simples, reparaciones o mano de obra fijando el precio que desees.</p>
               </div>
             </button>
 
             {/* Item 4: Historial */}
             <button
-              onClick={() => setSubScreen("historial")}
-              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
+              onClick={() => setTab("remisiones")}
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+              <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-500/20 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <History size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Historial</h4>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 dark:text-blue-300 transition-colors uppercase tracking-wide">Historial</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Ficheros de cotizaciones en curso y notas de cobro archivadas.</p>
               </div>
             </button>
 
-            {/* Item 5: Optimizador de Cortes */}
+            {/* Item 5: Álbum de Muestras */}
+            <button
+              onClick={() => setTab("album")}
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
+            >
+              <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-500/20 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <Image size={20} className="stroke-[2]" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 dark:text-blue-300 transition-colors uppercase tracking-wide">Álbum de Muestras</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Muestra a tus clientes tu trabajo con fotografías y renders de referencia.</p>
+              </div>
+            </button>
+
+            {/* Item 6: Optimizador de Cortes */}
             <button
               onClick={() => setTab("optimizador")}
-              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+              <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-500/20 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Scissors size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Optimizador de Cortes</h4>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 dark:text-blue-300 transition-colors uppercase tracking-wide">Optimizador de Cortes</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Reduce el desperdicio de barras de 6.10m ingresando tus medidas.</p>
               </div>
             </button>
@@ -858,13 +861,13 @@ Generado automáticamente desde AluDev Inc México.`;
             {/* Item 6: Peso de Vidrio */}
             <button
               onClick={() => setSubScreen("peso")}
-              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group cursor-pointer"
             >
-              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+              <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-500/20 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Scale size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Peso de Vidrio</h4>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 dark:text-blue-300 transition-colors uppercase tracking-wide">Peso de Vidrio</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5">Multiplica metros cuadrados por espesor de hoja al instante.</p>
               </div>
             </button>
@@ -879,7 +882,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 <Wrench size={20} className="stroke-[2.5]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-blue-700 dark:text-blue-400 text-[15px] group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors flex items-center gap-1.5 uppercase tracking-wide">
+                <h4 className="font-bold text-blue-700 dark:text-blue-300 text-[15px] group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors flex items-center gap-1.5 uppercase tracking-wide">
                   Calculadora AluDev
                   <span className="text-[9px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded font-mono font-bold leading-none uppercase">Fórmulas</span>
                 </h4>
@@ -890,13 +893,13 @@ Generado automáticamente desde AluDev Inc México.`;
             {/* Item 8: Configuración */}
             <button
               onClick={() => setSubScreen("config")}
-              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group"
+              className="p-5 bg-white dark:bg-[#0c1328] hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-[#121c38] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500 dark:hover:border-blue-500 text-left rounded-2xl flex items-start gap-4 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] group"
             >
-              <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-900/10 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+              <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 p-3.5 rounded-2xl shadow-sm border border-blue-100/50 dark:border-blue-500/20 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Settings size={20} className="stroke-[2]" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-wide">Configuración</h4>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-blue-600 dark:group-hover:text-blue-400 dark:text-blue-300 transition-colors uppercase tracking-wide">Configuración</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-xs leading-normal mt-1.5 font-sans">Tabuladores de precios para perfiles de 2 y 3 pulgadas, planchas, vinil, herrajes y notas PDF.</p>
               </div>
             </button>
@@ -906,10 +909,10 @@ Generado automáticamente desde AluDev Inc México.`;
           {/* LOWER ACTION RAIL AND STATUS INDICATORS matching Aludev style */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 pb-1 border-t border-slate-800">
             {/* ID hardware serial plate block */}
-            <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs font-mono">
+            <div className="inline-flex items-center gap-2 bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs font-mono">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-50 dark:bg-emerald-900/400"></span>
               </span>
               <span className="text-slate-400 font-medium">LICENCIA PRO:</span>
               <span className="text-emerald-400 font-bold tracking-wider">ID: AD-BE9C-787D</span>
@@ -918,7 +921,7 @@ Generado automáticamente desde AluDev Inc México.`;
             {/* Green help messenger bubble button */}
             <button
               onClick={() => setShowAyudaDialog(true)}
-              className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-950/20 active:scale-95 transition"
+              className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-50 dark:bg-emerald-900/400 text-slate-950 font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-950/20 active:scale-95 transition"
             >
               <HelpCircle size={16} />
               Ayuda
@@ -927,8 +930,8 @@ Generado automáticamente desde AluDev Inc México.`;
 
           {/* INTERACTIVE AYUDA MODAL DIALOG */}
           {showAyudaDialog && (
-            <div className="fixed inset-0 bg-slate-1000/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4 animate-scale-up">
+            <div className="fixed inset-0 bg-slate-100 dark:bg-slate-700 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4 animate-scale-up">
                 <button
                   type="button"
                   onClick={() => setShowAyudaDialog(false)}
@@ -938,7 +941,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 </button>
 
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-850">
-                  <div className="bg-emerald-500 p-1.5 rounded-lg text-slate-950">
+                  <div className="bg-emerald-50 dark:bg-emerald-900/400 p-1.5 rounded-lg text-slate-950">
                     <HelpCircle size={16} />
                   </div>
                   <h3 className="font-bold text-slate-100 text-base text-left">Asistente de Ayuda Pro</h3>
@@ -961,7 +964,7 @@ Generado automáticamente desde AluDev Inc México.`;
                   </div>
 
                   <div>
-                    <h5 className="font-bold text-amber-500 mb-0.5">¿Cómo contacto a soporte de desarrollo?</h5>
+                    <h5 className="font-bold text-blue-500 dark:text-blue-300 mb-0.5">¿Cómo contacto a soporte de desarrollo?</h5>
                     <p>Usa la ID de licencia <b>PX-BE9C-787D</b> si necesitas recuperar o actualizar el sistema de descuentos personalizados.</p>
                   </div>
                 </div>
@@ -969,7 +972,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 <button
                   type="button"
                   onClick={() => setShowAyudaDialog(false)}
-                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-750 text-white text-xs font-bold rounded-xl transition"
+                  className="w-full py-2.5 bg-slate-800 dark:bg-slate-950 hover:bg-slate-750 text-white text-xs font-bold rounded-xl transition"
                 >
                   Entendido, Volver al Taller
                 </button>
@@ -978,7 +981,7 @@ Generado automáticamente desde AluDev Inc México.`;
           )}
 
           {/* S0c Visual Sales and Material Costs Chart Card (Last 30 Days) */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+          <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pb-2 border-b border-slate-850">
               <div>
                 <h4 className="font-bold text-white text-sm uppercase font-sans tracking-wide">Métricas de Rendimiento (Últimos 30 Días)</h4>
@@ -1051,12 +1054,12 @@ Generado automáticamente desde AluDev Inc México.`;
           </div>
 
           {/* S0b Quick Stock Alert segment helper and Cloud State */}
-          <div className="bg-slate-50 dark:bg-slate-800/20 border border-slate-200/60 dark:border-slate-800 p-4 rounded-2xl flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+          <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-800 p-4 rounded-2xl flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1.5 font-mono">
-              <Cloud size={14} className="text-emerald-500 shrink-0" />
+              <Cloud size={14} className="text-emerald-500 dark:text-emerald-400 shrink-0" />
               Sincronización de Base de Datos: <strong className="text-slate-700 dark:text-slate-200">Local + Offline Activado</strong>
             </span>
-            <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold font-mono px-2 py-0.5 rounded">
+            <span className="text-[10px] bg-slate-200 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-bold font-mono px-2 py-0.5 rounded">
               Base: SQLite Local
             </span>
           </div>
@@ -1066,7 +1069,7 @@ Generado automáticamente desde AluDev Inc México.`;
 
       {/* VIEW S1: PESO DE VIDRIO VIEW */}
       {subScreen === "peso" && (
-        <div className="bg-slate-900 border border-slate-800 text-slate-200 p-6 rounded-3xl space-y-6 shadow-2xl animate-fade-in" id="glass-weight-calculator-view">
+        <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 text-slate-200 p-6 rounded-3xl space-y-6 shadow-2xl animate-fade-in" id="glass-weight-calculator-view">
           
           <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
             <div className="bg-sky-500/10 text-sky-400 p-2.5 rounded-xl border border-sky-500/10">
@@ -1078,9 +1081,9 @@ Generado automáticamente desde AluDev Inc México.`;
             </div>
           </div>
 
-          {/* Formula Instruction Box matches video exactly */}
-          <div className="bg-amber-500/10 border border-amber-500/20 text-amber-200 p-3.5 rounded-2xl flex items-start gap-2.5 text-xs">
-            <Info size={16} className="text-amber-500 mt-0.5 shrink-0" />
+          {/* Formula Instruction Box personalizar */}
+          <div className="bg-amber-500/10 border border-blue-500/20 text-amber-200 p-3.5 rounded-2xl flex items-start gap-2.5 text-xs">
+            <Info size={16} className="text-blue-500 dark:text-blue-300 mt-0.5 shrink-0" />
             <p className="leading-normal font-medium">
               <strong className="text-amber-400 font-mono">Fórmula:</strong> Base(m) × Altura(m) × Espesor(mm) × 2.5 = Peso(kg)
             </p>
@@ -1121,9 +1124,9 @@ Generado automáticamente desde AluDev Inc México.`;
               />
             </div>
 
-            {/* Espesores Comunes Pill Buttons matches video */}
+            {/* Espesores Comunes Pill Buttons personalizar */}
             <div>
-              <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2 font-mono">Espesores comunes:</span>
+              <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 font-mono">Espesores comunes:</span>
               <div className="flex flex-wrap gap-2">
                 {[3, 4, 5, 6, 8, 9, 10, 12, 15, 19].map((thick) => {
                   const isActive = glassThickness === thick;
@@ -1134,7 +1137,7 @@ Generado automáticamente desde AluDev Inc México.`;
                       onClick={() => setGlassThickness(thick)}
                       className={`text-xs font-bold font-mono px-3.5 py-1.5 rounded-xl border transition ${
                         isActive
-                          ? "bg-amber-500/20 text-amber-400 border-amber-500/40"
+                          ? "bg-amber-500/20 text-amber-400 border-blue-500/40"
                           : "bg-slate-950 text-slate-400 border-slate-850 hover:bg-slate-850"
                       }`}
                     >
@@ -1152,7 +1155,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 <button
                   type="button"
                   onClick={() => setGlassQty((prev) => Math.max(1, prev - 1))}
-                  className="bg-slate-950 border border-slate-850 hover:bg-slate-800 text-slate-200 h-10 w-11 rounded-xl font-bold flex items-center justify-center transition"
+                  className="bg-slate-950 border border-slate-850 hover:bg-slate-800 dark:bg-slate-950 text-slate-200 h-10 w-11 rounded-xl font-bold flex items-center justify-center transition"
                 >
                   -
                 </button>
@@ -1162,7 +1165,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 <button
                   type="button"
                   onClick={() => setGlassQty((prev) => prev + 1)}
-                  className="bg-slate-950 border border-slate-850 hover:bg-slate-800 text-slate-200 h-10 w-11 rounded-xl font-bold flex items-center justify-center transition"
+                  className="bg-slate-950 border border-slate-850 hover:bg-slate-800 dark:bg-slate-950 text-slate-200 h-10 w-11 rounded-xl font-bold flex items-center justify-center transition"
                 >
                   +
                 </button>
@@ -1173,15 +1176,15 @@ Generado automáticamente desde AluDev Inc México.`;
 
           {/* Calculations Results Block - exact style match */}
           <div className="pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-850 text-center">
-              <span className="text-[10px] uppercase font-mono text-slate-500 tracking-wider">M² por vidrio</span>
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-850 text-center">
+              <span className="text-[10px] uppercase font-mono text-slate-500 dark:text-slate-400 tracking-wider">M² por vidrio</span>
               <h4 className="text-2xl font-black text-[#ff9f43] font-mono mt-1">
                 {calcGlassArea().toFixed(2)} m²
               </h4>
             </div>
 
-            <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-850 text-center">
-              <span className="text-[10px] uppercase font-mono text-slate-500 tracking-wider">kg por vidrio</span>
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-850 text-center">
+              <span className="text-[10px] uppercase font-mono text-slate-500 dark:text-slate-400 tracking-wider">kg por vidrio</span>
               <h4 className="text-2xl font-black text-[#ff9f43] font-mono mt-1">
                 {calcSingleGlassWeight().toFixed(2)} kg
               </h4>
@@ -1197,7 +1200,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 <span className="font-mono text-lg font-black text-[#ff9f43]">{calcTotalGlassWeight().toFixed(2)} Kg</span>
               </div>
 
-              <div className="bg-slate-950/40 p-2 rounded-lg text-[10px] font-mono text-[#a89993] leading-normal pt-2 mt-2">
+              <div className="bg-slate-950 p-2 rounded-lg text-[10px] font-mono text-[#a89993] leading-normal pt-2 mt-2">
                 <strong>Desglose del cálculo:</strong><br />
                 {glassBase / 100}m × {glassHeight / 100}m × {glassThickness}mm × 2.5 factor × {glassQty} pzs = <strong>{calcTotalGlassWeight().toFixed(2)} kg</strong>
               </div>
@@ -1214,23 +1217,23 @@ Generado automáticamente desde AluDev Inc México.`;
         </div>
       )}
 
-      {/* VIEW S7: ALU-CALCULADORA DE DESCUENTOS Y MEDIDAS (Tal como en el Vídeo) */}
+      {/* VIEW S7: ALU-CALCULADORA DE DESCUENTOS Y MEDIDAS (Tal como en el Taller) */}
       {subScreen === "alucalculadora" && (
         <div className="space-y-6 animate-fade-in" id="alucalculadora-view">
           
           {/* Header wrapper matching the back navbar */}
-          <div className="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-3xl flex flex-col sm:flex-row justify-between sm:items-center gap-3 shadow-md">
+          <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 p-4 sm:p-5 rounded-3xl flex flex-col sm:flex-row justify-between sm:items-center gap-3 shadow-md">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSubScreen("menu")}
-                className="bg-slate-950 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-300 p-2.5 rounded-xl transition"
+                className="bg-slate-950 border border-slate-800 hover:bg-slate-800 dark:bg-slate-950 hover:border-slate-700 text-slate-300 p-2.5 rounded-xl transition"
                 title="Volver"
               >
                 <ArrowLeft size={18} />
               </button>
               <div>
                 <h2 className="text-base font-bold text-white font-sans uppercase">Calculadora de Descuentos AluDev</h2>
-                <p className="text-slate-400 text-xs">Corte de taller, tramos de 6m y cálculo de cristal basándose en el vídeo de cancelería</p>
+                <p className="text-slate-400 text-xs">Corte de taller, optimización de tramos y cálculo de cristal automatizado</p>
               </div>
             </div>
             
@@ -1250,7 +1253,7 @@ Generado automáticamente desde AluDev Inc México.`;
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                Serie 3″ L3 (Vídeo)
+                Serie 3″ L3 (Pesada)
               </button>
               <button
                 onClick={() => {
@@ -1277,13 +1280,13 @@ Generado automáticamente desde AluDev Inc México.`;
             {/* COLUMN 1: SMARTPHONE LAYOUT PLAYGROUND (SMARTPHONE FRAME ON DESKTOP) */}
             <div className="lg:col-span-7 xl:col-span-6 flex justify-center w-full">
               
-              {/* Virtual Smartphone container matching exactly the device frame from video */}
+              {/* Virtual Smartphone container matching exactly the device frame from taller */}
               <div className="w-full max-w-[420px] bg-slate-950 border-4 border-slate-800 rounded-[3rem] p-4 p-y-5 shadow-2xl relative ring-1 ring-slate-850/50">
                 
                 {/* Smartphone Dynamic Island pill at the top */}
                 <div className="absolute top-2 w-28 h-5 bg-black rounded-full left-1/2 -translate-x-1/2 z-20 flex justify-center items-center">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-950/20 mr-1.5 animate-pulse"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900/40"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-900 dark:bg-slate-950 border border-slate-950/20 mr-1.5 animate-pulse"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900"></span>
                 </div>
 
                 {/* Smartphone Screen container */}
@@ -1296,7 +1299,7 @@ Generado automáticamente desde AluDev Inc México.`;
                   </div>
 
                   {/* Dual Tab Switch matching vide's top tab */}
-                  <div className="grid grid-cols-2 bg-slate-900/60 p-1 rounded-xl border border-slate-850/60">
+                  <div className="grid grid-cols-2 bg-slate-900 p-1 rounded-xl border border-slate-850/60">
                     <button
                       onClick={() => setAluActiveTab("descuentos")}
                       className={`py-2 rounded-lg text-[11px] font-bold uppercase transition flex items-center justify-center gap-1.5 ${
@@ -1321,13 +1324,13 @@ Generado automáticamente desde AluDev Inc México.`;
                     </button>
                   </div>
 
-                  {/* Input measures segment - identical to video */}
+                  {/* Input measures segment - identical to taller */}
                   <div className="bg-[#111726] border border-slate-800 rounded-2xl p-4 space-y-3.5">
                     <span className="block text-[9px] font-bold uppercase text-slate-400 tracking-wider font-mono text-center">INGRESE MEDIDAS EN CM</span>
                     
                     <div className="grid grid-cols-2 gap-3.5">
                       <div>
-                        <span className="block text-[8px] font-black uppercase text-slate-500 font-mono text-center mb-1">ANCHO</span>
+                        <span className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-400 font-mono text-center mb-1">ANCHO</span>
                         <div className="relative">
                           <input
                             type="number"
@@ -1336,7 +1339,7 @@ Generado automáticamente desde AluDev Inc México.`;
                             onChange={(e) => setAluWidth(Number(e.target.value) || 0)}
                             className="w-full bg-[#18233c] hover:bg-[#1f2d4d] border border-sky-900 focus:border-sky-500 text-white rounded-xl py-2 px-2 text-center font-mono font-bold text-sm focus:ring-1 focus:ring-sky-500 transition"
                           />
-                          <span className="absolute right-2 top-2 text-[10px] text-slate-500 font-mono sm:hidden">cm</span>
+                          <span className="absolute right-2 top-2 text-[10px] text-slate-500 dark:text-slate-400 font-mono sm:hidden">cm</span>
                         </div>
                       </div>
 
@@ -1350,7 +1353,7 @@ Generado automáticamente desde AluDev Inc México.`;
                             onChange={(e) => setAluHeight(Number(e.target.value) || 0)}
                             className="w-full bg-[#18233c] hover:bg-[#1f2d4d] border border-sky-900 focus:border-sky-500 text-white rounded-xl py-2 px-2 text-center font-mono font-black text-sm focus:ring-1 focus:ring-sky-500 transition"
                           />
-                          <span className="absolute right-2 top-2 text-[10px] text-slate-500 font-mono sm:hidden">cm</span>
+                          <span className="absolute right-2 top-2 text-[10px] text-slate-500 dark:text-slate-400 font-mono sm:hidden">cm</span>
                         </div>
                       </div>
                     </div>
@@ -1373,12 +1376,12 @@ Generado automáticamente desde AluDev Inc México.`;
                   {/* ACTIVE TAB PANEL VIEWPORTS */}
                   <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 space-y-3 custom-scrollbar">
                     
-                    {/* VIEWPORT 1: LISTA DESCUENTOS - MATCHES VIDEO SCREEN */}
+                    {/* VIEWPORT 1: LISTA DESCUENTOS - MATCHES TALLER SCREEN */}
                     {aluActiveTab === "descuentos" && (
                       <div className="space-y-2.5 animate-fade-in">
                         <div className="flex justify-between items-center border-b border-sky-950/20 pb-1.5">
                           <span className="text-[9px] uppercase font-mono tracking-widest text-[#fbbf24] font-bold">LISTA DE DESCUENTOS</span>
-                          <span className="text-[9px] font-mono text-slate-500 bg-[#070b13] px-1.5 py-0.5 rounded border border-slate-900">
+                          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 bg-[#070b13] px-1.5 py-0.5 rounded border border-slate-900">
                             {aluSeries === "corrediza_3" ? "3 pulgadas L3" : "2 pulgadas Nac"}
                           </span>
                         </div>
@@ -1390,11 +1393,11 @@ Generado automáticamente desde AluDev Inc México.`;
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">JAMBA_L3</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Cabezal Superior (Ancho)</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Cabezal Superior (Ancho)</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">1 pz {cutJamba1.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaJamba1}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">1 pz {cutJamba1.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaJamba1}</span>
                                 </div>
                               </div>
 
@@ -1402,11 +1405,11 @@ Generado automáticamente desde AluDev Inc México.`;
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">JAMBA_L3</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Jambas Laterales</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Jambas Laterales</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">2 pz {cutJamba2.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaJamba2}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">2 pz {cutJamba2.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaJamba2}</span>
                                 </div>
                               </div>
 
@@ -1414,11 +1417,11 @@ Generado automáticamente desde AluDev Inc México.`;
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">RIEL_L3</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans font-medium">Riel Horizontal Superior/Inferior</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans font-medium">Riel Horizontal Superior/Inferior</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">2 pz {cutRiel.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaRiel}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">2 pz {cutRiel.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaRiel}</span>
                                 </div>
                               </div>
 
@@ -1426,11 +1429,11 @@ Generado automáticamente desde AluDev Inc México.`;
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">CERCO_L3</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Cercos Hojas</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Cercos Hojas</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">2 pz {cutCerco.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaCerco}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">2 pz {cutCerco.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaCerco}</span>
                                 </div>
                               </div>
 
@@ -1438,11 +1441,11 @@ Generado automáticamente desde AluDev Inc México.`;
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">TRASLAPE_L3</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Traslapes Centrales</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Traslapes Centrales</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">2 pz {cutTraslape.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaTraslape}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">2 pz {cutTraslape.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaTraslape}</span>
                                 </div>
                               </div>
 
@@ -1450,11 +1453,11 @@ Generado automáticamente desde AluDev Inc México.`;
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">ZOCLO 1V_L3</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Zoclos Horizontales</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Zoclos Horizontales</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">4 pz {cutZoclo.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaZoclo}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">4 pz {cutZoclo.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaZoclo}</span>
                                 </div>
                               </div>
                             </>
@@ -1464,76 +1467,76 @@ Generado automáticamente desde AluDev Inc México.`;
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">JAMBA_L2</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Chambrana Horizontal</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Chambrana Horizontal</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">1 pz {aluWidth} cm</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">1 pz {aluWidth} cm</span>
                                 </div>
                               </div>
 
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">JAMBA_L2</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Jambas Laterales</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Jambas Laterales</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">2 pz {cutJamba2_s2.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaJamba2_s2}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">2 pz {cutJamba2_s2.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaJamba2_s2}</span>
                                 </div>
                               </div>
 
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">RIEL_L2</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Riel Inferior</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Riel Inferior</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">1 pz {cutRiel_s2.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaRiel_s2}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">1 pz {cutRiel_s2.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaRiel_s2}</span>
                                 </div>
                               </div>
 
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">CABEZAL_L2</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Cabezal Superior Horizontal</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Cabezal Superior Horizontal</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">1 pz {cutCabezal_s2.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaCabezal_s2}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">1 pz {cutCabezal_s2.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaCabezal_s2}</span>
                                 </div>
                               </div>
 
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">CERCO_L2</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Cerco Hojas</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Cerco Hojas</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">2 pz {cutCerco_s2.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaCerco_s2}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">2 pz {cutCerco_s2.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaCerco_s2}</span>
                                 </div>
                               </div>
 
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">TRASLAPE_L2</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Traslape Central</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Traslape Central</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">2 pz {cutTraslape_s2.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaTraslape_s2}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">2 pz {cutTraslape_s2.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaTraslape_s2}</span>
                                 </div>
                               </div>
 
                               <div className="bg-[#111726]/70 border border-slate-800 rounded-xl p-3 flex justify-between items-center font-mono hover:bg-[#151e33] transition">
                                 <div className="space-y-0.5">
                                   <span className="text-[10px] font-bold text-slate-400">ZOCLO_L2</span>
-                                  <span className="block text-[8px] text-slate-500 font-sans">Zoclo de Hoja</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 font-sans">Zoclo de Hoja</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-xs font-black text-white bg-slate-900 px-2 py-1 rounded border border-slate-805">4 pz {cutZoclo_s2.toFixed(1)} cm</span>
-                                  <span className="block text-[8px] text-slate-500 mt-1">fórmula: {formulaZoclo_s2}</span>
+                                  <span className="text-xs font-black text-white bg-slate-900 dark:bg-slate-950 px-2 py-1 rounded border border-slate-805">4 pz {cutZoclo_s2.toFixed(1)} cm</span>
+                                  <span className="block text-[8px] text-slate-500 dark:text-slate-400 mt-1">fórmula: {formulaZoclo_s2}</span>
                                 </div>
                               </div>
                             </>
@@ -1542,27 +1545,27 @@ Generado automáticamente desde AluDev Inc México.`;
                       </div>
                     )}
 
-                    {/* VIEWPORT 2: PRECIOS Y COTIZACIÓN - MATCH DEL VÍDEO AL 0:21 */}
+                    {/* VIEWPORT 2: PRECIOS Y COTIZACIÓN - MATCH DEL TALLER AL 0:21 */}
                     {aluActiveTab === "cotizacion" && (
                       <div className="space-y-3.5 animate-fade-in text-[11px]">
                         
                         <div className="flex justify-between items-center border-b border-sky-950/20 pb-1.5">
                           <span className="text-[9px] uppercase font-mono tracking-widest text-[#10b981] font-bold">MATERIALES DE FABRICACIÓN</span>
-                          <span className="text-[9px] font-mono text-slate-500">Tramas 6 Metros</span>
+                          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400">Tramas 6 Metros</span>
                         </div>
 
                         {/* Vidrios Details with manual overrides */}
                         <div className="bg-[#0c1220] border border-sky-950/40 rounded-xl p-3 space-y-2">
                           <div className="flex justify-between items-center">
                             <span className="font-bold text-[#38bdf8] uppercase tracking-wide text-[10px]">VIDRIOS:</span>
-                            <span className="text-[9px] font-mono text-slate-400 bg-slate-950/80 px-2 py-0.5 rounded border border-slate-900">
+                            <span className="text-[9px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-900">
                               Área Facturar: {billingArea} m²
                             </span>
                           </div>
                           <div className="bg-[#060b13] p-2.5 rounded-lg flex justify-between items-center hover:border-slate-805 transition border border-transparent">
                             <div className="space-y-0.5">
                               <span className="font-bold text-white block text-[10px]">Vidrio Claro 6mm</span>
-                              <span className="text-[8px] text-slate-500 block">Medida: 2 pzs × {glassW.toFixed(1)} × {glassH.toFixed(1)} cm (waste 14%)</span>
+                              <span className="text-[8px] text-slate-500 dark:text-slate-400 block">Medida: 2 pzs × {glassW.toFixed(1)} × {glassH.toFixed(1)} cm (waste 14%)</span>
                             </div>
                             <div className="text-right">
                               <div className="flex items-center gap-1 justify-end">
@@ -1571,9 +1574,9 @@ Generado automáticamente desde AluDev Inc México.`;
                                   type="number"
                                   value={aluGlassPrice}
                                   onChange={(e) => setAluGlassPrice(Number(e.target.value) || 0)}
-                                  className="w-12 bg-slate-900 border border-slate-800 text-white font-mono font-bold text-center rounded py-0.5 px-0.5 focus:ring-1 focus:ring-emerald-550 focus:outline-none"
+                                  className="w-12 bg-slate-900 dark:bg-slate-950 border border-slate-800 text-white font-mono font-bold text-center rounded py-0.5 px-0.5 focus:ring-1 focus:ring-emerald-550 focus:outline-none"
                                 />
-                                <span className="text-slate-500">/m²</span>
+                                <span className="text-slate-500 dark:text-slate-400">/m²</span>
                               </div>
                               <span className="text-xs font-bold text-emerald-400 mt-1 block">${glassCostCalculated.toLocaleString("es-MX")}</span>
                             </div>
@@ -1586,12 +1589,12 @@ Generado automáticamente desde AluDev Inc México.`;
                           
                           <div className="space-y-1 text-[10px] font-mono">
                             {/* Row 1: Jamba */}
-                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900/30 rounded border border-transparent hover:border-slate-805">
+                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900 rounded border border-transparent hover:border-slate-805">
                               <span className="text-slate-400">JAMBA {totJamba.toFixed(0)}cm</span>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] bg-[#070b13] text-slate-400 font-bold px-1 py-0.5 rounded">{barsJamba} trm de 6m</span>
                                 <div className="flex items-center">
-                                  <span className="text-slate-500 mr-0.5">$</span>
+                                  <span className="text-slate-500 dark:text-slate-400 mr-0.5">$</span>
                                   <input
                                     type="number"
                                     value={aluJambaPrice}
@@ -1604,12 +1607,12 @@ Generado automáticamente desde AluDev Inc México.`;
                             </div>
 
                             {/* Row 2: Riel */}
-                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900/30 rounded border border-transparent hover:border-slate-805">
+                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900 rounded border border-transparent hover:border-slate-805">
                               <span className="text-slate-400">RIEL {totRiel.toFixed(0)}cm</span>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] bg-[#070b13] text-slate-400 font-bold px-1 py-0.5 rounded">{barsRiel} trm de 6m</span>
                                 <div className="flex items-center flex-row">
-                                  <span className="text-slate-500 mr-0.5">$</span>
+                                  <span className="text-slate-500 dark:text-slate-400 mr-0.5">$</span>
                                   <input
                                     type="number"
                                     value={aluRielPrice}
@@ -1622,12 +1625,12 @@ Generado automáticamente desde AluDev Inc México.`;
                             </div>
 
                             {/* Row 3: Cerco */}
-                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900/30 rounded border border-transparent hover:border-slate-805">
+                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900 rounded border border-transparent hover:border-slate-805">
                               <span className="text-slate-400">CERCO {totCerco.toFixed(0)}cm</span>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] bg-[#070b13] text-slate-400 font-bold px-1 py-0.5 rounded">{barsCerco} trm de 6m</span>
                                 <div className="flex items-center flex-row">
-                                  <span className="text-slate-500 mr-0.5">$</span>
+                                  <span className="text-slate-500 dark:text-slate-400 mr-0.5">$</span>
                                   <input
                                     type="number"
                                     value={aluCercoPrice}
@@ -1640,12 +1643,12 @@ Generado automáticamente desde AluDev Inc México.`;
                             </div>
 
                             {/* Row 4: Traslape */}
-                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900/30 rounded border border-transparent hover:border-slate-805">
+                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900 rounded border border-transparent hover:border-slate-805">
                               <span className="text-slate-400">TRASLAPE {totTraslape.toFixed(0)}cm</span>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] bg-[#070b13] text-slate-400 font-bold px-1 py-0.5 rounded">{barsTraslape} trm de 6m</span>
                                 <div className="flex items-center">
-                                  <span className="text-slate-500 mr-0.5">$</span>
+                                  <span className="text-slate-500 dark:text-slate-400 mr-0.5">$</span>
                                   <input
                                     type="number"
                                     value={aluTraslapePrice}
@@ -1658,12 +1661,12 @@ Generado automáticamente desde AluDev Inc México.`;
                             </div>
 
                             {/* Row 5: Zoclo */}
-                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900/30 rounded border border-transparent hover:border-slate-850">
+                            <div className="flex justify-between items-center p-1.5 hover:bg-slate-900 rounded border border-transparent hover:border-slate-850">
                               <span className="text-slate-400">ZOCLO_1V {totZoclo.toFixed(0)}cm</span>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] bg-[#070b13] text-slate-400 font-bold px-1 py-0.5 rounded">{barsZoclo} trm de 6m</span>
                                 <div className="flex items-center flex-row">
-                                  <span className="text-slate-500 mr-0.5">$</span>
+                                  <span className="text-slate-500 dark:text-slate-400 mr-0.5">$</span>
                                   <input
                                     type="number"
                                     value={aluZocloPrice}
@@ -1688,27 +1691,27 @@ Generado automáticamente desde AluDev Inc México.`;
                           
                           <div className="grid grid-cols-2 gap-3">
                             <div className="bg-[#070b13] p-2 rounded border border-slate-900">
-                              <span className="block text-[8px] text-slate-500 uppercase font-mono">Costos Herrajes:</span>
+                              <span className="block text-[8px] text-slate-500 dark:text-slate-400 uppercase font-mono">Costos Herrajes:</span>
                               <div className="flex items-center mt-1">
                                 <span className="text-slate-400 mr-0.5">$</span>
                                 <input
                                   type="number"
                                   value={aluAccessoryPrice}
                                   onChange={(e) => setAluAccessoryPrice(Number(e.target.value) || 0)}
-                                  className="w-full bg-slate-900 border border-slate-800 text-white font-mono font-bold text-xs rounded p-0.5"
+                                  className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-white font-mono font-bold text-xs rounded p-0.5"
                                 />
                               </div>
                             </div>
 
                             <div className="bg-[#070b13] p-2 rounded border border-slate-900">
-                              <span className="block text-[8px] text-slate-500 uppercase font-mono">Costo Mano Obra:</span>
+                              <span className="block text-[8px] text-slate-500 dark:text-slate-400 uppercase font-mono">Costo Mano Obra:</span>
                               <div className="flex items-center mt-1">
                                 <span className="text-slate-400 mr-0.5">$</span>
                                 <input
                                   type="number"
                                   value={aluLaborPrice}
                                   onChange={(e) => setAluLaborPrice(Number(e.target.value) || 0)}
-                                  className="w-full bg-slate-900 border border-slate-800 text-white font-mono font-bold text-xs rounded p-0.5"
+                                  className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-white font-mono font-bold text-xs rounded p-0.5"
                                 />
                               </div>
                             </div>
@@ -1722,7 +1725,7 @@ Generado automáticamente desde AluDev Inc México.`;
                   {/* BOTTOM SMARTPHONE ACTIONS */}
                   <div className="space-y-2 pt-3 border-t border-slate-900">
                     
-                    {/* Glowing Total Box matching video screen absolute totals */}
+                    {/* Glowing Total Box personalizar screen absolute totals */}
                     <div className="bg-sky-950/40 border border-[#1e3a8a]/30 rounded-2xl p-2.5 text-center">
                       <span className="text-[7px] font-black uppercase text-sky-400 tracking-widest block mb-0.5 font-mono">MONTO TOTAL ESTIMADO (FRACCIÓN)</span>
                       <strong className="text-lg font-mono text-emerald-400 tracking-tight font-black">
@@ -1752,7 +1755,7 @@ Generado automáticamente desde AluDev Inc México.`;
                       </button>
                       <button
                         onClick={copyCutsReport}
-                        className="py-2.5 bg-slate-800 hover:bg-slate-705 border border-slate-700 hover:border-slate-600 text-slate-100 rounded-xl font-bold uppercase text-[10px] tracking-wider transition flex items-center justify-center gap-1.5"
+                        className="py-2.5 bg-slate-800 dark:bg-slate-950 hover:bg-slate-705 border border-slate-700 hover:border-slate-600 text-slate-100 rounded-xl font-bold uppercase text-[10px] tracking-wider transition flex items-center justify-center gap-1.5"
                       >
                         <Printer size={12} />
                         COMPARTIR
@@ -1776,114 +1779,114 @@ Generado automáticamente desde AluDev Inc México.`;
             {/* COLUMN 2: WORKSHOP DOCUMENTATION AND LIVE FORMULA EDITING ACCORDION */}
             <div className="lg:col-span-5 xl:col-span-6 space-y-5">
               
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping"></span>
                   <h4 className="font-bold text-white text-xs uppercase tracking-wide">Fórmulas en Tiempo Real ("Modo Taller")</h4>
                 </div>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Para darte <strong>completa libertad de taller</strong> (tal como se destaca en el vídeo), hemos expuesto el generador de fórmulas directo. Puedes re-escribir las ecuaciones matemáticas utilizando las constantes <code className="text-sky-300 font-mono">W</code> (Ancho total) y <code className="text-sky-300 font-mono">H</code> (Alto total). Toda modificación se calcula de inmediato.
+                  Para darte <strong>completa libertad de taller</strong>, hemos expuesto el generador de fórmulas directo. Puedes re-escribir las ecuaciones matemáticas utilizando las constantes <code className="text-sky-300 font-mono">W</code> (Ancho total) y <code className="text-sky-300 font-mono">H</code> (Alto total). Toda modificación se calcula de inmediato.
                 </p>
 
                 {aluSeries === "corrediza_3" ? (
                   <div className="space-y-3 pt-2 text-xs">
                     {/* formula jamba 1 */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">JAMBA_L3 (Corte Horizontal):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: W (1 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: W (1 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaJamba1}
                           onChange={(e) => setFormulaJamba1(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaJamba1, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula jamba 2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">JAMBA_L3 (Corte Vertical):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: H - 2.7 (2 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: H - 2.7 (2 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaJamba2}
                           onChange={(e) => setFormulaJamba2(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaJamba2, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula riel */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">RIEL_L3 (Corte Horizontal):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: W (2 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: W (2 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaRiel}
                           onChange={(e) => setFormulaRiel(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaRiel, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula cerco */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">CERCO_L3 (Corte Vertical):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: H - 3.7 (2 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: H - 3.7 (2 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaCerco}
                           onChange={(e) => setFormulaCerco(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaCerco, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula traslape */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">TRASLAPE_L3 (Corte Vertical):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: H - 3.7 (2 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: H - 3.7 (2 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaTraslape}
                           onChange={(e) => setFormulaTraslape(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaTraslape, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula zoclo */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">ZOCLO 1V_L3 (Corte Horizontal):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: (W - 18) / 2 (4 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: (W - 18) / 2 (4 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaZoclo}
                           onChange={(e) => setFormulaZoclo(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaZoclo, aluWidth, aluHeight)}</span>
                       </div>
@@ -1892,102 +1895,102 @@ Generado automáticamente desde AluDev Inc México.`;
                 ) : (
                   <div className="space-y-3 pt-2 text-xs">
                     {/* formula jamba 2 s2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">JAMBA_L2 (Corte Vertical):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: H - 2.5 (2 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: H - 2.5 (2 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaJamba2_s2}
                           onChange={(e) => setFormulaJamba2_s2(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaJamba2_s2, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula riel s2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">RIEL_L2 (Corte Horizontal):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: W (1 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: W (1 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaRiel_s2}
                           onChange={(e) => setFormulaRiel_s2(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaRiel_s2, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula cabezal s2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">CABEZAL_L2 (Corte Horizontal):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: W (1 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: W (1 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaCabezal_s2}
                           onChange={(e) => setFormulaCabezal_s2(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaCabezal_s2, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula cerco s2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">CERCO_L2 (Corte Vertical):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: H - 3.5 (2 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: H - 3.5 (2 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaCerco_s2}
                           onChange={(e) => setFormulaCerco_s2(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaCerco_s2, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula traslape s2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">TRASLAPE_L2 (Corte Vertical):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: H - 3.5 (2 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: H - 3.5 (2 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaTraslape_s2}
                           onChange={(e) => setFormulaTraslape_s2(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaTraslape_s2, aluWidth, aluHeight)}</span>
                       </div>
                     </div>
 
                     {/* formula zoclo s2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-850">
+                    <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-850">
                       <div className="md:col-span-5">
                         <strong className="block text-slate-300 text-[11px]">ZOCLO_L2 (Corte Horizontal):</strong>
-                        <span className="text-[10px] text-slate-500 italic">Predef: (W - 14) / 2 (4 pz)</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">Predef: (W - 14) / 2 (4 pz)</span>
                       </div>
                       <div className="md:col-span-7 flex gap-1 items-center">
                         <input
                           type="text"
                           value={formulaZoclo_s2}
                           onChange={(e) => setFormulaZoclo_s2(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                          className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-sky-400 px-3 py-1.5 font-mono text-center rounded-lg focus:ring-1 focus:ring-sky-500 focus:outline-none"
                         />
                         <span className="text-[10px] text-[#fbbf24] font-mono">={evalFormula(formulaZoclo_s2, aluWidth, aluHeight)}</span>
                       </div>
@@ -1997,11 +2000,11 @@ Generado automáticamente desde AluDev Inc México.`;
               </div>
 
               {/* Guide Card helper */}
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-3.5">
+              <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-3.5">
                 <h4 className="font-bold text-white text-xs uppercase tracking-wider font-sans">Guía de Colaboradores AluDev</h4>
                 <div className="text-xs text-slate-400 space-y-3">
                   <p>
-                    Esta calculadora emula el flujo de trabajo del vídeo para maximizar la velocidad y precisión de tu cuadrilla:
+                    Esta calculadora emula el flujo de trabajo en taller para maximizar la velocidad y precisión de tu cuadrilla:
                   </p>
                   <ul className="list-decimal list-inside space-y-1.5 pl-1">
                     <li>Ingresa las medidas tomadas en campo utilizando los deslizadores o los botones directos.</li>
@@ -2241,7 +2244,7 @@ Generado automáticamente desde AluDev Inc México.`;
           <div className="space-y-4">
             
             {/* Phase 1: Client Information */}
-            <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-850/80 space-y-3">
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-850/80 space-y-3">
               <span className="block text-[10px] font-bold text-[#c084fc] uppercase tracking-wider font-mono">Datos del Cliente (Opcional):</span>
               
               <div>
@@ -2298,7 +2301,7 @@ Generado automáticamente desde AluDev Inc México.`;
 
               <div className="space-y-3.5" id="manual-concept-rows-grid">
                 {customConcepts.map((item, index) => (
-                  <div key={item.id} className="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl relative space-y-2">
+                  <div key={item.id} className="bg-slate-900 dark:bg-slate-950 border border-slate-800 p-3.5 rounded-2xl relative space-y-2">
                     
                     <button
                       type="button"
@@ -2310,14 +2313,14 @@ Generado automáticamente desde AluDev Inc México.`;
                     </button>
 
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-bold font-mono text-slate-500">CONCEPTO {index + 1}</span>
+                      <span className="text-[10px] font-bold font-mono text-slate-500 dark:text-slate-400">CONCEPTO {index + 1}</span>
                       <button
                         type="button"
                         onClick={() => toggleConceptRepairType(item.id)}
                         className={`text-[9.5px] px-2 py-0.5 rounded-md font-bold transition flex items-center gap-1 ${
                           item.isRepair
                             ? "bg-emerald-600/25 text-emerald-400 border border-emerald-500/30 font-sans"
-                            : "bg-slate-800 text-slate-400 hover:bg-slate-750 border border-slate-700/60 font-sans"
+                            : "bg-slate-800 dark:bg-slate-950 text-slate-400 hover:bg-slate-750 border border-slate-700/60 font-sans"
                         }`}
                       >
                         {item.isRepair ? "🛠️ Modo Reparación: Activo" : "🛠️ Calcular por Horas"}
@@ -2348,7 +2351,7 @@ Generado automáticamente desde AluDev Inc México.`;
                     </div>
 
                     {item.isRepair && (
-                      <div className="grid grid-cols-2 gap-3 pb-1 bg-slate-950/45 p-2 rounded-xl border border-slate-850/60 transition-all">
+                      <div className="grid grid-cols-2 gap-3 pb-1 bg-slate-950 p-2 rounded-xl border border-slate-850/60 transition-all">
                         <div>
                           <label className="block text-[8.5px] text-slate-400 font-bold uppercase font-mono mb-0.5 text-left">Horas Estimadas (Trabajo)</label>
                           <input
@@ -2378,7 +2381,7 @@ Generado automáticamente desde AluDev Inc México.`;
 
                     <div className="grid grid-cols-2 gap-3.5">
                       <div>
-                        <label className="block text-[9px] text-slate-500 font-bold uppercase font-mono text-left">Cant</label>
+                        <label className="block text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase font-mono text-left">Cant</label>
                         <input
                           type="number"
                           placeholder="1"
@@ -2389,7 +2392,7 @@ Generado automáticamente desde AluDev Inc México.`;
                       </div>
 
                       <div>
-                        <label className="block text-[9px] text-slate-500 font-bold uppercase font-mono text-left">P. Unitario ($):</label>
+                        <label className="block text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase font-mono text-left">P. Unitario ($):</label>
                         <input
                           type="number"
                           placeholder="0.00"
@@ -2408,7 +2411,7 @@ Generado automáticamente desde AluDev Inc México.`;
               </div>
             </div>
 
-            {/* Advance deposit controls matches video */}
+            {/* Advance deposit controls personalizar */}
             <div className="bg-slate-950 p-4 rounded-2xl border border-slate-850 space-y-3.5">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">Anticipo de Obra (Contrato):</span>
@@ -2417,7 +2420,7 @@ Generado automáticamente desde AluDev Inc México.`;
                     type="button"
                     onClick={() => setDepositType("percent")}
                     className={`text-[9px] font-black uppercase px-2.5 py-1 rounded transition ${
-                      depositType === "percent" ? "bg-[#c084fc] text-white" : "bg-slate-900 text-slate-400"
+                      depositType === "percent" ? "bg-[#c084fc] text-white" : "bg-slate-900 dark:bg-slate-950 text-slate-400"
                     }`}
                   >
                     Porcentaje %
@@ -2426,7 +2429,7 @@ Generado automáticamente desde AluDev Inc México.`;
                     type="button"
                     onClick={() => setDepositType("fixed")}
                     className={`text-[9px] font-black uppercase px-2.5 py-1 rounded transition ${
-                      depositType === "fixed" ? "bg-[#c084fc] text-white" : "bg-slate-900 text-slate-400"
+                      depositType === "fixed" ? "bg-[#c084fc] text-white" : "bg-slate-900 dark:bg-slate-950 text-slate-400"
                     }`}
                   >
                     Monto Fijo $
@@ -2439,9 +2442,9 @@ Generado automáticamente desde AluDev Inc México.`;
                   type="number"
                   value={depositValue}
                   onChange={(e) => setDepositValue(Number(e.target.value))}
-                  className="w-full bg-slate-900 border border-slate-800 text-white rounded-xl py-2 px-3.5 font-bold font-mono text-sm focus:outline-none"
+                  className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 text-white rounded-xl py-2 px-3.5 font-bold font-mono text-sm focus:outline-none"
                 />
-                <span className="text-[9px] text-slate-500 block mt-1">Se muestra en el PDF de Contrato: Total, Anticipo solicitado y Saldo restante</span>
+                <span className="text-[9px] text-slate-500 dark:text-slate-400 block mt-1">Se muestra en el PDF de Contrato: Total, Anticipo solicitado y Saldo restante</span>
               </div>
 
               <div className="flex justify-between items-center pt-2.5 border-t border-slate-850">
@@ -2450,11 +2453,11 @@ Generado automáticamente desde AluDev Inc México.`;
                   type="button"
                   onClick={() => setManualIva(!manualIva)}
                   className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    manualIva ? "bg-[#c084fc]" : "bg-slate-800"
+                    manualIva ? "bg-[#c084fc]" : "bg-slate-800 dark:bg-slate-950"
                   }`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition duration-200 ease-in-out ${
                       manualIva ? "translate-x-5" : "translate-x-0"
                     }`}
                   />
@@ -2482,7 +2485,7 @@ Generado automáticamente desde AluDev Inc México.`;
               <span className="text-xl text-purple-300 font-black">${calcManualTotal().toLocaleString("es-MX")} MXN</span>
             </div>
 
-            <div className="bg-slate-950/50 p-2.5 rounded-xl text-[10px] font-mono text-[#a599b1] space-y-1">
+            <div className="bg-slate-950 p-2.5 rounded-xl text-[10px] font-mono text-[#a599b1] space-y-1">
               <div className="flex justify-between">
                 <span>Anticipo ({depositType === "percent" ? `${depositValue}%` : `$${depositValue}`}):</span>
                 <strong className="text-purple-300">${calcManualDeposit().toLocaleString("es-MX")}</strong>
@@ -2525,7 +2528,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 <div
                   key={st}
                   className={`h-2.5 w-2.5 rounded-full transition ${
-                    guideStep === st ? "bg-[#fb923c]" : guideStep > st ? "bg-amber-600/50" : "bg-slate-800"
+                    guideStep === st ? "bg-[#fb923c]" : guideStep > st ? "bg-amber-600/50" : "bg-slate-800 dark:bg-slate-950"
                   }`}
                 />
               ))}
@@ -2620,7 +2623,7 @@ Generado automáticamente desde AluDev Inc México.`;
                   }`}
                 >
                   <span className="text-xs uppercase tracking-wider">Línea Nacional</span>
-                  <span className="text-[9px] text-slate-500 font-mono">Perfiles 2″ y 3″ estándar</span>
+                  <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono">Perfiles 2″ y 3″ estándar</span>
                 </button>
 
                 <button
@@ -2633,7 +2636,7 @@ Generado automáticamente desde AluDev Inc México.`;
                   }`}
                 >
                   <span className="text-xs uppercase tracking-wider">Línea Española</span>
-                  <span className="text-[9px] text-slate-500 font-mono">Series Europeas 4600/1400</span>
+                  <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono">Series Europeas 4600/1400</span>
                 </button>
               </div>
 
@@ -2732,7 +2735,7 @@ Generado automáticamente desde AluDev Inc México.`;
                     onChange={(e) => setWizardWidth(Number(e.target.value))}
                     className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-2 px-3 text-center text-sm font-bold font-mono"
                   />
-                  <div className="flex justify-between text-[9px] text-slate-500 mt-1">
+                  <div className="flex justify-between text-[9px] text-slate-500 dark:text-slate-400 mt-1">
                     <span>Min: 30cm</span>
                     <span>Max: 300cm</span>
                   </div>
@@ -2746,7 +2749,7 @@ Generado automáticamente desde AluDev Inc México.`;
                     onChange={(e) => setWizardHeight(Number(e.target.value))}
                     className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-2 px-3 text-center text-sm font-bold font-mono"
                   />
-                  <div className="flex justify-between text-[9px] text-slate-500 mt-1">
+                  <div className="flex justify-between text-[9px] text-slate-500 dark:text-slate-400 mt-1">
                     <span>Min: 30cm</span>
                     <span>Max: 300cm</span>
                   </div>
@@ -2825,11 +2828,11 @@ Generado automáticamente desde AluDev Inc México.`;
 
       {/* VIEW S5: HISTORIAL VIEW */}
       {subScreen === "historial" && (
-        <div className="bg-slate-900 border border-slate-800 text-slate-200 p-6 rounded-3xl space-y-5 shadow-2xl animate-fade-in" id="workshop-quote-history-view">
+        <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 text-slate-200 p-6 rounded-3xl space-y-5 shadow-2xl animate-fade-in" id="workshop-quote-history-view">
           
           <div className="flex justify-between items-center pb-3 border-b border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="bg-amber-500/10 text-amber-500 p-2.5 rounded-xl border border-amber-500/10">
+              <div className="bg-amber-500/10 text-blue-500 dark:text-blue-300 p-2.5 rounded-xl border border-blue-500/10">
                 <History size={20} />
               </div>
               <div>
@@ -2844,7 +2847,7 @@ Generado automáticamente desde AluDev Inc México.`;
                     clearQuotes();
                   }
                 }}
-                className="text-xxs font-mono bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/25 px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1"
+                className="text-xxs font-mono bg-rose-50 dark:bg-rose-900/300/10 hover:bg-rose-50 dark:bg-rose-900/300/20 text-rose-400 border border-rose-500/25 px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1"
               >
                 <Trash2 size={11} />
                 Vaciar Venta
@@ -2870,23 +2873,23 @@ Generado automáticamente desde AluDev Inc México.`;
               <>
                 <div className="space-y-3">
                   {state.quotes.map((q) => (
-                    <div key={q.id} className="bg-slate-950/80 p-4 rounded-2xl border border-slate-850/80 hover:border-slate-800/80 transition relative space-y-2">
+                    <div key={q.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-850/80 hover:border-slate-800/80 transition relative space-y-2">
                       <button
                         type="button"
                         onClick={() => deleteQuoteItem(q.id)}
-                        className="absolute top-3.5 right-3.5 text-rose-500 hover:text-rose-400 p-1 bg-slate-900 border border-slate-800 rounded-lg hover:scale-105 transition"
+                        className="absolute top-3.5 right-3.5 text-rose-500 hover:text-rose-400 p-1 bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-lg hover:scale-105 transition"
                         title="Eliminar elemento"
                       >
                         <Trash2 size={13} />
                       </button>
 
-                      <span className="text-[10px] bg-slate-900 border border-slate-800 px-2.5 py-0.5 rounded font-bold font-mono tracking-wider text-slate-400">
+                      <span className="text-[10px] bg-slate-900 dark:bg-slate-950 border border-slate-800 px-2.5 py-0.5 rounded font-bold font-mono tracking-wider text-slate-400">
                         {q.line}
                       </span>
 
                       <h4 className="text-xs font-bold leading-normal text-white max-w-[85%]">{q.label}</h4>
                       
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-slate-500 font-mono">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                         {q.width > 0 && (
                           <span>Medidas: <strong>{q.width}×{q.height}cm</strong></span>
                         )}
@@ -2898,14 +2901,14 @@ Generado automáticamente desde AluDev Inc México.`;
                       </div>
 
                       <div className="pt-2 border-t border-slate-850/50 flex justify-between items-baseline">
-                        <span className="text-[10px] text-slate-500 uppercase font-mono">Neto Unitario: ${Math.round(q.totalPrice / q.qty).toLocaleString("es-MX")}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-mono">Neto Unitario: ${Math.round(q.totalPrice / q.qty).toLocaleString("es-MX")}</span>
                         <span className="text-sm font-black text-[#ff9f43] font-mono">Monto Total: ${Math.round(q.totalPrice).toLocaleString("es-MX")} MXN</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Summarized metrics matches video */}
+                {/* Summarized metrics personalizar */}
                 <div className="bg-[#241e15] border border-[#523d21] p-4 rounded-2xl space-y-2 text-xs">
                   <div className="flex justify-between font-mono text-slate-400">
                     <span>Partidas cotizadas:</span>
@@ -2971,7 +2974,7 @@ Generado automáticamente desde AluDev Inc México.`;
         </div>
       )}
 
-      {/* VIEW S6: CONFIGURATION EDIT ACCORDION LIST matches video */}
+      {/* VIEW S6: CONFIGURATION EDIT ACCORDION LIST personalizar */}
       {subScreen === "config" && (
         <div className="bg-[#18181b] border border-[#2e2e33] text-slate-300 p-6 rounded-3xl space-y-4 shadow-2xl animate-fade-in" id="workshop-tabuladores-configurator">
           
@@ -2987,7 +2990,7 @@ Generado automáticamente desde AluDev Inc México.`;
             </div>
             <button
               onClick={resetToDefault}
-              className="text-[10px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/35 px-2.5 py-1.5 rounded-lg font-bold transition font-mono uppercase"
+              className="text-[10px] bg-rose-50 dark:bg-rose-900/300/10 hover:bg-rose-50 dark:bg-rose-900/300/20 text-rose-400 border border-rose-500/35 px-2.5 py-1.5 rounded-lg font-bold transition font-mono uppercase"
             >
               Restablecer Fábrica
             </button>
@@ -2996,24 +2999,24 @@ Generado automáticamente desde AluDev Inc México.`;
           <div className="space-y-2.5" id="tabulators-collapsable-accordions">
             
             {/* Accordion 1: Percentages (Utilidades y merma) */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setActiveAccordion(activeAccordion === "utilidades" ? null : "utilidades")}
-                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950/80 text-left font-bold text-xs uppercase"
+                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950 text-left font-bold text-xs uppercase"
               >
-                <span className="flex items-center gap-2 text-amber-500">
+                <span className="flex items-center gap-2 text-blue-500 dark:text-blue-300">
                   <Coins size={14} />
                   1. Porcentajes de Utilidad
                 </span>
                 {activeAccordion === "utilidades" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {activeAccordion === "utilidades" && (
-                <div className="p-4 bg-slate-900 border-t border-slate-850 space-y-3.5 text-xs">
+                <div className="p-4 bg-slate-900 dark:bg-slate-950 border-t border-slate-850 space-y-3.5 text-xs">
                   <span className="block text-[10px] text-[#ff9f43] leading-normal font-mono uppercase">Preferencia de ganancia:</span>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Ganancia recomendada (%):</label>
+                      <label className="block text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mb-1">Ganancia recomendada (%):</label>
                       <input
                         type="number"
                         className="w-full bg-slate-950 border border-slate-850 py-1.5 px-3 rounded text-white text-xs font-mono font-bold"
@@ -3021,7 +3024,7 @@ Generado automáticamente desde AluDev Inc México.`;
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Ganancia mínima (%):</label>
+                      <label className="block text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mb-1">Ganancia mínima (%):</label>
                       <input
                         type="number"
                         className="w-full bg-slate-950 border border-slate-850 py-1.5 px-3 rounded text-white text-xs font-mono font-bold"
@@ -3029,7 +3032,7 @@ Generado automáticamente desde AluDev Inc México.`;
                       />
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-500 leading-normal">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal">
                     Fórmula inteligente aplicada: <strong className="font-mono bg-slate-950 px-1 py-0.5 rounded">Costo / (1 - Porcentaje/100)</strong> para un cálculo preciso del margen útil.
                   </p>
                 </div>
@@ -3037,11 +3040,11 @@ Generado automáticamente desde AluDev Inc México.`;
             </div>
 
             {/* Accordion 2: Perfiles de Aluminio inline pricing list */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setActiveAccordion(activeAccordion === "perfiles" ? null : "perfiles")}
-                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950/80 text-left font-bold text-xs uppercase"
+                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950 text-left font-bold text-xs uppercase"
               >
                 <span className="flex items-center gap-2 text-zinc-300 animate-fade-in">
                   <Layers size={14} />
@@ -3050,19 +3053,19 @@ Generado automáticamente desde AluDev Inc México.`;
                 {activeAccordion === "perfiles" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {activeAccordion === "perfiles" && (
-                <div className="p-4 bg-slate-900 border-t border-slate-850 space-y-3 font-mono">
-                  <span className="block text-[10px] text-slate-500 uppercase tracking-wider mb-2">Precios base por metro lineal ($/m):</span>
+                <div className="p-4 bg-slate-900 dark:bg-slate-950 border-t border-slate-850 space-y-3 font-mono">
+                  <span className="block text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Precios base por metro lineal ($/m):</span>
                   <div className="space-y-2 text-xs">
                     {state.profiles.map((prof) => (
                       <div key={prof.id} className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850/60">
                         <span className="text-slate-200 font-sans tracking-wide">{prof.name} ({prof.line})</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-slate-500">$/m:</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">$/m:</span>
                           <input
                             type="number"
                             value={prof.pricePerMeter}
                             onChange={(e) => updateProfile(prof.id, { pricePerMeter: Number(e.target.value) })}
-                            className="w-20 bg-slate-900 border border-slate-800 py-1 px-2 rounded font-bold text-white text-right text-xs"
+                            className="w-20 bg-slate-900 dark:bg-slate-950 border border-slate-800 py-1 px-2 rounded font-bold text-white text-right text-xs"
                           />
                         </div>
                       </div>
@@ -3072,12 +3075,12 @@ Generado automáticamente desde AluDev Inc México.`;
               )}
             </div>
 
-            {/* Accordion 3: Glass Price Tabulator matches video list */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            {/* Accordion 3: Glass Price Tabulator personalizar list */}
+            <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setActiveAccordion(activeAccordion === "glasses" ? null : "glasses")}
-                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950/80 text-left font-bold text-xs uppercase"
+                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950 text-left font-bold text-xs uppercase"
               >
                 <span className="flex items-center gap-2 text-sky-400">
                   <Scale size={14} />
@@ -3086,19 +3089,19 @@ Generado automáticamente desde AluDev Inc México.`;
                 {activeAccordion === "glasses" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {activeAccordion === "glasses" && (
-                <div className="p-4 bg-slate-900 border-t border-slate-850 space-y-3 font-mono">
-                  <span className="block text-[10px] text-slate-500 uppercase tracking-wider mb-2">Precios base por metro cuadrado ($/m²):</span>
+                <div className="p-4 bg-slate-900 dark:bg-slate-950 border-t border-slate-850 space-y-3 font-mono">
+                  <span className="block text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Precios base por metro cuadrado ($/m²):</span>
                   <div className="space-y-2 text-xs">
                     {state.glasses.map((glass) => (
                       <div key={glass.id} className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850/60">
                         <span className="text-slate-200 font-sans tracking-wide">Vidrio Espesor {glass.thickness}</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-slate-500">$/m²:</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">$/m²:</span>
                           <input
                             type="number"
                             value={glass.pricePerM2}
                             onChange={(e) => updateGlass(glass.id, { pricePerM2: Number(e.target.value) })}
-                            className="w-20 bg-slate-900 border border-slate-800 py-1 px-2 rounded font-bold text-white text-right text-xs"
+                            className="w-20 bg-slate-900 dark:bg-slate-950 border border-slate-800 py-1 px-2 rounded font-bold text-white text-right text-xs"
                           />
                         </div>
                       </div>
@@ -3108,12 +3111,12 @@ Generado automáticamente desde AluDev Inc México.`;
               )}
             </div>
 
-            {/* Accordion 4: Aluminum colors additonal rates matches video list */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            {/* Accordion 4: Aluminum colors additonal rates personalizar list */}
+            <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setActiveAccordion(activeAccordion === "colors" ? null : "colors")}
-                className="w-full flex justify-between items-center py-[#e] py-3.5 px-4 bg-slate-950/80 text-left font-bold text-xs uppercase"
+                className="w-full flex justify-between items-center py-[#e] py-3.5 px-4 bg-slate-950 text-left font-bold text-xs uppercase"
               >
                 <span className="flex items-center gap-2 text-violet-400">
                   <Paintbrush size={14} />
@@ -3122,7 +3125,7 @@ Generado automáticamente desde AluDev Inc México.`;
                 {activeAccordion === "colors" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {activeAccordion === "colors" && (
-                <div className="p-4 bg-slate-900 border-t border-slate-850 space-y-2 font-mono text-xs">
+                <div className="p-4 bg-slate-900 dark:bg-slate-950 border-t border-slate-850 space-y-2 font-mono text-xs">
                   {[
                     { name: "Blanco", extra: 0 },
                     { name: "Natural Anodizado", extra: 0 },
@@ -3135,26 +3138,26 @@ Generado automáticamente desde AluDev Inc México.`;
                     <div key={colorItem.name} className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850/60">
                       <span className="text-slate-200 font-sans tracking-wide">{colorItem.name}</span>
                       <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-slate-500">+$:</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400">+$:</span>
                         <input
                           type="number"
                           defaultValue={colorItem.extra}
-                          className="w-16 bg-slate-900 border border-slate-850 py-1 px-2 rounded font-bold text-white text-right text-xs"
+                          className="w-16 bg-slate-900 dark:bg-slate-950 border border-slate-850 py-1 px-2 rounded font-bold text-white text-right text-xs"
                         />
                       </div>
                     </div>
                   ))}
-                  <p className="text-[10px] text-slate-500 pt-1 leading-normal uppercase">Recargo adicional aplicado por cada metro lineal fabricado.</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 pt-1 leading-normal uppercase">Recargo adicional aplicado por cada metro lineal fabricado.</p>
                 </div>
               )}
             </div>
 
             {/* Accordion 5: Extra inputs (Mosquiteros and Duelas) */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setActiveAccordion(activeAccordion === "extras" ? null : "extras")}
-                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950/80 text-left font-bold text-xs uppercase"
+                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950 text-left font-bold text-xs uppercase"
               >
                 <span className="flex items-center gap-2 text-rose-400">
                   <Sliders size={14} />
@@ -3163,15 +3166,15 @@ Generado automáticamente desde AluDev Inc México.`;
                 {activeAccordion === "extras" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {activeAccordion === "extras" && (
-                <div className="p-4 bg-slate-900 border-t border-[#2d2f33] space-y-3 font-mono text-xs">
+                <div className="p-4 bg-slate-900 dark:bg-slate-950 border-t border-[#2d2f33] space-y-3 font-mono text-xs">
                   <div className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850">
                     <span className="text-slate-300">Mosquitero estándar:</span>
                     <div className="flex items-center gap-1">
-                      <span className="text-slate-500">$/m²:</span>
+                      <span className="text-slate-500 dark:text-slate-400">$/m²:</span>
                       <input
                         type="number"
                         defaultValue={250}
-                        className="w-20 bg-slate-900 border border-slate-800 py-1 px-2 rounded font-bold text-white text-right"
+                        className="w-20 bg-slate-900 dark:bg-slate-950 border border-slate-800 py-1 px-2 rounded font-bold text-white text-right"
                       />
                     </div>
                   </div>
@@ -3179,11 +3182,11 @@ Generado automáticamente desde AluDev Inc México.`;
                   <div className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-850">
                     <span className="text-slate-300">Duela Doble Vista (tira 6.10m):</span>
                     <div className="flex items-center gap-1">
-                      <span className="text-slate-500">$/tira:</span>
+                      <span className="text-slate-500 dark:text-slate-400">$/tira:</span>
                       <input
                         type="number"
                         defaultValue={350}
-                        className="w-20 bg-slate-900 border border-slate-800 py-1 px-2 rounded font-bold text-white text-right"
+                        className="w-20 bg-slate-900 dark:bg-slate-950 border border-slate-800 py-1 px-2 rounded font-bold text-white text-right"
                       />
                     </div>
                   </div>
@@ -3191,12 +3194,12 @@ Generado automáticamente desde AluDev Inc México.`;
               )}
             </div>
 
-            {/* Accordion 6: Logo & enterprise settings PDF matches video */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            {/* Accordion 6: Logo & enterprise settings PDF personalizar */}
+            <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setActiveAccordion(activeAccordion === "branding" ? null : "branding")}
-                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950/80 text-left font-bold text-xs uppercase"
+                className="w-full flex justify-between items-center py-3.5 px-4 bg-slate-950 text-left font-bold text-xs uppercase"
               >
                 <span className="flex items-center gap-2 text-indigo-400 font-sans">
                   <Image size={14} />
@@ -3205,9 +3208,9 @@ Generado automáticamente desde AluDev Inc México.`;
                 {activeAccordion === "branding" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {activeAccordion === "branding" && (
-                <div className="p-4 bg-slate-900 border-t border-slate-850 space-y-3.5 text-xs">
+                <div className="p-4 bg-slate-900 dark:bg-slate-950 border-t border-slate-850 space-y-3.5 text-xs">
                   <div>
-                    <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Nombre Comercial de la Empresa:</label>
+                    <label className="block text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mb-1">Nombre Comercial de la Empresa:</label>
                     <input
                       type="text"
                       className="w-full bg-slate-950 border border-slate-850 py-2 px-3 rounded text-white text-xs"
@@ -3217,9 +3220,9 @@ Generado automáticamente desde AluDev Inc México.`;
                   </div>
 
                   <div className="pt-2">
-                    <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1.5">Logotipo de la Nota de Venta:</span>
+                    <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mb-1.5">Logotipo de la Nota de Venta:</span>
                     <div className="bg-slate-950 border-2 border-dashed border-slate-800 rounded-2xl p-6 text-center hover:bg-slate-850 transition cursor-pointer flex flex-col items-center justify-center gap-2">
-                      <Image size={24} className="text-slate-600 animate-pulse" />
+                      <Image size={24} className="text-slate-600 dark:text-slate-300 animate-pulse" />
                       <span className="font-bold">Subir Logotipo Corporativo</span>
                       <span className="text-[9px] text-[#ff9f43] font-mono leading-none">Formatos recomendados: JPG o PNG cuadrados de 300px</span>
                     </div>
@@ -3230,11 +3233,96 @@ Generado automáticamente desde AluDev Inc México.`;
 
           </div>
 
-          <div className="pt-4 border-t border-slate-850/60 p-4 rounded-xl text-center bg-slate-950/30 text-xs">
+          <div className="pt-4 border-t border-slate-850/60 p-4 rounded-xl text-center bg-slate-950 text-xs">
             <span className="text-[10px] uppercase font-mono text-slate-400 block">Responsable Técnico del Software:</span>
             <strong className="text-white uppercase text-xs mt-1 block">AluDev Inc México</strong>
           </div>
 
+        </div>
+      )}
+
+      {/* QUICK ADD PROFILE FAB */}
+      <button
+        onClick={() => setShowQuickAddModal(true)}
+        className="fixed bottom-20 md:bottom-8 right-6 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white rounded-full p-4 shadow-xl shadow-blue-900/20 active:scale-95 transition-all z-40 group border border-blue-400/30"
+        title="Añadir Perfil Rápido"
+      >
+        <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+      </button>
+
+      {/* QUICK ADD PROFILE MODAL */}
+      {showQuickAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900 backdrop-blur-sm" onClick={() => setShowQuickAddModal(false)} />
+          <div className="relative bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <PlusCircle size={20} className="text-blue-500 dark:text-blue-300" />
+                Añadir Perfil Rápido
+              </h3>
+              <button
+                onClick={() => setShowQuickAddModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:text-slate-300 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-full transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+                  Descripción / Nombre del Perfil
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: Riel inferior de 2 pulgadas"
+                  value={quickAddProfileName}
+                  onChange={(e) => setQuickAddProfileName(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+                  Largo de Tramos (Metros)
+                </label>
+                <input
+                  type="number"
+                  placeholder="6.10"
+                  value={quickAddProfileLength}
+                  onChange={(e) => setQuickAddProfileLength(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition font-mono"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    if (!quickAddProfileName.trim() || !quickAddProfileLength) {
+                      alert("Por favor, ingresa el nombre y la longitud del perfil.");
+                      return;
+                    }
+                    addProfile({
+                      id: "prof_custom_" + Date.now(),
+                      name: quickAddProfileName,
+                      line: "Nacional 2″", // Default
+                      brand: "Default",
+                      pricePerMeter: 0,
+                      stockMeters: Number(quickAddProfileLength),
+                      minStockMeters: 0
+                    });
+                    setQuickAddProfileName("");
+                    setQuickAddProfileLength("");
+                    setShowQuickAddModal(false);
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+                >
+                  Guardar en Inventario
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

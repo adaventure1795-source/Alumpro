@@ -467,6 +467,26 @@ export const DEFAULT_FORMULAS: FormulaRule[] = [
       { accessoryId: "acc-esq", quantityFormula: "4" },
       { accessoryId: "acc-tornillo", quantityFormula: "12" }
     ]
+  },
+  {
+    id: "f-reja-seguridad",
+    name: "Reja de Seguridad / Protección",
+    category: "rejas",
+    variables: [
+      { name: "Ancho", description: "Ancho total de la reja en cm", defaultValue: 120 },
+      { name: "Alto", description: "Alto total de la reja en cm", defaultValue: 120 }
+    ],
+    profileEquations: [
+      { profileId: "prof-tubo-cuad-2", name: "Marco Perimetral y Soportes Interiores", formula: "Ancho * 2 + Alto * 5", quantity: 1, angle: "90/90" }
+    ],
+    glassEquation: {
+      formulaWidth: "0",
+      formulaHeight: "0",
+      quantity: 0
+    },
+    accessoryEquations: [
+      { accessoryId: "acc-tornillo", quantityFormula: "24" }
+    ]
   }
 ];
 

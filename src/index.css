@@ -1,119 +1,119 @@
 @import "tailwindcss";
 
-/* ==========================================================================
-   ALUMASTER PREMIUM OBSIDIAN DARK THEME CONFIG
-   ========================================================================== */
-
-.dark-theme {
-  --background-color: #030712;
-  --card-bg: #090e1a;
-  --subcard-bg: #0d1324;
-  --border-color: #162035;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
+@theme {
+  --color-blue-50: #f0f4f8;
+  --color-blue-100: #d9e2ec;
+  --color-blue-200: #bcccdc;
+  --color-blue-300: #9fb3c8;
+  --color-blue-400: #829ab1;
+  --color-blue-500: #3b82f6; /* Keep standard for vibrant accents */
+  --color-blue-600: #1e4089; /* ALUDEV BLUE */
+  --color-blue-700: #193675;
+  --color-blue-800: #142a5c;
+  --color-blue-900: #102047;
+  --color-blue-950: #0a142e;
 }
 
-html,
-body,
-#root {
-  background-color: #0b1329 !important;
-  color: #f1f5f9;
+html, body, #root {
   min-height: 100vh;
 }
 
 body {
   transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: #f8fafc !important; /* light slate */
+  color: #0f172a !important;
 }
 
-/* Standard theme-based default backgrounds for PWA solid shell integration */
-html.dark-theme,
-body.dark-theme,
-html,
-body {
-  background-color: #0b1329 !important;
-  color: #f1f5f9 !important;
-}
-
-.dark-theme #main-app-container,
+/* Light Theme overrides for main container */
 #main-app-container {
-  background-color: #0b1329 !important;
+  background-color: #f8fafc !important;
 }
 
+/* Aludev Blue Dark Theme Configuration */
+.dark-theme {
+  --background-color: #0b1120;
+  --card-bg: #111827;
+  --subcard-bg: #1f2937;
+  --border-color: #374151;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+}
 
-/* Solid Obsidian Styling for Inputs, Select element and Textareas */
+html.dark, html.dark-theme, 
+body.dark, body.dark-theme,
+html.dark body, html.dark-theme body {
+  background-color: #0b1120 !important;
+  color: #f8fafc !important;
+}
+
+html.dark #main-app-container, 
+html.dark-theme #main-app-container,
+body.dark #main-app-container,
+body.dark-theme #main-app-container {
+  background-color: #0b1120 !important;
+}
+
+/* Inputs styling for dark mode */
 .dark-theme select,
 .dark-theme input[type="text"],
 .dark-theme input[type="number"],
 .dark-theme input[type="email"],
 .dark-theme input[type="password"],
 .dark-theme textarea {
-  background-color: #050811 !important;
-  border-color: #16223b !important;
+  background-color: #111827 !important;
+  border-color: #374151 !important;
   color: #f8fafc !important;
 }
 
 .dark-theme select:focus,
-.dark-theme input:focus {
-  border-color: #2563eb !important;
+.dark-theme input:focus,
+.dark-theme textarea:focus {
+  border-color: #3b82f6 !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
 }
 
-/* Ensure dropdown select values are highly readable */
 .dark-theme select option {
-  background-color: #090e1a !important;
+  background-color: #111827 !important;
   color: #f8fafc !important;
 }
 
 .dark-theme select optgroup {
-  background-color: #060a15 !important;
+  background-color: #1f2937 !important;
   color: #94a3b8 !important;
   font-weight: 700;
 }
 
-/* SVG blueprint viewer customization for deep obsidian background integration */
+/* SVG in dark mode */
 .dark-theme svg {
-  background-color: #050811 !important;
-  border-color: #111a2e !important;
+  background-color: transparent !important;
 }
-
-.dark-theme svg rect[fill="#ffffff"],
-.dark-theme svg rect[fill="none"] {
-  stroke: #16223b !important;
-}
-
 .dark-theme svg rect[fill="#ffffff"] {
-  fill: #090e1a !important;
+  fill: #111827 !important;
+  stroke: #374151 !important;
 }
-
 .dark-theme svg text {
   fill: #94a3b8 !important;
 }
 
-.dark-theme svg rect[fill*="url(#aluminum-texture)"] {
-  opacity: 0.7;
-}
-
-.dark-theme svg rect[stroke*="#94a3b8"] {
-  stroke: #334155 !important;
-}
-
-.dark-theme svg g[stroke="#64748b"] {
-  stroke: #334155 !important;
-}
-
-/* Custom modern scrollbars in Dark Mode */
-.dark-theme ::-webkit-scrollbar {
+/* Scrollbars */
+::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-.dark-theme ::-webkit-scrollbar-track {
-  background: #030712;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-.dark-theme ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
   border-radius: 3px;
 }
-.dark-theme ::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.dark-theme ::-webkit-scrollbar-thumb {
   background: #334155;
+}
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }

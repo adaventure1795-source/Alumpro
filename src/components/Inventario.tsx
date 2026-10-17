@@ -129,6 +129,40 @@ export const Inventario: React.FC = () => {
   };
 
   // CSV/JSON Export-Import simulator
+  const handleExportCSV = () => {
+    let csv = "CATEGORIA,ID,NOMBRE/ESPECIFICACION,LINEA,MARCA,PRECIO,STOCK,STOCK_MINIMO\n";
+    
+    // Perfiles
+    state.profiles.forEach(p => {
+      // Escape comillas para CSV
+      const name = p.name.replace(/"/g, '""');
+      csv += `Perfil,${p.id},"${name}",${p.line},${p.brand},${p.pricePerMeter},${p.stockMeters},${p.minStockMeters}\n`;
+    });
+
+    // Accesorios
+    state.accessories.forEach(a => {
+      const name = a.name.replace(/"/g, '""');
+      csv += `Accesorio,${a.id},"${name}",-,-,${a.pricePerUnit},${a.stockUnits},${a.minStockUnits}\n`;
+    });
+
+    // Vidrios
+    state.glasses.forEach(g => {
+      const thickness = g.thickness.replace(/"/g, '""');
+      csv += `Vidrio,${g.id},"${thickness}",-,-,${g.pricePerM2},${g.stockM2},${g.minStockM2}\n`;
+    });
+
+    const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const exportFileDefaultName = `inventario_precios_${new Date().toISOString().split("T")[0]}.csv`;
+
+    const linkEl = document.createElement("a");
+    linkEl.setAttribute("href", url);
+    linkEl.setAttribute("download", exportFileDefaultName);
+    document.body.appendChild(linkEl);
+    linkEl.click();
+    document.body.removeChild(linkEl);
+  };
+
   const handleExportDataJson = () => {
     const backupStr = JSON.stringify(state, null, 2);
     const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(backupStr);
@@ -167,25 +201,33 @@ export const Inventario: React.FC = () => {
       {/* Title block */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-800 font-sans tracking-tight">
+          <h1 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 font-sans tracking-tight">
             Control de Precios e Inventario
           </h1>
-          <p className="text-slate-500 text-xs font-sans">
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-sans">
             Ajusta los costos por metro de aluminio, precios de vidrios y herrajes, o descarga respaldos CSV/JSON.
           </p>
         </div>
 
         {/* Export Data buttons */}
-        <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
           <button
-            onClick={handleExportDataJson}
-            className="flex-1 sm:flex-none px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 flex items-center justify-center gap-1 transition"
+            onClick={handleExportCSV}
+            className="flex-1 sm:flex-none px-3.5 py-1.5 bg-blue-50 dark:bg-blue-900/40 hover:bg-blue-100 text-blue-700 dark:text-blue-300 text-xs font-bold rounded-xl border border-blue-200 dark:border-blue-700/50 flex items-center justify-center gap-1 transition shadow-sm"
           >
             <Download size={13} />
-            Exportar Respaldo
+            Exportar CSV
           </button>
           
-          <label className="flex-1 sm:flex-none px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 cursor-pointer flex items-center justify-center gap-1 transition">
+          <button
+            onClick={handleExportDataJson}
+            className="flex-1 sm:flex-none px-3.5 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1 transition"
+          >
+            <Database size={13} />
+            Respaldo JSON
+          </button>
+          
+          <label className="flex-1 sm:flex-none px-3.5 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer flex items-center justify-center gap-1 transition">
             <Upload size={13} />
             Importar
             <input
@@ -204,8 +246,8 @@ export const Inventario: React.FC = () => {
           onClick={() => setActiveSubTab("profiles")}
           className={`px-4 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition ${
             activeSubTab === "profiles"
-              ? "border-blue-600 text-blue-700"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-blue-600 text-blue-700 dark:text-blue-300"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200"
           }`}
         >
           Perfiles de Aluminio
@@ -214,8 +256,8 @@ export const Inventario: React.FC = () => {
           onClick={() => setActiveSubTab("accessories")}
           className={`px-4 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition ${
             activeSubTab === "accessories"
-              ? "border-blue-600 text-blue-700"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-blue-600 text-blue-700 dark:text-blue-300"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200"
           }`}
         >
           Herrajes y Accesorios
@@ -224,8 +266,8 @@ export const Inventario: React.FC = () => {
           onClick={() => setActiveSubTab("glasses")}
           className={`px-4 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition ${
             activeSubTab === "glasses"
-              ? "border-blue-600 text-blue-700"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-blue-600 text-blue-700 dark:text-blue-300"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200"
           }`}
         >
           Vidrios y Cristales
@@ -234,8 +276,8 @@ export const Inventario: React.FC = () => {
           onClick={() => setActiveSubTab("business")}
           className={`px-4 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition ${
             activeSubTab === "business"
-              ? "border-blue-600 text-blue-700"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-blue-600 text-blue-700 dark:text-blue-300"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200"
           }`}
         >
           Ajustes del Negocio
@@ -245,9 +287,9 @@ export const Inventario: React.FC = () => {
       {/* SUB-TAB 1: PROFILES MANAGEMENT */}
       {activeSubTab === "profiles" && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center bg-slate-50">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Líneas de Perfiles Activas ({state.profiles.length})
               </span>
             </div>
@@ -255,7 +297,7 @@ export const Inventario: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase font-mono border-b border-slate-155">
+                  <tr className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] uppercase font-mono border-b border-slate-155">
                     <th className="p-3">Nombre del Perfil</th>
                     <th className="p-3">Línea</th>
                     <th className="p-3">Marca</th>
@@ -269,19 +311,19 @@ export const Inventario: React.FC = () => {
                   {state.profiles.map((p) => {
                     const isLow = p.stockMeters <= p.minStockMeters;
                     return (
-                      <tr key={p.id} className={`hover:bg-slate-50/50 ${isLow ? "bg-red-50/20" : ""}`}>
-                        <td className="p-3 font-semibold text-slate-800 flex items-center gap-1">
+                      <tr key={p.id} className={`hover:bg-slate-50 ${isLow ? "bg-red-50/20" : ""}`}>
+                        <td className="p-3 font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-1">
                           {isLow && <AlertCircle className="text-red-500 shrink-0" size={14} />}
                           {p.name}
                         </td>
-                        <td className="p-3 text-slate-500">{p.line}</td>
-                        <td className="p-3 text-slate-500">{p.brand}</td>
+                        <td className="p-3 text-slate-500 dark:text-slate-400">{p.line}</td>
+                        <td className="p-3 text-slate-500 dark:text-slate-400">{p.brand}</td>
                         <td className="p-3 text-right font-mono font-bold">
                           <input
                             type="number"
                             value={p.pricePerMeter}
                             onChange={(e) => updateProfile(p.id, { pricePerMeter: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-right text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 dark:border-slate-700/50 hover:border-slate-300 dark:border-slate-600 focus:border-blue-500 text-right text-xs"
                           />
                         </td>
                         <td className="p-3 text-center font-mono">
@@ -289,7 +331,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={p.stockMeters}
                             onChange={(e) => updateProfile(p.id, { stockMeters: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-center text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 dark:border-slate-700/50 hover:border-slate-300 dark:border-slate-600 focus:border-blue-500 text-center text-xs"
                           />
                           m
                         </td>
@@ -298,7 +340,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={p.minStockMeters}
                             onChange={(e) => updateProfile(p.id, { minStockMeters: Number(e.target.value) })}
-                            className="w-12 bg-transparent border-b border-slate-100 text-center text-xs"
+                            className="w-12 bg-transparent border-b border-slate-100 dark:border-slate-700/50 text-center text-xs"
                           />
                         </td>
                         <td className="p-3 text-center">
@@ -318,32 +360,32 @@ export const Inventario: React.FC = () => {
           </div>
 
           {/* Form to add Aluminum profile */}
-          <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Plus size={16} className="text-blue-600" />
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+              <Plus size={16} className="text-blue-600 dark:text-blue-300" />
               Nuevo Perfil Comercial
             </h3>
 
             <form onSubmit={handleAddProfile} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-500 mb-1">Nombre Completo (ej: Cabezal o Traslape)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">Nombre Completo (ej: Cabezal o Traslape)</label>
                 <input
                   type="text"
                   required
                   placeholder="Cabezal Nacional de 3″"
                   value={profName}
                   onChange={(e) => setProfName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-slate-500 mb-1">Línea de Perfil</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Línea de Perfil</label>
                   <select
                     value={profLine}
                     onChange={(e) => setProfLine(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-slate-800 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-slate-800 dark:text-slate-100 focus:outline-none"
                   >
                     <option value="Nacional 2″">Nacional 2″</option>
                     <option value="Nacional 3″">Nacional 3″</option>
@@ -354,11 +396,11 @@ export const Inventario: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-500 mb-1">Marca Extrusora</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Marca Extrusora</label>
                   <select
                     value={profBrand}
                     onChange={(e) => setProfBrand(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-slate-800 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-slate-800 dark:text-slate-100 focus:outline-none"
                   >
                     {BRANDS.map((b) => (
                       <option key={b} value={b}>
@@ -371,37 +413,37 @@ export const Inventario: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-slate-500 mb-1">Costo ($ / m)</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Costo ($ / m)</label>
                   <input
                     type="number"
                     value={profPrice}
                     onChange={(e) => setProfPrice(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center text-slate-800 font-mono font-bold"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center text-slate-800 dark:text-slate-100 font-mono font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 mb-1">Stock (Meters)</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Stock (Meters)</label>
                   <input
                     type="number"
                     value={profStock}
                     onChange={(e) => setProfStock(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center text-slate-800 font-mono"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center text-slate-800 dark:text-slate-100 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 mb-1">Stock Mínimo</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Stock Mínimo</label>
                   <input
                     type="number"
                     value={profMin}
                     onChange={(e) => setProfMin(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center text-slate-800 text-slate-400 font-mono"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center text-slate-800 dark:text-slate-100 text-slate-400 font-mono"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full mt-2 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
+                className="w-full mt-2 py-2 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold rounded-lg transition"
               >
                 + Registrar en Catálogo perfiles
               </button>
@@ -413,9 +455,9 @@ export const Inventario: React.FC = () => {
       {/* SUB-TAB 2: ACCESSORIES MANAGEMENT */}
       {activeSubTab === "accessories" && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center bg-slate-50">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Herrajes de Montaje en Stock ({state.accessories.length})
               </span>
             </div>
@@ -423,7 +465,7 @@ export const Inventario: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase font-mono border-b">
+                  <tr className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] uppercase font-mono border-b">
                     <th className="p-3">Nombre del Inserto</th>
                     <th className="p-3 text-right">Precio unitario ($)</th>
                     <th className="p-3 text-center">En Stock</th>
@@ -435,9 +477,9 @@ export const Inventario: React.FC = () => {
                   {state.accessories.map((a) => {
                     const isLow = a.stockUnits <= a.minStockUnits;
                     return (
-                      <tr key={a.id} className={`hover:bg-slate-50/50 ${isLow ? "bg-amber-50/25" : ""}`}>
+                      <tr key={a.id} className={`hover:bg-slate-50 ${isLow ? "bg-amber-50/25" : ""}`}>
                         <td className="p-3 font-semibold text-slate-850 flex items-center gap-1">
-                          {isLow && <AlertCircle className="text-amber-500 shrink-0" size={14} />}
+                          {isLow && <AlertCircle className="text-blue-500 dark:text-blue-300 shrink-0" size={14} />}
                           {a.name}
                         </td>
                         <td className="p-3 text-right font-mono font-bold">
@@ -446,7 +488,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={a.pricePerUnit}
                             onChange={(e) => updateAccessory(a.id, { pricePerUnit: Number(e.target.value) })}
-                            className="w-12 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-right text-xs"
+                            className="w-12 bg-transparent border-b border-slate-100 dark:border-slate-700/50 hover:border-slate-300 dark:border-slate-600 focus:border-blue-500 text-right text-xs"
                           />
                         </td>
                         <td className="p-3 text-center font-mono">
@@ -454,7 +496,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={a.stockUnits}
                             onChange={(e) => updateAccessory(a.id, { stockUnits: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-center text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 dark:border-slate-700/50 hover:border-slate-300 dark:border-slate-600 focus:border-blue-500 text-center text-xs"
                           />
                           pz
                         </td>
@@ -463,7 +505,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={a.minStockUnits}
                             onChange={(e) => updateAccessory(a.id, { minStockUnits: Number(e.target.value) })}
-                            className="w-12 bg-transparent border-b border-slate-100 text-center text-xs"
+                            className="w-12 bg-transparent border-b border-slate-100 dark:border-slate-700/50 text-center text-xs"
                           />
                         </td>
                         <td className="p-3 text-center">
@@ -482,58 +524,58 @@ export const Inventario: React.FC = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Plus size={16} className="text-blue-600" />
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+              <Plus size={16} className="text-blue-600 dark:text-blue-300" />
               Nuevo Herraje o Sello
             </h3>
 
             <form onSubmit={handleAddAccessory} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-500 mb-1">Nombre Comercial de Accesorio</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">Nombre Comercial de Accesorio</label>
                 <input
                   type="text"
                   required
                   placeholder="Bisagra española o Felpa"
                   value={accName}
                   onChange={(e) => setAccName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-slate-500 mb-1">Costo Unitario</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Costo Unitario</label>
                   <input
                     type="number"
                     value={accPrice}
                     onChange={(e) => setAccPrice(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center text-slate-850 font-mono font-bold"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center text-slate-850 font-mono font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 mb-1">En Stock (pz)</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">En Stock (pz)</label>
                   <input
                     type="number"
                     value={accStock}
                     onChange={(e) => setAccStock(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center font-mono"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 mb-1">Mínimo Alerta</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Mínimo Alerta</label>
                   <input
                     type="number"
                     value={accMin}
                     onChange={(e) => setAccMin(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center text-slate-400 font-mono"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center text-slate-400 font-mono"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full mt-2 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
+                className="w-full mt-2 py-2 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold rounded-lg transition"
               >
                 + Incluir Herraje
               </button>
@@ -545,9 +587,9 @@ export const Inventario: React.FC = () => {
       {/* SUB-TAB 3: GLASSES MANAGEMENT */}
       {activeSubTab === "glasses" && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center bg-slate-50">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Láminas de Cristal en Talleres ({state.glasses.length})
               </span>
             </div>
@@ -555,7 +597,7 @@ export const Inventario: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase font-mono border-b">
+                  <tr className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] uppercase font-mono border-b">
                     <th className="p-3">Grosor / Tipo de Cristal</th>
                     <th className="p-3 text-right">Precio por m² (MXN)</th>
                     <th className="p-3 text-center">Disponible (m²)</th>
@@ -567,9 +609,9 @@ export const Inventario: React.FC = () => {
                   {state.glasses.map((g) => {
                     const isLow = g.stockM2 <= g.minStockM2;
                     return (
-                      <tr key={g.id} className={`hover:bg-slate-50/50 ${isLow ? "bg-amber-50/25" : ""}`}>
-                        <td className="p-3 font-semibold text-slate-800 flex items-center gap-1">
-                          {isLow && <AlertCircle className="text-amber-500 shrink-0" size={14} />}
+                      <tr key={g.id} className={`hover:bg-slate-50 ${isLow ? "bg-amber-50/25" : ""}`}>
+                        <td className="p-3 font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                          {isLow && <AlertCircle className="text-blue-500 dark:text-blue-300 shrink-0" size={14} />}
                           {g.thickness}
                         </td>
                         <td className="p-3 text-right font-mono font-bold">
@@ -578,7 +620,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={g.pricePerM2}
                             onChange={(e) => updateGlass(g.id, { pricePerM2: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-right text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 dark:border-slate-700/50 hover:border-slate-300 dark:border-slate-600 focus:border-blue-500 text-right text-xs"
                           />
                         </td>
                         <td className="p-3 text-center font-mono">
@@ -586,7 +628,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={g.stockM2}
                             onChange={(e) => updateGlass(g.id, { stockM2: Number(e.target.value) })}
-                            className="w-16 bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-blue-500 text-center text-xs"
+                            className="w-16 bg-transparent border-b border-slate-100 dark:border-slate-700/50 hover:border-slate-300 dark:border-slate-600 focus:border-blue-500 text-center text-xs"
                           />
                           m²
                         </td>
@@ -595,7 +637,7 @@ export const Inventario: React.FC = () => {
                             type="number"
                             value={g.minStockM2}
                             onChange={(e) => updateGlass(g.id, { minStockM2: Number(e.target.value) })}
-                            className="w-12 bg-transparent border-b border-slate-100 text-center text-xs"
+                            className="w-12 bg-transparent border-b border-slate-100 dark:border-slate-700/50 text-center text-xs"
                           />
                         </td>
                         <td className="p-3 text-center">
@@ -614,58 +656,58 @@ export const Inventario: React.FC = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Plus size={16} className="text-blue-600" />
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+              <Plus size={16} className="text-blue-600 dark:text-blue-300" />
               Nuevo Tipo de Vidrio
             </h3>
 
             <form onSubmit={handleAddGlass} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-500 mb-1">Detalle de Espesor / Textura</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">Detalle de Espesor / Textura</label>
                 <input
                   type="text"
                   required
                   placeholder="ej: 6mm Templado Sanblasteado o Opaco"
                   value={glassThick}
                   onChange={(e) => setGlassThick(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-slate-500 mb-1">Costo m²</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Costo m²</label>
                   <input
                     type="number"
                     value={glassPrice}
                     onChange={(e) => setGlassPrice(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center text-slate-800 font-mono font-bold"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center text-slate-800 dark:text-slate-100 font-mono font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 mb-1">En Stock (m²)</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">En Stock (m²)</label>
                   <input
                     type="number"
                     value={glassStock}
                     onChange={(e) => setGlassStock(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center font-mono"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 mb-1">Mínimo Alerta</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Mínimo Alerta</label>
                   <input
                     type="number"
                     value={glassMin}
                     onChange={(e) => setGlassMin(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-2 text-center text-slate-400 font-mono"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1.5 py-2 text-center text-slate-400 font-mono"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full mt-2 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
+                className="w-full mt-2 py-2 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold rounded-lg transition"
               >
                 + Incluir Vidrio
               </button>
@@ -676,92 +718,92 @@ export const Inventario: React.FC = () => {
 
       {/* SUB-TAB 4: GENERAL BUSINESS SETTINGS */}
       {activeSubTab === "business" && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
-          <div className="border-b border-slate-100 pb-3">
-            <h3 className="font-bold text-slate-800 text-base">Configuraciones del Taller e Identidad de Impresión</h3>
-            <p className="text-slate-500 text-xs">Registra tus marcas, tasas por hora de operario y datos para notas de remisión fiscales.</p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-6">
+          <div className="border-b border-slate-100 dark:border-slate-700/50 pb-3">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Configuraciones del Taller e Identidad de Impresión</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-xs">Registra tus marcas, tasas por hora de operario y datos para notas de remisión fiscales.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
             {/* Business settings */}
             <div className="space-y-4">
-              <h4 className="font-semibold text-slate-700 uppercase tracking-wider">Identidad Física de Facturación</h4>
+              <h4 className="font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">Identidad Física de Facturación</h4>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 mb-1">Nombre Comercial del Taller</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Nombre Comercial del Taller</label>
                   <input
                     type="text"
                     value={bizName}
                     onChange={(e) => setBizName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-semibold focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 font-semibold focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 mb-1">Teléfono Directo de Atención</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">Teléfono Directo de Atención</label>
                   <input
                     type="text"
                     value={bizPhone}
                     onChange={(e) => setBizPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1">Dirección de Taller / Tienda</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">Dirección de Taller / Tienda</label>
                 <input
                   type="text"
                   value={bizAddress}
                   onChange={(e) => setBizAddress(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1">RFC / Registros Tributarios (Opcional)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">RFC / Registros Tributarios (Opcional)</label>
                 <input
                   type="text"
                   value={bizRFC}
                   onChange={(e) => setBizRFC(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-mono focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 font-mono focus:outline-none"
                 />
               </div>
             </div>
 
             {/* General rates and bars */}
             <div className="space-y-4">
-              <h4 className="font-semibold text-slate-700 uppercase tracking-wider">Costos Indirectos y Taller Mecánico</h4>
+              <h4 className="font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">Costos Indirectos y Taller Mecánico</h4>
               
               <div>
-                <label className="block text-slate-500 mb-1">Costo de Mano de Obra ($ Pesos / Hora de Trabajo)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">Costo de Mano de Obra ($ Pesos / Hora de Trabajo)</label>
                 <input
                   type="number"
                   value={laborRate}
                   onChange={(e) => setLaborRate(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-mono font-bold focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 font-mono font-bold focus:outline-none"
                   title="Costo de fabricación por hora. Se utiliza para calcular el precio total incluyendo armado de ventana."
                 />
                 <p className="text-[10px] text-slate-400 mt-1">Este concepto evalúa el tiempo asignado en minutos por pieza y lo multiplica por la tasa horaria.</p>
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1">Barra de Fábrica predeterminada (cm)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">Barra de Fábrica predeterminada (cm)</label>
                 <input
                   type="number"
                   value={barLen}
                   onChange={(e) => setBarLen(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-mono focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 font-mono focus:outline-none"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">Tamaño estándar de perfiles comerciales para el cálculo inteligente de barras.</p>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex justify-end">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 flex justify-end">
             <button
               onClick={handleSaveBusiness}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow"
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm"
               id="save-business-details"
             >
               <Award size={14} />

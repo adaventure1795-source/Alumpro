@@ -128,10 +128,10 @@ export const Optimizador: React.FC<{
       {/* Page Title & Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-800 font-sans tracking-tight">
+          <h1 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 font-sans tracking-tight">
             Optimización Inteligente de Perfiles
           </h1>
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-500 dark:text-slate-400 text-xs">
             Resuelve el desperdicio agrupando múltiples cortes de aluminio para barras comerciales de mermas mínimas.
           </p>
         </div>
@@ -139,7 +139,7 @@ export const Optimizador: React.FC<{
           {cutsToOptimize.length === 0 && (
             <button
               onClick={loadDemoCuts}
-              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition"
+              className="px-3.5 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 transition"
             >
               Cargar Paquete de Prueba
             </button>
@@ -155,7 +155,7 @@ export const Optimizador: React.FC<{
           <button
             onClick={() => window.print()}
             disabled={optimizedResults.length === 0}
-            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-40 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition shadow"
+            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white disabled:opacity-40 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition shadow-sm"
           >
             <Printer size={13} />
             Imprimir Guía de Corte
@@ -168,19 +168,19 @@ export const Optimizador: React.FC<{
         
         {/* INPUT PANEL (Col span 2) */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-widest flex items-center gap-2">
-              <Info size={14} className="text-blue-500" />
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-4">
+            <h3 className="text-xs font-extrabold text-slate-700 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+              <Info size={14} className="text-blue-500 dark:text-blue-300" />
               1. Configuración de Sierras y Barras
             </h3>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Barra de Fábrica (cm)</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Barra de Fábrica (cm)</label>
                 <select
                   value={barLength}
                   onChange={(e) => setBarLength(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="610">610 cm (Estándar 6.1m)</option>
                   <option value="420">420 cm (Estándar 4.2m)</option>
@@ -190,7 +190,7 @@ export const Optimizador: React.FC<{
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Grosor de Disco-Sierra (cm)</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Grosor de Disco-Sierra (cm)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -198,7 +198,7 @@ export const Optimizador: React.FC<{
                   max="1.5"
                   value={kerf}
                   onChange={(e) => setKerf(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs font-mono font-bold"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 text-xs font-mono font-bold"
                   title="Saw cut loss per cut (kerf)"
                 />
               </div>
@@ -206,9 +206,9 @@ export const Optimizador: React.FC<{
           </div>
 
           {/* ADD CUT MANUAL INPUTS */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
-            <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-widest flex items-center gap-2">
-              <Plus size={14} className="text-blue-500" />
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-3">
+            <h3 className="text-xs font-extrabold text-slate-700 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+              <Plus size={14} className="text-blue-500 dark:text-blue-300" />
               Agregar Cortes Adicionales
             </h3>
 
@@ -219,7 +219,7 @@ export const Optimizador: React.FC<{
                   <select
                     value={newCutProfile}
                     onChange={(e) => setNewCutProfile(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-slate-800 text-xs focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-100 text-xs focus:outline-none"
                   >
                     {Array.from(new Set(state.profiles.map((p) => p.name))).map((pName) => (
                       <option key={pName} value={pName}>
@@ -238,7 +238,7 @@ export const Optimizador: React.FC<{
                     placeholder="Ej: Marco Cocina"
                     value={newCutName}
                     onChange={(e) => setNewCutName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-slate-800 dark:text-slate-100 text-xs focus:outline-none"
                   />
                 </div>
               </div>
@@ -250,7 +250,7 @@ export const Optimizador: React.FC<{
                     type="number"
                     value={newCutLength}
                     onChange={(e) => setNewCutLength(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs font-mono font-bold text-center focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-slate-800 dark:text-slate-100 text-xs font-mono font-bold text-center focus:outline-none"
                   />
                 </div>
                 <div>
@@ -260,7 +260,7 @@ export const Optimizador: React.FC<{
                     min="1"
                     value={newCutQty}
                     onChange={(e) => setNewCutQty(Math.max(1, Number(e.target.value)))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs text-center font-bold focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-slate-800 dark:text-slate-100 text-xs text-center font-bold focus:outline-none"
                   />
                 </div>
                 <div>
@@ -268,7 +268,7 @@ export const Optimizador: React.FC<{
                   <select
                     value={newCutAngle}
                     onChange={(e) => setNewCutAngle(e.target.value as any)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-slate-800 dark:text-slate-100 text-xs focus:outline-none"
                   >
                     <option value="90°">90° Recto</option>
                     <option value="45°">45° Sesgado</option>
@@ -278,7 +278,7 @@ export const Optimizador: React.FC<{
 
               <button
                 onClick={handleAddCut}
-                className="w-full mt-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition"
+                className="w-full mt-2.5 py-2 bg-slate-800 dark:bg-slate-950 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition"
               >
                 + Incluir a la Planificación
               </button>
@@ -286,9 +286,9 @@ export const Optimizador: React.FC<{
           </div>
 
           {/* ACTIVE QUEUED CUTS LIST */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-96">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm flex flex-col justify-between h-96">
             <div>
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-widest pb-2 border-b border-slate-100 mb-2 flex justify-between items-center">
+              <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest pb-2 border-b border-slate-100 dark:border-slate-700/50 mb-2 flex justify-between items-center">
                 <span>Lista Escaneada de Cortes ({cutsToOptimize.length})</span>
                 {cutsToOptimize.length > 0 && (
                   <span className="text-[10px] text-slate-400 font-mono">Más grande a más chico</span>
@@ -299,18 +299,18 @@ export const Optimizador: React.FC<{
                 {cutsToOptimize.map((cut) => (
                   <div
                     key={cut.id}
-                    className="px-3 py-2 bg-slate-50 hover:bg-slate-100/50 border border-slate-200 rounded-xl relative group flex justify-between items-center transition"
+                    className="px-3 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl relative group flex justify-between items-center transition"
                   >
                     <div className="max-w-[150px] truncate">
-                      <p className="text-xs font-bold text-slate-800 font-mono">{cut.lengthCm} cm</p>
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-100 font-mono">{cut.lengthCm} cm</p>
                       <p className="text-[9px] text-slate-400 truncate tracking-tight">{cut.profileName}</p>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold font-mono">
+                      <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-1.5 py-0.5 rounded font-bold font-mono">
                         {cut.quantity} pz
                       </span>
-                      <span className="text-[10px] font-mono text-slate-500 font-bold">{cut.angle}</span>
+                      <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-bold">{cut.angle}</span>
                       <button
                         onClick={() => handleDeleteCut(cut.id)}
                         className="text-slate-300 hover:text-red-500 transition shrink-0"
@@ -335,7 +335,7 @@ export const Optimizador: React.FC<{
             {cutsToOptimize.length > 0 && (
               <button
                 onClick={handleOptimize}
-                className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition"
+                className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition"
               >
                 <RefreshCw size={13} />
                 Optimizar Todo ({cutsToOptimize.length} Cuts)
@@ -346,14 +346,14 @@ export const Optimizador: React.FC<{
 
         {/* METICULOUS DEEP OPTIMIZATION RESULTS PANEL (Col span 3) */}
         <div className="lg:col-span-3 space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[500px]">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest pb-3 border-b border-slate-100 mb-4 flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm min-h-[500px]">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-widest pb-3 border-b border-slate-100 dark:border-slate-700/50 mb-4 flex justify-between items-center">
               <span className="flex items-center gap-2">
                 <Scissors size={15} className="text-violet-600" />
                 2. Planos de Corte y Despiece Óptimo
               </span>
               {optimizedResults.length > 0 && (
-                <span className="text-xs text-emerald-600 font-bold bg-emerald-50 border border-emerald-100 px-2.5 py-0.5 rounded-full">
+                <span className="text-xs text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800/40 px-2.5 py-0.5 rounded-full">
                   Soluble con Máximo Rendimiento
                 </span>
               )}
@@ -370,10 +370,10 @@ export const Optimizador: React.FC<{
                 const totalCostNeeded = profRes.totalBarsNeeded * costOfOneBar;
 
                 return (
-                  <div key={profIndex} className="space-y-4 border-b border-slate-100 pb-6 last:border-none">
+                  <div key={profIndex} className="space-y-4 border-b border-slate-100 dark:border-slate-700/50 pb-6 last:border-none">
                     <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-2">
                       <div>
-                        <h4 className="font-bold text-slate-800 text-sm font-sans">
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm font-sans">
                           {profRes.profileName}
                         </h4>
                         <p className="text-[10px] text-slate-400 font-mono">
@@ -385,7 +385,7 @@ export const Optimizador: React.FC<{
                         <span className="text-xs bg-violet-50 text-violet-700 border border-violet-100 px-2.5 py-1 rounded font-bold font-mono">
                           Comprar: {profRes.totalBarsNeeded} barras de {barLength / 100}m
                         </span>
-                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                           Desperdicio Promedio: <strong className="text-rose-500">{profRes.averageWastePercent}%</strong>
                         </p>
                       </div>
@@ -397,14 +397,14 @@ export const Optimizador: React.FC<{
                         let accumulatedPositionCm = 0;
 
                         return (
-                          <div key={bar.barIndex} className="bg-slate-50 border border-slate-200 p-3 rounded-xl space-y-2">
-                            <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                          <div key={bar.barIndex} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl space-y-2">
+                            <div className="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                               <span><strong>Barra #{bar.barIndex}</strong></span>
                               <span>Pérdida/Sobra: <strong className="text-rose-600 font-bold">{bar.wasteCm.toFixed(1)} cm ({bar.wastePercent}%)</strong></span>
                             </div>
 
                             {/* BAR SEGMENTS VISUAL COMPONENT */}
-                            <div className="h-6 w-full bg-slate-200 rounded-md overflow-hidden flex border border-slate-300 relative">
+                            <div className="h-6 w-full bg-slate-200 dark:bg-slate-700 rounded-md overflow-hidden flex border border-slate-300 dark:border-slate-600 relative">
                               {bar.cuts.map((cut, cutIdx) => {
                                 const widthPercent = (cut.lengthCm / barLength) * 100;
                                 const kerfWidthPercent = (kerf / barLength) * 100;
@@ -415,13 +415,13 @@ export const Optimizador: React.FC<{
                                     {/* Real Cut Block */}
                                     <div
                                       style={{ width: `${widthPercent}%` }}
-                                      className="bg-blue-600 hover:bg-blue-500 h-full border-r border-slate-900/30 flex items-center justify-center text-[9px] text-white font-mono font-bold truncate px-1 transition relative group cursor-help"
+                                      className="bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 h-full border-r border-slate-900/30 flex items-center justify-center text-[9px] text-white font-mono font-bold truncate px-1 transition relative group cursor-help"
                                       title={`Pieza: ${cut.name} | Medida: ${cut.lengthCm}cm | Ángulo: ${cut.angle}`}
                                     >
                                       <span>{cut.lengthCm}cm</span>
                                       
                                       {/* Minimal Tooltip hover info */}
-                                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-slate-900 text-white text-[9px] p-2 rounded hidden group-hover:block z-20 whitespace-normal border border-slate-705 shadow-xl w-32 font-sans font-normal leading-tight">
+                                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-slate-900 dark:bg-slate-950 text-white text-[9px] p-2 rounded hidden group-hover:block z-20 whitespace-normal border border-slate-705 shadow-xl w-32 font-sans font-normal leading-tight">
                                         <p className="font-semibold">{cut.name}</p>
                                         <p className="text-blue-300 mt-0.5 font-mono">{cut.lengthCm} cm</p>
                                         <p className="text-slate-400">Mitra: {cut.angle}</p>
@@ -432,7 +432,7 @@ export const Optimizador: React.FC<{
                                     {cutIdx < bar.cuts.length - 1 && (
                                       <div
                                         style={{ width: `${kerfWidthPercent}%` }}
-                                        className="bg-slate-800 h-full shrink-0"
+                                        className="bg-slate-800 dark:bg-slate-950 h-full shrink-0"
                                         title={`Corte disco sierra: ${kerf}cm`}
                                       />
                                     )}
@@ -453,11 +453,11 @@ export const Optimizador: React.FC<{
                             </div>
 
                             {/* TEXT LIST OF CUTS FOR THE MANUAL CUTTER WORKER */}
-                            <div className="text-[10px] text-slate-500 font-mono flex flex-wrap gap-2 pt-1 border-t border-slate-100">
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono flex flex-wrap gap-2 pt-1 border-t border-slate-100 dark:border-slate-700/50">
                               <span className="text-slate-400">Guía de Cortes:</span>
                               {bar.cuts.map((cut, cutIdx) => (
-                                <span key={cutIdx} className="bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-700 font-bold">
-                                  {cutIdx + 1}° Cortar <span className="text-blue-600 font-serif">{cut.lengthCm} cm</span> ({cut.angle}) &rarr; <span className="text-[9px] text-slate-400 italic font-sans font-normal">{cut.name}</span>
+                                <span key={cutIdx} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded text-slate-700 dark:text-slate-200 font-bold">
+                                  {cutIdx + 1}° Cortar <span className="text-blue-600 dark:text-blue-300 font-serif">{cut.lengthCm} cm</span> ({cut.angle}) &rarr; <span className="text-[9px] text-slate-400 italic font-sans font-normal">{cut.name}</span>
                                 </span>
                               ))}
                             </div>
@@ -467,10 +467,10 @@ export const Optimizador: React.FC<{
                     </div>
 
                     {/* Financial summary for this profile group */}
-                    <div className="grid grid-cols-3 gap-2 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 text-slate-600 text-xs font-mono">
+                    <div className="grid grid-cols-3 gap-2 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 text-slate-600 dark:text-slate-300 text-xs font-mono">
                       <div>
                         <span className="block text-[8px] text-slate-400">Metraje de Cortes:</span>
-                        <strong className="text-slate-800">{(totalMetersWanted).toFixed(1)}m</strong>
+                        <strong className="text-slate-800 dark:text-slate-100">{(totalMetersWanted).toFixed(1)}m</strong>
                       </div>
                       <div>
                         <span className="block text-[8px] text-slate-400">Mermas Netas:</span>
@@ -478,7 +478,7 @@ export const Optimizador: React.FC<{
                       </div>
                       <div>
                         <span className="block text-[8px] text-slate-400 font-sans">Costo aproximado material:</span>
-                        <strong className="text-slate-800">${Math.round(totalCostNeeded)} MXN</strong>
+                        <strong className="text-slate-800 dark:text-slate-100">${Math.round(totalCostNeeded)} MXN</strong>
                       </div>
                     </div>
                   </div>
@@ -486,9 +486,9 @@ export const Optimizador: React.FC<{
               })}
 
               {optimizedResults.length === 0 && (
-                <div className="text-center py-24 text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                <div className="text-center py-24 text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 space-y-3">
                   <Scissors size={44} className="mx-auto text-slate-300" />
-                  <p className="text-sm font-bold text-slate-500">Planificador de Corte Listo</p>
+                  <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Planificador de Corte Listo</p>
                   <p className="text-xs text-slate-400 max-w-[320px] mx-auto leading-relaxed">
                     Añade perfiles de aluminio y haz clic en "Optimizar Todo" para desplegar la secuencia física de cortes industriales con mínimos remanentes.
                   </p>

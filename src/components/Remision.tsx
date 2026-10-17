@@ -355,23 +355,23 @@ export const Remision: React.FC = () => {
   const themeClasses = {
     blue: {
       primary: "bg-blue-900",
-      text: "text-blue-900 border-blue-900",
-      accent: "bg-blue-50 border-blue-200"
+      text: "text-blue-900 dark:text-blue-100 border-blue-900",
+      accent: "bg-blue-50 dark:bg-blue-900/40 border-blue-200 dark:border-blue-700/50"
     },
     dark: {
-      primary: "bg-slate-900",
-      text: "text-slate-900 border-slate-900",
-      accent: "bg-slate-50 border-slate-200"
+      primary: "bg-slate-900 dark:bg-slate-950",
+      text: "text-slate-900 dark:text-slate-50 border-slate-900",
+      accent: "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
     },
     emerald: {
       primary: "bg-emerald-900",
-      text: "text-emerald-900 border-emerald-900",
-      accent: "bg-emerald-50 border-emerald-200"
+      text: "text-emerald-900 dark:text-emerald-100 border-emerald-900",
+      accent: "bg-emerald-50 dark:bg-emerald-900/40 border-emerald-200"
     },
     steel: {
       primary: "bg-slate-700",
-      text: "text-slate-700 border-slate-700",
-      accent: "bg-slate-100 border-slate-300"
+      text: "text-slate-700 dark:text-slate-200 border-slate-700",
+      accent: "bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600"
     }
   };
 
@@ -381,10 +381,10 @@ export const Remision: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-800 font-sans tracking-tight">
+          <h1 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 font-sans tracking-tight">
             Gestión de Notas de Remisión y Recibos
           </h1>
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-500 dark:text-slate-400 text-xs">
             Imprime comprobantes detallados con anticipos amortizados y saldo liquidable por cobrar al cliente.
           </p>
         </div>
@@ -393,7 +393,7 @@ export const Remision: React.FC = () => {
           {!showInvoiceForm ? (
             <button
               onClick={() => setShowInvoiceForm(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition shadow"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition shadow-sm"
             >
               <Plus size={14} />
               Crear Nueva Remisión
@@ -401,7 +401,7 @@ export const Remision: React.FC = () => {
           ) : (
             <button
               onClick={() => setShowInvoiceForm(false)}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 border transition"
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5 border transition"
             >
               <X size={14} />
               Cancelar Formulario
@@ -412,9 +412,9 @@ export const Remision: React.FC = () => {
 
       {showInvoiceForm ? (
         /* ISSUING NEW NOTE DE REMISIÓN FORM stage */
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-md space-y-6">
-          <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
-            <h3 className="font-bold text-slate-800 text-sm">Formulario de Facturación Rápida</h3>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-md space-y-6">
+          <div className="border-b border-slate-100 dark:border-slate-700/50 pb-3 flex justify-between items-center">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Formulario de Facturación Rápida</h3>
             <span className="text-xs text-slate-400">Las notas creadas se guardan en el historial del taller</span>
           </div>
 
@@ -422,53 +422,53 @@ export const Remision: React.FC = () => {
             {/* Customer Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">Nombre Completo del Cliente</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">Nombre Completo del Cliente</label>
                 <input
                   type="text"
                   required
                   placeholder="ej: Ignacio Martínez"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">Celular / Teléfono Cliente</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">Celular / Teléfono Cliente</label>
                 <input
                   type="text"
                   placeholder="ej: 5539124021"
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-800 dark:text-slate-100 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">Fecha Estimada de Entrega</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">Fecha Estimada de Entrega</label>
                 <input
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-500 mb-1 font-semibold">Dirección de Instalación</label>
+              <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">Dirección de Instalación</label>
               <input
                 type="text"
                 placeholder="ej: Calle Del Río 24, Int 4, San Angel, CDMX"
                 value={clientAddress}
                 onChange={(e) => setClientAddress(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 focus:outline-none"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-800 dark:text-slate-100 focus:outline-none"
               />
             </div>
 
             {/* Sub-items list generator */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/60 space-y-3">
-              <h4 className="font-bold text-slate-700 uppercase text-[10px] tracking-wide">
+            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200/60 space-y-3">
+              <h4 className="font-bold text-slate-700 dark:text-slate-200 uppercase text-[10px] tracking-wide">
                 Agregar Conceptos de Ensamblaje / Materiales a la Nota
               </h4>
               
@@ -515,7 +515,7 @@ export const Remision: React.FC = () => {
                     setItemPrice(1200);
                     setItemQty(1);
                   }}
-                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-bold py-1 px-2.5 rounded-lg transition"
+                  className="bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-bold py-1 px-2.5 rounded-lg transition"
                 >
                   🪜 Servicio Reparación Cancel ($1,200)
                 </button>
@@ -529,7 +529,7 @@ export const Remision: React.FC = () => {
                     placeholder="ej: Ventana Corrediza 2 hojas (1.2 x 1.5m) de 3 pulgadas"
                     value={itemText}
                     onChange={(e) => setItemText(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded p-1.5 text-xs text-slate-800"
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-xs text-slate-800 dark:text-slate-100"
                   />
                 </div>
                 <div>
@@ -539,7 +539,7 @@ export const Remision: React.FC = () => {
                     min="1"
                     value={itemQty}
                     onChange={(e) => setItemQty(Math.max(1, Number(e.target.value)))}
-                    className="w-full bg-white border border-slate-200 rounded p-1.5 text-center text-xs text-slate-800 font-bold"
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-center text-xs text-slate-800 dark:text-slate-100 font-bold"
                   />
                 </div>
                 <div>
@@ -548,14 +548,14 @@ export const Remision: React.FC = () => {
                     type="number"
                     value={itemPrice}
                     onChange={(e) => setItemPrice(Number(e.target.value))}
-                    className="w-full bg-white border border-slate-200 rounded p-1.5 text-right font-mono text-xs text-slate-800 font-bold"
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-right font-mono text-xs text-slate-800 dark:text-slate-100 font-bold"
                   />
                 </div>
                 <div className="flex items-end">
                   <button
                     type="button"
                     onClick={handleAddSubItem}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-2 rounded text-center transition cursor-pointer"
+                    className="w-full bg-slate-800 dark:bg-slate-950 hover:bg-slate-700 text-white text-xs font-bold py-2 rounded text-center transition cursor-pointer"
                   >
                     + Añadir
                   </button>
@@ -563,10 +563,10 @@ export const Remision: React.FC = () => {
               </div>
 
               {/* Items Table inside Form */}
-              <div className="border border-slate-200 bg-white rounded-lg overflow-hidden mt-3 text-xs">
+              <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg overflow-hidden mt-3 text-xs">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 text-slate-500 font-mono text-[9px] uppercase border-b border-slate-200">
+                    <tr className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-mono text-[9px] uppercase border-b border-slate-200 dark:border-slate-700">
                       <th className="p-2">Concepto Detallado</th>
                       <th className="p-2 text-center">Cant</th>
                       <th className="p-2 text-right">P. Unitario</th>
@@ -576,11 +576,11 @@ export const Remision: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-mono">
                     {invoiceItemsList.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/40">
-                        <td className="p-2 font-sans font-medium text-slate-800">{item.description}</td>
-                        <td className="p-2 text-center text-slate-700 font-bold">{item.quantity}</td>
-                        <td className="p-2 text-right text-slate-600">${item.unitPrice.toLocaleString()}</td>
-                        <td className="p-2 text-right text-slate-800 font-bold">${item.total.toLocaleString()}</td>
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="p-2 font-sans font-medium text-slate-800 dark:text-slate-100">{item.description}</td>
+                        <td className="p-2 text-center text-slate-700 dark:text-slate-200 font-bold">{item.quantity}</td>
+                        <td className="p-2 text-right text-slate-600 dark:text-slate-300">${item.unitPrice.toLocaleString()}</td>
+                        <td className="p-2 text-right text-slate-800 dark:text-slate-100 font-bold">${item.total.toLocaleString()}</td>
                         <td className="p-2 text-center font-sans">
                           <button
                             type="button"
@@ -605,13 +605,13 @@ export const Remision: React.FC = () => {
             </div>
 
             {/* Totals & Advance */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-100 p-4 rounded-xl border border-slate-200 text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-100 dark:bg-slate-700 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">IVA (%)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">IVA (%)</label>
                 <select
                   value={ivaPercent}
                   onChange={(e) => setIvaPercent(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-200 rounded p-1.5 font-bold"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-1.5 font-bold"
                 >
                   <option value="16">16% (IVA Regular)</option>
                   <option value="8">8% (Fronterizo)</option>
@@ -620,31 +620,31 @@ export const Remision: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">Anticipo Recibido ($ Pesos)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">Anticipo Recibido ($ Pesos)</label>
                 <input
                   type="number"
                   placeholder="ej: 3000"
                   value={advancePayment}
                   onChange={(e) => setAdvancePayment(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-250 rounded p-1.5 font-mono font-black text-slate-800"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-250 rounded p-1.5 font-mono font-black text-slate-800 dark:text-slate-100"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">Términos Especiales / Notas de entrega</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">Términos Especiales / Notas de entrega</label>
                 <input
                   type="text"
                   placeholder="ej: Se requiere anticipo del 50%. Pago en efectivo."
                   value={remNote}
                   onChange={(e) => setRemNote(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded p-1.5"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-1.5"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full mt-2 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition shadow"
+              className="w-full mt-2 py-3 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold text-sm rounded-xl transition shadow-sm"
             >
               Completar y Guardar Nota de Remisión
             </button>
@@ -655,11 +655,11 @@ export const Remision: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           
           {/* INVOICES DIRECTORY TREE (Col span 2) */}
-          <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-[520px]">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm flex flex-col justify-between h-[520px]">
             <div>
-              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-widest pb-2 border-b border-slate-100 mb-4 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-xs uppercase tracking-widest pb-2 border-b border-slate-100 dark:border-slate-700/50 mb-4 flex justify-between items-center">
                 <span>Historial de Remisiones</span>
-                <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold font-mono">
+                <span className="text-[10px] bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold font-mono">
                   {state.invoices.length} Total
                 </span>
               </h3>
@@ -671,8 +671,8 @@ export const Remision: React.FC = () => {
                     onClick={() => setSelectedInvoiceId(inv.id)}
                     className={`p-3.5 rounded-xl border cursor-pointer transition relative ${
                       selectedInvoiceId === inv.id
-                        ? "bg-blue-50 border-blue-200 text-blue-900"
-                        : "bg-slate-50/60 border-slate-150 text-slate-700 hover:bg-slate-100/50"
+                        ? "bg-blue-50 dark:bg-blue-900/40 border-blue-200 dark:border-blue-700/50 text-blue-900 dark:text-blue-100"
+                        : "bg-slate-50 border-slate-150 text-slate-700 dark:text-slate-200 hover:bg-slate-100"
                     }`}
                   >
                     {/* Delete handler */}
@@ -701,13 +701,13 @@ export const Remision: React.FC = () => {
                         </span>
                       </div>
                       
-                      <h4 className="text-xs font-bold text-slate-800 mt-1">{inv.clientName}</h4>
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-1">{inv.clientName}</h4>
                       <p className="text-[10px] text-slate-400 font-mono mt-0.5">{inv.date} &bull; {inv.items.length} items</p>
                     </div>
 
                     <div className="mt-2 text-right border-t border-dashed border-slate-200/80 pt-1.5 flex justify-between items-center text-xs">
                       <span className="text-[10px] text-slate-400">Saldo Restante:</span>
-                      <strong className="font-mono text-slate-800 font-bold">
+                      <strong className="font-mono text-slate-800 dark:text-slate-100 font-bold">
                         ${inv.pendingBalance.toLocaleString()} MXN
                       </strong>
                     </div>
@@ -734,17 +734,17 @@ export const Remision: React.FC = () => {
             {activeInvoice ? (
               <div className="space-y-4">
                 {/* Visual control settings bar */}
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap justify-between items-center gap-2 text-xs">
+                <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 flex flex-wrap justify-between items-center gap-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-500">Diseño Nota:</span>
-                    <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-white">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">Diseño Nota:</span>
+                    <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900">
                       <button
                         type="button"
                         onClick={() => setIsThermalTicket(false)}
                         className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1 ${
                           !isThermalTicket
-                            ? "bg-blue-600 text-white shadow"
-                            : "text-slate-600 hover:bg-slate-150"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-150"
                         }`}
                       >
                         📄 Carta / PDF
@@ -754,8 +754,8 @@ export const Remision: React.FC = () => {
                         onClick={() => setIsThermalTicket(true)}
                         className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1 ${
                           isThermalTicket
-                            ? "bg-slate-800 text-white shadow dark:bg-slate-700"
-                            : "text-slate-600 hover:bg-slate-150"
+                            ? "bg-slate-800 dark:bg-slate-950 text-white shadow-sm dark:bg-slate-700"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-150"
                         }`}
                       >
                         📟 Ticket Térmico
@@ -769,7 +769,7 @@ export const Remision: React.FC = () => {
                         <select
                           value={invoiceTheme}
                           onChange={(e) => setInvoiceTheme(e.target.value as any)}
-                          className="bg-white border text-xs px-1.5 py-0.5 rounded font-semibold"
+                          className="bg-white dark:bg-slate-900 border text-xs px-1.5 py-0.5 rounded font-semibold"
                         >
                           <option value="blue">Azul</option>
                           <option value="dark">Negro</option>
@@ -785,7 +785,7 @@ export const Remision: React.FC = () => {
                     <select
                       value={activeInvoice.status}
                       onChange={(e) => handleToggleStatus(activeInvoice, e.target.value as any)}
-                      className="bg-white border text-xs px-2 py-0.5 rounded font-bold uppercase font-mono"
+                      className="bg-white dark:bg-slate-900 border text-xs px-2 py-0.5 rounded font-bold uppercase font-mono"
                     >
                       <option value="pendiente">Pendiente</option>
                       <option value="fabricando">Fabricando</option>
@@ -795,7 +795,7 @@ export const Remision: React.FC = () => {
 
                     <button
                       onClick={() => handleWhatsAppShare(activeInvoice)}
-                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded flex items-center gap-1 transition"
+                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-50 dark:bg-emerald-900/400 text-white text-xs font-semibold rounded flex items-center gap-1 transition"
                       title="Enviar resumen por WhatsApp"
                     >
                       <Share2 size={12} />
@@ -804,8 +804,8 @@ export const Remision: React.FC = () => {
                     
                     <button
                       onClick={() => isThermalTicket ? handlePrintThermalTicket(activeInvoice) : window.print()}
-                      className={`px-2.5 py-1 text-white text-xs font-semibold rounded flex items-center gap-1 transition shadow font-mono ${
-                        isThermalTicket ? "bg-amber-600 hover:bg-amber-500 shadow-amber-900/10" : "bg-slate-800 hover:bg-slate-700"
+                      className={`px-2.5 py-1 text-white text-xs font-semibold rounded flex items-center gap-1 transition shadow-sm font-mono ${
+                        isThermalTicket ? "bg-amber-600 hover:bg-amber-500 shadow-amber-900/10" : "bg-slate-800 dark:bg-slate-950 hover:bg-slate-700"
                       }`}
                     >
                       <Printer size={12} />
@@ -901,7 +901,7 @@ export const Remision: React.FC = () => {
                   </div>
                 ) : (
                   <div
-                    className="bg-white p-8 rounded-2xl border border-slate-205 shadow-lg print:border-none print:shadow-none font-sans relative overflow-hidden"
+                    className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-205 shadow-lg print:border-none print:shadow-none font-sans relative overflow-hidden"
                     id="printable-remision-sheet"
                   >
                     {/* Watermark theme accent line */}
@@ -910,10 +910,10 @@ export const Remision: React.FC = () => {
                     {/* Header Title block */}
                     <div className="flex justify-between items-start gap-4 pb-4 border-b border-slate-150">
                       <div className="space-y-1">
-                        <h4 className="text-xl font-black text-slate-800 tracking-tight">
+                        <h4 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
                           {activeInvoice.businessName}
                         </h4>
-                        <p className="text-[11px] text-slate-500 leading-tight max-w-sm">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight max-w-sm">
                           {activeInvoice.businessAddress}
                           <br />
                           Atención: <strong>{activeInvoice.businessPhone}</strong>
@@ -927,7 +927,7 @@ export const Remision: React.FC = () => {
                         <span className={`px-3 py-1 font-mono text-[10px] uppercase font-black text-white rounded shrink-0 ${selectedTheme.primary}`}>
                           Nota de Remisión
                         </span>
-                        <h3 className="text-xl font-bold font-mono text-slate-700 mt-1.5">
+                        <h3 className="text-xl font-bold font-mono text-slate-700 dark:text-slate-200 mt-1.5">
                           {activeInvoice.invoiceNumber}
                         </h3>
                         <p className="text-[10px] text-slate-400 font-mono mt-0.5">
@@ -938,21 +938,21 @@ export const Remision: React.FC = () => {
 
                     {/* Customer and Due date info */}
                     <div className="grid grid-cols-2 gap-4 py-4 text-xs">
-                      <div className="space-y-1 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                      <div className="space-y-1 bg-slate-50 dark:bg-slate-800 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700/50">
                         <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono">DENTINATARIO (CLIENTE):</span>
                         <p className="font-bold text-slate-850 text-sm leading-tight">{activeInvoice.clientName}</p>
                         {activeInvoice.clientPhone && (
-                          <p className="text-slate-500 font-mono">Cel: {activeInvoice.clientPhone}</p>
+                          <p className="text-slate-500 dark:text-slate-400 font-mono">Cel: {activeInvoice.clientPhone}</p>
                         )}
                         {activeInvoice.clientAddress && (
                           <p className="text-slate-400 leading-tight">{activeInvoice.clientAddress}</p>
                         )}
                       </div>
 
-                      <div className="space-y-1.5 bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-right">
+                      <div className="space-y-1.5 bg-slate-50 dark:bg-slate-800 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700/50 text-right">
                         <div>
                           <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">VENCIMIENTO DE ENTREGA:</span>
-                          <strong className="text-slate-800 font-mono text-sm block mt-0.5">
+                          <strong className="text-slate-800 dark:text-slate-100 font-mono text-sm block mt-0.5">
                             {new Date(activeInvoice.dueDate).toLocaleDateString("es-MX")}
                           </strong>
                         </div>
@@ -977,11 +977,11 @@ export const Remision: React.FC = () => {
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {activeInvoice.items.map((item, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/40">
-                            <td className="p-2.5 font-medium text-slate-800">{item.description}</td>
-                            <td className="p-2.5 text-center text-slate-700 font-mono font-bold">{item.quantity}</td>
-                            <td className="p-2.5 text-right text-slate-600 font-mono">${item.unitPrice.toLocaleString()}</td>
-                            <td className="p-2.5 text-right text-slate-800 font-bold font-mono">${item.total.toLocaleString()}</td>
+                          <tr key={idx} className="hover:bg-slate-50">
+                            <td className="p-2.5 font-medium text-slate-800 dark:text-slate-100">{item.description}</td>
+                            <td className="p-2.5 text-center text-slate-700 dark:text-slate-200 font-mono font-bold">{item.quantity}</td>
+                            <td className="p-2.5 text-right text-slate-600 dark:text-slate-300 font-mono">${item.unitPrice.toLocaleString()}</td>
+                            <td className="p-2.5 text-right text-slate-800 dark:text-slate-100 font-bold font-mono">${item.total.toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -991,22 +991,22 @@ export const Remision: React.FC = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pt-4 border-t border-slate-150 text-xs">
                       
                       {/* Legal Notes / Conditions */}
-                      <div className="max-w-sm text-[10px] text-slate-400 leading-normal bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <strong className="text-slate-500 block mb-0.5 uppercase tracking-wide">Acuerdo de Servicio:</strong>
+                      <div className="max-w-sm text-[10px] text-slate-400 leading-normal bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                        <strong className="text-slate-500 dark:text-slate-400 block mb-0.5 uppercase tracking-wide">Acuerdo de Servicio:</strong>
                         {activeInvoice.notes}
                       </div>
 
                       {/* Numeric values box */}
                       <div className="w-full sm:w-60 text-right space-y-1.5 font-mono text-xs">
-                        <div className="flex justify-between text-slate-500">
+                        <div className="flex justify-between text-slate-500 dark:text-slate-400">
                           <span>Subtotal:</span>
                           <span>${activeInvoice.subtotal.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between text-slate-500 border-b border-dashed border-slate-200 pb-1">
+                        <div className="flex justify-between text-slate-500 dark:text-slate-400 border-b border-dashed border-slate-200 dark:border-slate-700 pb-1">
                           <span>IVA gravado ({activeInvoice.ivaPercent}%):</span>
                           <span>${Math.round(activeInvoice.subtotal * (activeInvoice.ivaPercent / 100)).toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between text-slate-800 font-bold text-sm">
+                        <div className="flex justify-between text-slate-800 dark:text-slate-100 font-bold text-sm">
                           <span>Importe Total:</span>
                           <span>${activeInvoice.total.toLocaleString()} MXN</span>
                         </div>
@@ -1023,11 +1023,11 @@ export const Remision: React.FC = () => {
 
                     {/* Dual signature lines for formal validity */}
                     <div className="grid grid-cols-2 gap-12 pt-16 text-center text-[10px] text-slate-400 font-mono print:pt-14">
-                      <div className="border-t border-slate-300 pt-1.5 max-w-[180px] mx-auto">
+                      <div className="border-t border-slate-300 dark:border-slate-600 pt-1.5 max-w-[180px] mx-auto">
                         ENTREGÓ CONFORME
                         <span className="block text-[8px] text-slate-300 mt-1">Sello del Taller</span>
                       </div>
-                      <div className="border-t border-slate-300 pt-1.5 max-w-[180px] mx-auto">
+                      <div className="border-t border-slate-300 dark:border-slate-600 pt-1.5 max-w-[180px] mx-auto">
                         RECIBIÓ DE CONFORMIDAD
                         <span className="block text-[8px] text-slate-300 mt-1">Firma del Cliente</span>
                       </div>
@@ -1036,9 +1036,9 @@ export const Remision: React.FC = () => {
                 )}
               </div>
             ) : (
-              <div className="text-center py-24 text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 leading-relaxed max-w-sm mx-auto space-y-3">
+              <div className="text-center py-24 text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 leading-relaxed max-w-sm mx-auto space-y-3">
                 <FileText size={44} className="mx-auto text-slate-300" />
-                <p className="text-sm font-bold text-slate-500">Recibo de Remisión Digital</p>
+                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Recibo de Remisión Digital</p>
                 <p className="text-xs text-slate-400">
                   Selecciona una nota del panel lateral para abrir su plantilla imprimible formalizada para el cliente.
                 </p>

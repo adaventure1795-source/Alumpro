@@ -8,6 +8,7 @@ import { useWorkshop } from "../context/WorkshopContext";
 import { QuoteItem, FormulaRule } from "../types";
 import { evaluateEquation } from "../utils/cutOptimizer";
 import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import {
   Plus,
   Trash2,
@@ -31,7 +32,8 @@ import {
   Edit2,
   Check,
   X,
-  Download
+  Download,
+  ImagePlus
 } from "lucide-react";
 import { COLORS } from "../data/defaultData";
 import { DynamicWindowPreview } from "./DynamicWindowPreview";
@@ -56,30 +58,34 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
   
   // Custom state modes for manual vs. calculated pricing
   const [isCalculatedMode, setIsCalculatedMode] = useState<boolean>(true);
-  const [customPrice, setCustomPrice] = useState<number | "">(1500);
+  const [customPrice, setCustomPrice] = useState<number | string>("1500");
   
   // Costing & markup controls
-  const [profitMargin, setProfitMargin] = useState<number>(30); // 30% default profit margin markup
+  const [profitMargin, setProfitMargin] = useState<number | string>("30"); // 30% default profit margin markup
   const [includeIva, setIncludeIva] = useState<boolean>(false); // 16% IVA toggle
-  const [wastePercentage, setWastePercentage] = useState<number>(10); // 10% default waste/merma cost addition
+  const [wastePercentage, setWastePercentage] = useState<number | string>("10"); // 10% default waste/merma cost addition
+  const [overrideTotal, setOverrideTotal] = useState<number | string>(""); // manual total override
+  const [showMaterialCost, setShowMaterialCost] = useState<boolean>(false); // Show material in PDF
+
 
   // Custom single item settings
   const [label, setLabel] = useState<string>("");
-  const [width, setWidth] = useState<number | "">(120);
-  const [height, setHeight] = useState<number | "">(100);
+  const [width, setWidth] = useState<number | string>("120");
+  const [height, setHeight] = useState<number | string>("100");
   const [line, setLine] = useState<string>("Nacional 2″");
   const [color, setColor] = useState<string>("Anodizado Natural");
   const [selectedGlassId, setSelectedGlassId] = useState<string>(
     state.glasses[0]?.id || ""
   );
-  const [qty, setQty] = useState<number | "">(1);
-  const [laborMinutes, setLaborMinutes] = useState<number | "">(120);
+  const [qty, setQty] = useState<number | string>("1");
+  const [laborMinutes, setLaborMinutes] = useState<number | string>("120");
 
   // Manual / Freequote customized details
   const [manualHasGlass, setManualHasGlass] = useState<boolean>(true);
   const [manualGlassTone, setManualGlassTone] = useState<string>("Claro");
   const [manualAluColor, setManualAluColor] = useState<string>("Natural (Anodizado)");
   const [manualMaterialIncluded, setManualMaterialIncluded] = useState<boolean>(true);
+  const [designImageUrl, setDesignImageUrl] = useState<string>("");
   
   // Quote item text-editor states:
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
@@ -202,9 +208,12 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     const laborHourRate = state.businessDetails.laborRatePerHour || 220;
     const laborCost = (laborMinutesPerPiece / 60) * laborHourRate * newQty;
 
-    const subtotalProfilesWithWaste = subtotalProfiles * (1 + wastePercentage / 100);
+    const normProfitMargin = Number(profitMargin) || 30;
+    const normWastePercentage = Number(wastePercentage) || 10;
+
+    const subtotalProfilesWithWaste = subtotalProfiles * (1 + normWastePercentage / 100);
     const baseCost = subtotalProfilesWithWaste + glassCost + subtotalAccessories + laborCost;
-    const priceWithMargin = baseCost * (1 + profitMargin / 100);
+    const priceWithMargin = baseCost * (1 + normProfitMargin / 100);
     const finalTotal = includeIva ? priceWithMargin * 1.16 : priceWithMargin;
 
     updateQuoteItem(qId, {
@@ -219,8 +228,8 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
         laborMinutes: laborMinutesPerPiece * newQty,
         laborCost,
         baseCost,
-        profitMarginPercent: profitMargin,
-        wastePercent: wastePercentage,
+        profitMarginPercent: normProfitMargin,
+        wastePercent: normWastePercentage,
         includeIva,
         total: finalTotal
       }
@@ -229,6 +238,10 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
   // PDF download configurations:
   const [clientNameForPdf, setClientNameForPdf] = useState<string>("");
+  const [clientAddressForPdf, setClientAddressForPdf] = useState<string>("");
+  const [clientPhoneForPdf, setClientPhoneForPdf] = useState<string>("");
+  const [businessAddressForPdf, setBusinessAddressForPdf] = useState<string>("Boca del Río, Veracruz");
+  const [businessPhoneForPdf, setBusinessPhoneForPdf] = useState<string>("229-684-6549");
   const [notesForPdf, setNotesForPdf] = useState<string>("Precios expuestos en Moneda Nacional (MXN). 60% de anticipo para iniciar fabricación y 40% contra entrega e instalación.");
   const [simplifyPdf, setSimplifyPdf] = useState<boolean>(true);
 
@@ -266,6 +279,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     activeCategory === "portones" ? "🚗 Portones y Garajes" :
     activeCategory === "fijos" ? "🖼️ Fijos Perimetrales" :
     activeCategory === "barandales" ? "🪜 Barandales" :
+    activeCategory === "rejas" ? "🛡️ Rejas y Protecciones" :
     "Estructura";
 
   useEffect(() => {
@@ -395,6 +409,8 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     const normCustomPrice = Number(customPrice) || 0;
     const normWidth = Number(width) || 120;
     const normHeight = Number(height) || 100;
+    const normProfitMargin = Number(profitMargin) || 30;
+    const normWastePercentage = Number(wastePercentage) || 10;
 
     if (!isCalculatedMode) {
       setPreviewResult({
@@ -512,16 +528,17 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     const laborCost = (normLaborMinutes / 60) * laborHourRate * normQty;
 
     // Apply waste/merma percentage on raw profiles
-    const subtotalProfilesWithWaste = subtotalProfiles * (1 + wastePercentage / 100);
+    const subtotalProfilesWithWaste = subtotalProfiles * (1 + normWastePercentage / 100);
     
     // Base cost is aluminum (with waste) + glass + accessories + labor
     const baseCost = subtotalProfilesWithWaste + glassCost + subtotalAccessories + laborCost;
     
     // Add profit/utility margin markup
-    const priceWithMargin = baseCost * (1 + profitMargin / 100);
+    const priceWithMargin = baseCost * (1 + normProfitMargin / 100);
     
     // Add IVA taxes if enabled
-    const finalTotal = includeIva ? priceWithMargin * 1.16 : priceWithMargin;
+    const calculatedFinalTotal = includeIva ? priceWithMargin * 1.16 : priceWithMargin;
+    const finalTotal = overrideTotal !== "" ? Number(overrideTotal) * normQty : calculatedFinalTotal;
 
     setPreviewResult({
       profiles: computedProfiles,
@@ -533,10 +550,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
       laborMinutes: normLaborMinutes * normQty,
       laborCost,
       baseCost,
-      profitMarginPercent: profitMargin,
-      wastePercent: wastePercentage,
+      profitMarginPercent: normProfitMargin,
+      wastePercent: normWastePercentage,
       includeIva,
-      total: finalTotal
+      total: finalTotal,
+      hasManualOverride: overrideTotal !== ""
     });
 
   }, [
@@ -559,17 +577,34 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     manualHasGlass,
     manualGlassTone,
     manualAluColor,
-    manualMaterialIncluded
+    manualMaterialIncluded,
+    overrideTotal
   ]);
 
+
   // Handle adding computed configuration to quote list
-  const handleAddToQuote = () => {
+  const handleAddToQuote = async () => {
     if (!previewResult) return;
+
+    let previewImageUrl = undefined;
+    if (isCalculatedMode) {
+      try {
+        const element = document.getElementById("live-visual-blueprint-section");
+        if (element) {
+          const canvas = await html2canvas(element, { backgroundColor: null, scale: 2 });
+          previewImageUrl = canvas.toDataURL("image/png");
+        }
+      } catch (err) {
+        console.error("Failed to capture preview image", err);
+      }
+    }
 
     const newItem: QuoteItem = {
       id: "quote-" + Date.now(),
       name: label || (isCalculatedMode ? "Cancel Desconocido" : "Concepto Libre"),
       formulaRuleId: isCalculatedMode ? selectedFormulaId : undefined,
+      designImageUrl,
+      previewImageUrl,
       widthCm: isCalculatedMode ? (Number(width) || 120) : 0,
       heightCm: isCalculatedMode ? (Number(height) || 100) : 0,
       line: isCalculatedMode ? line : (manualMaterialIncluded ? "Manual (Con Material)" : "Mano de Obra / Servicio"),
@@ -583,6 +618,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     // Reset inputs
     setLabel("");
     setQty(1);
+    setDesignImageUrl("");
     if (!isCalculatedMode) {
       setCustomPrice(1500);
     }
@@ -896,258 +932,250 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
       format: "a4"
     });
 
-    const pageWidth = doc.internal.pageSize.getWidth(); // A4 is 210mm
-    const pageHeight = doc.internal.pageSize.getHeight(); // A4 is 297mm
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
     const contentWidth = pageWidth - (margin * 2);
 
-    let y = margin;
+    let y = 0;
 
-    // Helper: Draw elegant divider
-    const drawDivider = (currentY: number) => {
-      doc.setDrawColor(226, 232, 240); // slate-200
-      doc.setLineWidth(0.5);
-      doc.line(margin, currentY, margin + contentWidth, currentY);
-      return currentY + 5;
-    };
+    // 1. BRAND HEADER (Dark Blue)
+    const headerHeight = 25;
+    doc.setFillColor(30, 64, 137); // #1E4089 ALUDEV Blue
+    doc.rect(0, 0, pageWidth, headerHeight, "F");
 
-    // 1. BRAND HEADER
-    doc.setFillColor(15, 23, 42); // slate-900 (Primary dark)
-    doc.rect(0, 0, pageWidth, 42, "F");
-
+    // ALUDEV Text
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text(state.businessDetails.name || "TALLER DE ALUMINIO", margin, 18);
+    doc.setFontSize(20);
+    doc.text("ALUDEV", margin, 15);
 
+    // COTIZACIÓN Text (Right Aligned)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("COTIZACIÓN", pageWidth - margin, 12, { align: "right" });
+    
+    // Subtext
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.setTextColor(203, 213, 225); // slate-300
-    const bizAddress = state.businessDetails.address || "Dirección del Taller";
-    const bizContact = `Tel: ${state.businessDetails.phone || "S/N"} | RFC: ${state.businessDetails.rfc || "S/RFC"}`;
-    doc.text(bizAddress, margin, 27);
-    doc.text(bizContact, margin, 32);
-
-    // Document stamp right-aligned inside dark header
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(56, 189, 248); // sky-400
-    doc.text("COTIZACIÓN", pageWidth - margin, 18, { align: "right" });
+    doc.setFontSize(9);
+    doc.text("Cotización personalizada de ALUDEV", pageWidth - margin, 17, { align: "right" });
     
-    doc.setFont("helvetica", "mono");
-    doc.setFontSize(8.5);
-    doc.setTextColor(255, 255, 255);
-    const dateStr = new Date().toLocaleDateString("es-MX", { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const quoteCode = `COT-${Math.floor(100000 + Math.random() * 900000)}`;
-    doc.text(`Folio: ${quoteCode}`, pageWidth - margin, 26, { align: "right" });
-    doc.text(`Fecha: ${dateStr}`, pageWidth - margin, 31, { align: "right" });
+    // Date and Quote Num
+    const dateStr = new Date().toLocaleDateString("es-MX", { day: 'numeric', month: 'numeric', year: 'numeric' });
+    const quoteCode = `10${Math.floor(Math.random() * 90)}`; // Example like 1091
+    doc.text(`Cotización #: ${quoteCode}    Fecha: ${dateStr}`, pageWidth - margin, 22, { align: "right" });
 
-    y = 52; // Set y below dark header
+    y = headerHeight + 8;
 
-    // 2. CLIENT SUB-PANEL
-    doc.setFillColor(248, 250, 252); // slate-50
-    doc.setDrawColor(241, 245, 249); // slate-100
-    doc.rect(margin, y, contentWidth, 24, "FD");
-
-    doc.setTextColor(100, 116, 139); // slate-500
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.text("CLIENTE DESTINATARIO:", margin + 5, y + 6);
+    const boxWidth = (contentWidth - 10) / 2;
+    // 2. Client & Project Info
+    doc.setFillColor(248, 250, 252); // slate-50 fill
+    doc.rect(margin, y, boxWidth, 25, "F");
     
-    doc.setTextColor(30, 41, 59); // slate-800
+    doc.setTextColor(30, 64, 137); // Dark blue header
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text(clientNameForPdf.trim() || "Público General / Cliente Particular", margin + 5, y + 13);
+    doc.setFontSize(9);
+    doc.text("INFORMACIÓN DEL CLIENTE", margin + 4, y + 6);
+    
+    doc.setTextColor(0, 0, 0); // Black values
+    doc.setFont("helvetica", "normal");
+    doc.text(`Nombre: ${clientNameForPdf.trim() || "-"}`, margin + 4, y + 12);
+    doc.text(`Dirección: ${clientAddressForPdf.trim() || "-"}`, margin + 4, y + 17);
+    doc.text(`Teléfono: ${clientPhoneForPdf.trim() || "-"}`, margin + 4, y + 22);
 
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(8.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text(`Atendido por: Equipo de Colaboradores de ${state.businessDetails.name.split("-")[0]}`, margin + 5, y + 19);
+    // Right Box (Project Info)
+    doc.setFillColor(248, 250, 252); // slate-50 fill
+    doc.rect(margin + boxWidth + 10, y, boxWidth, 25, "F");
+    
+    doc.setTextColor(30, 64, 137);
+    doc.setFont("helvetica", "bold");
+    doc.text("INFORMACIÓN DEL PROYECTO", margin + boxWidth + 14, y + 6);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Asesor: ${state.businessDetails.name || "Aludev"}`, margin + boxWidth + 14, y + 12);
+    doc.text(`Ubicación: ${businessAddressForPdf.trim() || "-"}`, margin + boxWidth + 14, y + 17);
+    doc.text(`Método de pago: -`, margin + boxWidth + 14, y + 22);
 
-    y += 32;
+    y += 33;
 
-    // 3. TABLE OF PRODUCTS / WORK ITEMS
-    // Table Header Band
-    doc.setFillColor(241, 245, 249); // slate-100 table row head
+    // 3. Table Header
+    doc.setFillColor(30, 64, 137); // Dark Blue Header
     doc.rect(margin, y, contentWidth, 8, "F");
-
+    doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(71, 85, 105); // slate-600
+    doc.setFontSize(9);
+    
+    // Configura posiciones X
+    const colDescX = margin + 2;
+    const colMedX = margin + 95;
+    const colCantX = margin + 125;
+    const colUnitPriceX = margin + 145;
+    const colTotalX = margin + 178;
 
-    doc.text("PZ", margin + 2, y + 5.5);
-    doc.text("DESCRIPCIÓN DEL CONCEPTO / TRABAJO CANCELERÍA", margin + 12, y + 5.5);
-    doc.text("P. UNITARIO", margin + 128, y + 5.5, { align: "right" });
-    doc.text("IMPORTE", margin + contentWidth - 2, y + 5.5, { align: "right" });
+    doc.text("Descripción", colDescX, y + 5.5);
+    doc.text("Medidas", colMedX, y + 5.5);
+    doc.text("Cant.", colCantX, y + 5.5, { align: "center" });
+    doc.text("Precio unit.", colUnitPriceX, y + 5.5);
+    doc.text("$ Total", colTotalX, y + 5.5);
 
     y += 8;
 
-    // Loop over quote items map
+    // Table Content
     state.quotes.forEach((q, index) => {
-      // Check for page break if y is high
-      if (y > 240) {
+      let descText = "";
+      if (q.customDescription) {
+        descText = q.customDescription;
+      } else {
+        const glassText = q.calculated.glasses[0]?.id === "glass-none" || !q.calculated.glasses[0]
+          ? ""
+          : ` / ${q.calculated.glasses[0]?.thickness}`;
+        descText = `${q.name} - ${q.line} / ${q.color}${glassText}`;
+      }
+      
+      const wrappedDesc = doc.splitTextToSize(descText, 90);
+      const textHeight = wrappedDesc.length * 4.5;
+      const rowHeight = textHeight + 5;
+      
+      if (y + rowHeight > 270) {
         doc.addPage();
-        y = margin + 10;
-        // Re-draw table header
-        doc.setFillColor(241, 245, 249);
+        y = margin;
+        doc.setFillColor(30, 64, 137);
         doc.rect(margin, y, contentWidth, 8, "F");
+        doc.setTextColor(255, 255, 255);
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
-        doc.setTextColor(71, 85, 105);
-        doc.text("PZ", margin + 2, y + 5.5);
-        doc.text("DESCRIPCIÓN DEL CONCEPTO (Sigue...)", margin + 12, y + 5.5);
-        doc.text("P. UNITARIO", margin + 128, y + 5.5, { align: "right" });
-        doc.text("IMPORTE", margin + contentWidth - 2, y + 5.5, { align: "right" });
+        doc.text("Descripción", colDescX, y + 5.5);
+        doc.text("Medidas", colMedX, y + 5.5);
+        doc.text("Cant.", colCantX, y + 5.5, { align: "center" });
+        doc.text("Precio unit.", colUnitPriceX, y + 5.5);
+        doc.text("$ Total", colTotalX, y + 5.5);
         y += 8;
       }
 
-      // Generate description text
-      let descString = "";
-      if (q.customDescription) {
-        descString = q.customDescription;
-      } else if (simplifyPdf) {
-        // Human friendly simplified representation
-        const glassText = q.calculated.glasses[0]?.id === "glass-none" || !q.calculated.glasses[0]
-          ? "sin incluir cristal"
-          : `con cristal ${q.calculated.glasses[0]?.thickness.toLowerCase()}`;
-        descString = `${q.name} de dimensiones ${q.widthCm} x ${q.heightCm} cm de alto. Estructurado en aluminio de línea ${q.line}, en color decorativo ${q.color}, ${glassText}. Fabricación con fijaciones herméticas, embalaje y garantía de taller.`;
-      } else {
-        // Detailed technical breakdown
-        const glassText = q.calculated.glasses[0] ? q.calculated.glasses[0].thickness : "Sin vidrio";
-        const profCount = q.calculated.profiles.length;
-        const accCount = q.calculated.accessories.length;
-        descString = `${q.name} (${q.widthCm}x${q.heightCm}cm) - Línea: ${q.line}, Color: ${q.color}. Vidrio: ${glassText}. [DESGLOSE TÉCNICO: ${profCount} perfiles de corte, ${accCount} bolsas de herrajes de fábrica, mano de obra estimada de ${q.calculated.laborMinutes} minutos]`;
+      // Striping background
+      if (index % 2 === 0) {
+        doc.setFillColor(250, 251, 253);
+        doc.rect(margin, y, contentWidth, rowHeight + 2, "F");
       }
-
-      // Calculate vertical height of row based on description wrap
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(51, 65, 85); // slate-700
-
-      const wrappedText = doc.splitTextToSize(descString, 108); // usable width for description
-      const lineCount = wrappedText.length;
-      const rowHeight = Math.max(lineCount * 4.2 + 6, 12);
-
-      // White or very soft alt grid lines
-      doc.setDrawColor(241, 245, 249);
-      doc.setLineWidth(0.3);
-      doc.line(margin, y + rowHeight, margin + contentWidth, y + rowHeight);
-
-      // Quantities and prices
-      doc.setFont("helvetica", "bold");
-      doc.text(String(q.quantity), margin + 3, y + 6);
       
+      doc.setTextColor(0, 0, 0); // Black text for rows
       doc.setFont("helvetica", "normal");
-      wrappedText.forEach((lineText: string, i: number) => {
-        doc.text(lineText, margin + 12, y + 6 + (i * 4.2));
+      doc.setFontSize(9);
+      
+      wrappedDesc.forEach((lineText: string, i: number) => {
+        doc.text(lineText, colDescX, y + 6 + (i * 4.5));
       });
-
-      // Price Unitary & Totals
+      
+      const medidasStr = q.widthCm && q.heightCm ? `${q.widthCm}×${q.heightCm} cm` : "-";
+      doc.text(medidasStr, colMedX, y + 6);
+      doc.text(String(q.quantity), colCantX, y + 6, { align: "center" });
+      
       const unitPrice = q.calculated.total / q.quantity;
-      doc.text(`$${Math.round(unitPrice).toLocaleString("es-MX")}`, margin + 128, y + 6, { align: "right" });
-      doc.setFont("helvetica", "bold");
-      doc.text(`$${Math.round(q.calculated.total).toLocaleString("es-MX")}`, margin + contentWidth - 2, y + 6, { align: "right" });
-
-      y += rowHeight;
+      doc.text(`$${unitPrice.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, colUnitPriceX, y + 6);
+      doc.text(`$${q.calculated.total.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, colTotalX, y + 6);
+      
+      y += rowHeight + 2;
     });
 
-    y += 4;
+    y += 5;
 
-    // Check for page break before totals
-    if (y > 220) {
-      doc.addPage();
-      y = margin + 10;
-    }
-
-    // 4. SUMMARY TOTAL PANEL (Right-aligned)
-    const totalProjectPriceLocal = state.quotes.reduce((sum, q) => sum + q.calculated.total, 0);
-    const sub = Math.round(totalProjectPriceLocal / (includeIva ? 1.16 : 1));
-    const ivaValue = includeIva ? Math.round(totalProjectPriceLocal - sub) : 0;
-    const finalTot = Math.round(totalProjectPriceLocal);
-
-    const startX = margin + 110;
-    const totalsWidth = contentWidth - 110;
-
-    doc.setFillColor(248, 250, 252); // slate-50
-    doc.rect(startX, y, totalsWidth, includeIva ? 22 : 16, "F");
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(100, 116, 139);
-
-    if (includeIva) {
-      doc.text("Subtotal Neto:", startX + 3, y + 5.5);
-      doc.text(`$${sub.toLocaleString("es-MX")}`, margin + contentWidth - 3, y + 5.5, { align: "right" });
-
-      doc.text("I.V.A. Trasladado (16%):", startX + 3, y + 10.5);
-      doc.text(`$${ivaValue.toLocaleString("es-MX")}`, margin + contentWidth - 3, y + 10.5, { align: "right" });
-
-      doc.setDrawColor(226, 232, 240);
-      doc.line(startX + 3, y + 13, margin + contentWidth - 3, y + 13);
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(15, 23, 42); // slate-900
-      doc.text("TOTAL COTIZADO:", startX + 3, y + 18.5);
-      doc.text(`$${finalTot.toLocaleString("es-MX")} MXN`, margin + contentWidth - 3, y + 18.5, { align: "right" });
-    } else {
-      doc.text("Importe de Materiales y Labor:", startX + 3, y + 5.5);
-      doc.text(`$${finalTot.toLocaleString("es-MX")}`, margin + contentWidth - 3, y + 5.5, { align: "right" });
-
-      doc.setDrawColor(226, 232, 240);
-      doc.line(startX + 3, y + 8, margin + contentWidth - 3, y + 8);
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(15, 23, 42); // slate-900
-      doc.text("TOTAL NETO:", startX + 3, y + 13);
-      doc.text(`$${finalTot.toLocaleString("es-MX")} MXN`, margin + contentWidth - 3, y + 13, { align: "right" });
-    }
-
-    y += includeIva ? 28 : 22;
-
-    // 5. NOTES AND CLAUSES TERMS
+    // 4. SUMMARY (RESUMEN)
+    const startTotalsY = y;
+    const totalsLeftX = margin + contentWidth - 65;
+    doc.setTextColor(30, 64, 137);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(71, 85, 105);
-    doc.text("CONDICIONES COMERCIALES Y DE ENTREGA:", margin, y);
+    doc.setFontSize(10);
+    doc.text("RESUMEN", totalsLeftX, y + 5);
 
+    const totalProjectPriceLocal = state.quotes.reduce((sum, q) => sum + q.calculated.total, 0);
+    const sub = totalProjectPriceLocal / (includeIva ? 1.16 : 1);
+    const ivaValue = includeIva ? (totalProjectPriceLocal - sub) : 0;
+    const finalTot = totalProjectPriceLocal;
+    const anticipo = finalTot * 0.60;
+
+    y += 12;
+    doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(9);
+    doc.text("Subtotal:", totalsLeftX, y);
+    doc.text(`$${sub.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, margin + contentWidth, y, { align: "right" });
+
+    y += 6;
+    doc.text(`IVA (${includeIva ? "16" : "0"}%):`, totalsLeftX, y);
+    doc.text(`$${ivaValue.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, margin + contentWidth, y, { align: "right" });
+
+    y += 8;
+    doc.setTextColor(30, 64, 137);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("TOTAL:", totalsLeftX, y);
+    doc.text(`$${finalTot.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, margin + contentWidth, y, { align: "right" });
+
+    y += 5;
     
-    const wrappedNotes = doc.splitTextToSize(notesForPdf, contentWidth);
-    wrappedNotes.forEach((lineText: string, i: number) => {
-      doc.text(lineText, margin, y + 4 + (i * 3.8));
-    });
+    // Pago / Anticipo box
+    doc.setFillColor(30, 64, 137);
+    doc.roundedRect(totalsLeftX, y, 65, 10, 2, 2, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Anticipo (60%):", totalsLeftX + 4, y + 6.5);
+    doc.text(`$${anticipo.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, totalsLeftX + 61, y + 6.5, { align: "right" });
 
-    y += 18 + (wrappedNotes.length * 3.8);
+    let leftY = y + 25;
+    if (leftY > 235) {
+      doc.addPage();
+      leftY = margin;
+    } else {
+      leftY = y + 25;
+    }
+    
+    doc.setTextColor(30, 64, 137);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("TÉRMINOS Y CONDICIONES", margin, leftY);
 
-    // 6. SIGNATURE PLATES
-    if (y < 265) {
-      doc.setDrawColor(148, 163, 184); // slate-400
-      doc.setLineWidth(0.4);
-
-      // Taller Signature Line
-      doc.line(margin + 15, y + 15, margin + 65, y + 15);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(71, 85, 105);
-      doc.text("REPRESENTANTE AUTORIZADO", margin + 40, y + 19, { align: "center" });
-      doc.setFont("helvetica", "normal");
-      doc.text(state.businessDetails.name.split("-")[0], margin + 40, y + 23, { align: "center" });
-
-      // Client Signature Line
-      doc.line(margin + 105, y + 15, margin + 155, y + 15);
-      doc.setFont("helvetica", "bold");
-      doc.text("ACEPTO CONFORMIDAD CLIENTE", margin + 130, y + 19, { align: "center" });
-      doc.setFont("helvetica", "normal");
-      doc.text("Firma de Autorización de Proyecto", margin + 130, y + 23, { align: "center" });
+    leftY += 6;
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    
+    let baseTerms = [
+      "1. Pago total del 100% al realizarse con Tarjeta de Crédito.",
+      "2. Validez: 10 días a partir de la fecha de emisión.",
+      "3. Tiempo de entrega estimado: 3 - 15 días según complejidad y cantidad.",
+      "4. Garantía: 3 años en aluminio y 1 año en cristal."
+    ];
+    
+    if (notesForPdf.trim()) {
+      baseTerms.push(`5. Adicional: ${notesForPdf.trim()}`);
     }
 
-    // Save File
-    const sanitizedClientName = (clientNameForPdf.trim() || "Publico_General").replace(/[^a-zA-Z0-9]/g, "_");
-    doc.save(`Cotizacion_${quoteCode}_${sanitizedClientName}.pdf`);
+    baseTerms.forEach((line) => {
+      const splitLine = doc.splitTextToSize(line, contentWidth);
+      doc.text(splitLine, margin, leftY);
+      leftY += splitLine.length * 4.5;
+    });
+
+    leftY += 8;
+    doc.setTextColor(30, 64, 137);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text(`Asesor: ${state.businessDetails.name || "Aludev"}`, margin, leftY);
+    
+    leftY += 6;
+    doc.setFontSize(11);
+    doc.text(`Whatsapp: ${businessPhoneForPdf.trim() || "-"}`, margin, leftY);
+
+    // 6. Footer
+    doc.setTextColor(150, 150, 150);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text("Documento generado automáticamente por el sistema de cotización ALUDEV.", pageWidth / 2, pageHeight - 10, { align: "center" });
+
+
+    // Save
+    doc.save(`Cotizacion_${quoteCode}.pdf`);
   };
 
   // Generate and Download Clients POS Receipt for Thermal Printers
@@ -1332,10 +1360,10 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-800 font-sans tracking-tight">
+          <h1 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 font-sans tracking-tight">
             Sistema de Cotización Instantánea
           </h1>
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-500 dark:text-slate-400 text-xs">
             Calcula piezas individualizadas en segundos y compila proyectos integrales con cálculos de materiales.
           </p>
         </div>
@@ -1343,7 +1371,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
           <button
             onClick={exportCutsToPackage}
             disabled={state.quotes.length === 0}
-            className="flex-1 sm:flex-none px-3.5 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition"
+            className="flex-1 sm:flex-none px-3.5 py-2 bg-slate-800 dark:bg-slate-950 hover:bg-slate-700 disabled:opacity-40 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition"
             id="export-cuts-button"
           >
             <Scissors size={14} />
@@ -1352,7 +1380,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
           <button
             onClick={exportToInvoice}
             disabled={state.quotes.length === 0}
-            className="flex-1 sm:flex-none px-3.5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition"
+            className="flex-1 sm:flex-none px-3.5 py-2 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 disabled:opacity-40 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition"
             id="create-bill-button"
           >
             <FileText size={14} />
@@ -1366,30 +1394,30 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
         
         {/* CONFIGURATION PANEL (Col span 3) */}
         <div className="lg:col-span-3 space-y-6">
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-50">
-              <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <Calculator size={15} className="text-blue-600" />
+          <div className="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-50 dark:border-slate-800">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                <Calculator size={15} className="text-blue-600 dark:text-blue-400 dark:text-blue-300" />
                 Nueva Pieza o Concepto
               </h2>
-              <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[10px] bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold">
                 ALUDEV Sistema
               </span>
             </div>
 
             {/* INTERACTIVE MODE TOGGLE SWITCH SLIDER */}
-            <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
+            <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl gap-1">
               <button 
                 type="button"
                 onClick={() => setIsCalculatedMode(true)}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition duration-200 ${isCalculatedMode ? "bg-white text-slate-800 shadow" : "text-slate-500 hover:text-slate-800"}`}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition duration-200 ${isCalculatedMode ? "bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 dark:hover:text-slate-200"}`}
               >
                 Calculadora de Fórmulas
               </button>
               <button 
                 type="button"
                 onClick={() => setIsCalculatedMode(false)}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition duration-200 ${!isCalculatedMode ? "bg-white text-slate-800 shadow" : "text-slate-500 hover:text-slate-800"}`}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition duration-200 ${!isCalculatedMode ? "bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 dark:hover:text-slate-200"}`}
               >
                 Concepto Manual (Rápido)
               </button>
@@ -1407,7 +1435,8 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       activeCategory === "canceles" ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300" :
                       activeCategory === "portones" ? "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300" :
                       activeCategory === "barandales" ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300" :
-                      "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                      activeCategory === "rejas" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300" :
+                      "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 dark:bg-slate-800 dark:text-slate-300"
                     }`}>
                       {selectedCategoryLabel}
                     </span>
@@ -1417,11 +1446,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                 {/* Template Dropdown */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Estructura Predeterminada</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Estructura Predeterminada</label>
                     <select
                       value={selectedFormulaId}
                       onChange={(e) => setSelectedFormulaId(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     >
                       <optgroup label="🪟 Ventanas">
                         {state.formulas.filter(f => f.category === "ventanas").map((form) => (
@@ -1465,43 +1494,50 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           </option>
                         ))}
                       </optgroup>
+                      <optgroup label="🛡️ Rejas y Protecciones">
+                        {state.formulas.filter(f => f.category === "rejas").map((form) => (
+                          <option key={form.id} value={form.id}>
+                            {form.name}
+                          </option>
+                        ))}
+                      </optgroup>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Etiqueta de Pieza (Nombre)</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Etiqueta de Pieza (Nombre)</label>
                     <input
                       type="text"
                       placeholder="Ej: Ventana Recámara Principal"
                       value={label}
                       onChange={(e) => setLabel(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     />
                   </div>
                 </div>
 
                 {/* Dimensions (Double Slider & Manual text Inputs) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <div className="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <div className="space-y-2 bg-slate-50 dark:bg-slate-800 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700/50">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-semibold text-slate-700">Ancho (Ancho Vano)</span>
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Ancho (Ancho Vano)</span>
                       <input
                         type="number"
                         value={width}
                         onChange={(e) => {
                           const val = e.target.value;
-                          setWidth(val === "" ? "" : Number(val));
+                          setWidth(val);
                         }}
-                        className="w-20 bg-white border border-slate-200 rounded px-2 py-0.5 text-right font-mono text-xs text-slate-800 font-bold"
+                        className="w-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-right font-mono text-xs text-slate-800 dark:text-slate-100 font-bold"
                       />
                     </div>
                     <input
                       type="range"
                       min="30"
-                      max="300"
+                      max="1000"
                       value={width === "" ? 30 : width}
                       onChange={(e) => setWidth(Number(e.target.value))}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
                     />
                     <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                       <span>30 cm</span>
@@ -1510,26 +1546,26 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     </div>
                   </div>
 
-                  <div className="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <div className="space-y-2 bg-slate-50 dark:bg-slate-800 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700/50">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-semibold text-slate-700">Alto (Alto Vano)</span>
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Alto (Alto Vano)</span>
                       <input
                         type="number"
                         value={height}
                         onChange={(e) => {
                           const val = e.target.value;
-                          setHeight(val === "" ? "" : Number(val));
+                          setHeight(val);
                         }}
-                        className="w-20 bg-white border border-slate-200 rounded px-2 py-0.5 text-right font-mono text-xs text-slate-800 font-bold"
+                        className="w-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-right font-mono text-xs text-slate-800 dark:text-slate-100 font-bold"
                       />
                     </div>
                     <input
                       type="range"
                       min="30"
-                      max="300"
+                      max="1000"
                       value={height === "" ? 30 : height}
                       onChange={(e) => setHeight(Number(e.target.value))}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
                     />
                     <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                       <span>30 cm</span>
@@ -1541,33 +1577,69 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
                 {/* DYNAMIC VISUAL BLUEPRINT GRAPHICS (Vista Previa Semicad) */}
                 <div className="pt-2" id="live-visual-blueprint-section">
-                  <div className="border-l-4 border-blue-600 pl-3 py-1 mb-2">
-                    <h3 className="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
-                      <Sparkles size={13} className="text-blue-600" />
+                  <div className="border-l-4 border-blue-600 pl-3 py-1 mb-2 flex justify-between items-center">
+                    <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase flex items-center gap-1.5">
+                      <Sparkles size={13} className="text-blue-600 dark:text-blue-300" />
                       Visualización Técnica Semicad (Plano Activo)
                     </h3>
+                    <label className="cursor-pointer text-[10px] bg-blue-50 dark:bg-blue-900/40 hover:bg-blue-100 text-blue-700 dark:text-blue-300 px-2 py-1 rounded border border-blue-200 dark:border-blue-700/50 font-bold flex items-center gap-1 transition">
+                      <ImagePlus size={12} />
+                      {designImageUrl ? "Cambiar Diseño" : "Subir Diseño Personalizado"}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setDesignImageUrl(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }} 
+                      />
+                    </label>
                   </div>
-                  <DynamicWindowPreview
-                    category={state.formulas.find(f => f.id === selectedFormulaId)?.category || "ventanas"}
-                    width={width}
-                    height={height}
-                    color={color}
-                    glassType={state.glasses.find(g => g.id === selectedGlassId)?.thickness || "4mm"}
-                  />
+                  
+                  {designImageUrl ? (
+                    <div className="relative bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 flex flex-col items-center justify-center shadow-inner overflow-hidden min-h-[180px]">
+                      <img src={designImageUrl} alt="Diseño personalizado" className="max-h-[220px] object-contain rounded-xl" />
+                      <button 
+                        onClick={() => setDesignImageUrl("")} 
+                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md transition"
+                        title="Eliminar diseño"
+                      >
+                        <X size={14} />
+                      </button>
+                      <span className="absolute bottom-2 left-2 bg-slate-800 text-white text-[9px] font-bold px-2 py-0.5 rounded backdrop-blur-sm uppercase tracking-wider">
+                        Diseño / Plano Adjunto
+                      </span>
+                    </div>
+                  ) : (
+                    <DynamicWindowPreview
+                      category={state.formulas.find(f => f.id === selectedFormulaId)?.category || "ventanas"}
+                      width={width as number}
+                      height={height as number}
+                      color={color}
+                      glassType={state.glasses.find(g => g.id === selectedGlassId)?.thickness || "4mm"}
+                    />
+                  )}
                 </div>
 
                 <div className="border-l-4 border-emerald-500 pl-3 py-1 pt-2">
-                  <h3 className="text-xs font-bold text-slate-700 uppercase">2. Especificación de Sistema & Vidrios</h3>
+                  <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase">2. Especificación de Sistema & Vidrios</h3>
                 </div>
 
                 {/* Profile Line & Glass Type selectors */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Línea de Aluminio</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Línea de Aluminio</label>
                     <select
                       value={line}
                       onChange={(e) => setLine(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     >
                       <option 
                         value="Nacional 2″" 
@@ -1590,13 +1662,13 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <label className="block text-xs font-medium text-slate-500">Color del Aluminio</label>
-                      <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">{color}</span>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Color del Aluminio</label>
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-bold">{color}</span>
                     </div>
                     <select
                       value={color}
                       onChange={(e) => setColor(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     >
                       {COLORS.map((col) => (
                         <option key={col} value={col}>
@@ -1606,9 +1678,9 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     </select>
                     
                     {/* Visual Round Swatches Grid */}
-                    <div className="flex flex-wrap gap-2.5 mt-2.5 bg-slate-50 p-2 rounded-xl border border-slate-100 dark:bg-slate-800/10">
+                    <div className="flex flex-wrap gap-2.5 mt-2.5 bg-slate-50 dark:bg-slate-800 p-2 rounded-xl border border-slate-100 dark:bg-slate-800">
                       {[
-                        { name: "Blanco (Pintado)", hex: "#f8fafc", border: "border-slate-300", label: "Blanco" },
+                        { name: "Blanco (Pintado)", hex: "#f8fafc", border: "border-slate-300 dark:border-slate-600", label: "Blanco" },
                         { name: "Natural (Anodizado)", hex: "#94a3b8", border: "border-slate-400", label: "Natural" },
                         { name: "Negro", hex: "#0f172a", border: "border-black", label: "Negro" },
                         { name: "Bronce", hex: "#45322e", border: "border-slate-800", label: "Bronce" },
@@ -1623,13 +1695,13 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                             type="button"
                             onClick={() => setColor(sw.name)}
                             className={`w-5.5 h-5.5 rounded-full ${sw.border} border flex items-center justify-center relative cursor-pointer hover:scale-110 transition ${
-                              isSelected ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-slate-900 scale-105 shadow" : "opacity-80"
+                              isSelected ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-slate-900 scale-105 shadow-sm" : "opacity-80"
                             }`}
                             style={{ backgroundColor: sw.hex }}
                             title={sw.name}
                           >
                             {isSelected && (
-                              <span className={`w-1 h-1 rounded-full ${color.toLowerCase().includes("negro") || color.toLowerCase().includes("bronce") || color.toLowerCase().includes("duranodick") ? "bg-white" : "bg-slate-800"}`} />
+                              <span className={`w-1 h-1 rounded-full ${color.toLowerCase().includes("negro") || color.toLowerCase().includes("bronce") || color.toLowerCase().includes("duranodick") ? "bg-white dark:bg-slate-900" : "bg-slate-800 dark:bg-slate-950"}`} />
                             )}
                           </button>
                         );
@@ -1638,11 +1710,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Cristal o Material de Relleno</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Cristal o Material de Relleno</label>
                     <select
                       value={selectedGlassId}
                       onChange={(e) => setSelectedGlassId(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     >
                       {state.glasses
                         .filter((glass) => {
@@ -1665,76 +1737,90 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     </select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Cantidad piezas</label>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Cantidad</label>
                       <input
                         type="number"
                         value={qty}
                         onChange={(e) => {
                           const val = e.target.value;
-                          setQty(val === "" ? "" : Number(val));
+                          setQty(val);
                         }}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-center font-bold"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-center font-bold"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Mano Obra (Min/pz)</label>
+                      <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1 leading-tight">Mano Obra<br/>(Minutos)</label>
                       <input
                         type="number"
                         value={laborMinutes}
                         onChange={(e) => {
                           const val = e.target.value;
-                          setLaborMinutes(val === "" ? "" : Number(val));
+                          setLaborMinutes(val);
                         }}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-center font-mono text-xs"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-center font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-blue-600 dark:text-blue-300 mb-1 font-bold">P. Unitario</label>
+                      <input
+                        type="number"
+                        placeholder="Auto"
+                        value={overrideTotal}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setOverrideTotal(val);
+                        }}
+                        className="w-full bg-blue-50/50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-700/50 rounded-xl px-2 py-2 text-blue-800 dark:text-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-center font-bold placeholder-blue-300"
                       />
                     </div>
                   </div>
                 </div>
-
                 {/* SECTION 3: COSTING AND MARGIN MARKUPS (Aluminio Facil Excel matching) */}
-                <div className="border-l-4 border-amber-500 pl-3 py-1 pt-2">
-                  <h3 className="text-xs font-bold text-slate-700 uppercase">3. Parámetros de Utilidad & Merma</h3>
+                <div className="border-l-4 border-blue-500 pl-3 py-1 pt-2">
+                  <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase">3. Parámetros de Utilidad & Merma</h3>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-amber-50/20 dark:bg-slate-800/10 p-4 rounded-xl border border-dashed border-amber-100 dark:border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/50 dark:bg-slate-800 p-4 rounded-xl border border-dashed border-blue-100 dark:border-slate-800">
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-slate-700 flex items-center gap-1">
-                        <Coins size={12} className="text-amber-500" />
+                      <span className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                        <Coins size={12} className="text-blue-500 dark:text-blue-300" />
                         Margen de Utilidad
                       </span>
-                      <strong className="text-amber-700 dark:text-amber-400 font-mono">+{profitMargin}%</strong>
+                      <div className="flex items-center text-blue-700 dark:text-blue-300 font-mono font-bold">
+                        +<input type="number" value={profitMargin} onChange={(e) => setProfitMargin(e.target.value)} className="w-12 bg-transparent text-right outline-none focus:border-blue-400 border-b border-transparent" />%
+                      </div>
                     </div>
                     <input
                       type="range"
                       min="0"
-                      max="150"
+                      max="300"
                       step="5"
                       value={profitMargin}
                       onChange={(e) => setProfitMargin(Number(e.target.value))}
-                      className="w-full h-1.5 bg-amber-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      className="w-full h-1.5 bg-blue-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
                     />
                     <div className="flex justify-between text-[9px] text-slate-400 font-mono">
                       <span>Costo Neto (0%)</span>
                       <span>50%</span>
-                      <span>150%</span>
+                      <span>300%</span>
                     </div>
                   </div>
-
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-slate-700 flex items-center gap-1">
-                        <TrendingDown size={12} className="text-emerald-500" />
+                      <span className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                        <TrendingDown size={12} className="text-emerald-500 dark:text-emerald-400" />
                         Factor Desperdicio (Merma)
                       </span>
-                      <strong className="text-emerald-700 dark:text-emerald-400 font-mono">+{wastePercentage}%</strong>
+                      <div className="flex items-center text-emerald-700 dark:text-emerald-400 font-mono font-bold">
+                        +<input type="number" value={wastePercentage} onChange={(e) => setWastePercentage(e.target.value)} className="w-12 bg-transparent text-right outline-none focus:border-emerald-400 border-b border-transparent" />%
+                      </div>
                     </div>
                     <input
                       type="range"
                       min="0"
-                      max="25"
+                      max="100"
                       step="1"
                       value={wastePercentage}
                       onChange={(e) => setWastePercentage(Number(e.target.value))}
@@ -1743,17 +1829,18 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     <div className="flex justify-between text-[9px] text-slate-400 font-mono">
                       <span>0% (Preciso)</span>
                       <span>10% (Taller)</span>
-                      <span>25%</span>
+                      <span>100%</span>
                     </div>
                   </div>
-
                   <div className="sm:col-span-2 flex justify-between items-center pt-2.5 border-t border-dashed border-slate-200/60">
-                    <div className="flex flex-col text-slate-700">
+
+                    <div className="flex flex-col text-slate-700 dark:text-slate-200">
                       <span className="text-xs font-bold leading-tight flex items-center gap-1">
                         Desglosar IVA (+16%)
                       </span>
                       <span className="text-[10px] text-slate-400 leading-normal">Agrega 16% de remisión estructurada al total de venta</span>
                     </div>
+
                     <button
                       type="button"
                       onClick={() => setIncludeIva(!includeIva)}
@@ -1762,8 +1849,30 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 shadow-sm ring-0 transition duration-200 ease-in-out ${
                           includeIva ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="sm:col-span-2 flex justify-between items-center pt-2.5 border-t border-dashed border-slate-200/60">
+                    <div className="flex flex-col text-slate-700 dark:text-slate-200">
+                      <span className="text-xs font-bold leading-tight flex items-center gap-1">
+                        Mostrar Desglose y Costo de Material en PDF
+                      </span>
+                      <span className="text-[10px] text-slate-400 leading-normal">Incluye el costo puro y la lista de materiales visible para el cliente.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowMaterialCost(!showMaterialCost)}
+                      className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        showMaterialCost ? "bg-amber-500" : "bg-slate-200 dark:bg-slate-750"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 shadow-sm ring-0 transition duration-200 ease-in-out ${
+                          showMaterialCost ? "translate-x-5" : "translate-x-0"
                         }`}
                       />
                     </button>
@@ -1773,26 +1882,55 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
             ) : (
               // MODAL MANUAL / LIBRE FLOW (OLD HERO LAYOUT)
               <>
-                <div className="border-l-4 border-amber-500 pl-3 py-1 bg-amber-50/50 dark:bg-amber-950/20 rounded-r-lg pr-2">
+                <div className="border-l-4 border-blue-500 pl-3 py-1 bg-blue-50/50 dark:bg-blue-950/60 rounded-r-lg pr-2">
                   <h3 className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase">Configuración de Concepto Manual Libre</h3>
                   <p className="text-[10px] text-amber-700 dark:text-amber-300">Ingresa los datos del concepto personalizado, reparaciones o servicios de taller.</p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Descripción del Producto / Servicio</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Descripción del Producto / Servicio</label>
                     <input
                       type="text"
                       placeholder="Ej: Portón automático de aluminio duela 10cm, con instalación y kit de pistones batientes"
                       value={label}
                       onChange={(e) => setLabel(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Ancho (cm) <span className="text-[9px] font-normal opacity-70">(Opcional)</span></label>
+                      <input
+                        type="number"
+                        placeholder="Ej: 120"
+                        value={width}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setWidth(val);
+                        }}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition text-center"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Alto (cm) <span className="text-[9px] font-normal opacity-70">(Opcional)</span></label>
+                      <input
+                        type="number"
+                        placeholder="Ej: 150"
+                        value={height}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setHeight(val);
+                        }}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition text-center"
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Precio Unitario ($ MXN)</label>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Precio Unitario ($ MXN)</label>
                       <div className="relative">
                         <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">$</span>
                         <input
@@ -1801,30 +1939,30 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           value={customPrice}
                           onChange={(e) => {
                             const val = e.target.value;
-                            setCustomPrice(val === "" ? "" : Number(val));
+                            setCustomPrice(val);
                           }}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2 text-slate-800 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-mono"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2 text-slate-800 dark:text-slate-100 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-mono"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Cantidad de Unidades</label>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Cantidad de Unidades</label>
                       <input
                         type="number"
                         placeholder="1"
                         value={qty}
                         onChange={(e) => {
                           const val = e.target.value;
-                          setQty(val === "" ? "" : Number(val));
+                          setQty(val);
                         }}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-slate-800 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-sans text-center"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-slate-800 dark:text-slate-100 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-sans text-center"
                       />
                     </div>
                   </div>
 
                   {/* Custom manual selections */}
-                  <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/85 dark:border-slate-800/80 space-y-3.5">
+                  <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3.5">
                     <span className="block text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider font-mono">
                       🛠️ Personalizar Especificaciones de Concepto:
                     </span>
@@ -1837,11 +1975,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                             type="checkbox"
                             checked={manualHasGlass}
                             onChange={(e) => setManualHasGlass(e.target.checked)}
-                            className="rounded text-amber-600 focus:ring-amber-400 bg-white dark:bg-slate-950 border-slate-300 h-4 w-4 mt-0.5"
+                            className="rounded text-amber-600 focus:ring-amber-400 bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-600 h-4 w-4 mt-0.5"
                           />
                           <div>
-                            <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">¿Lleva Cristal / Vidrio?</span>
-                            <span className="block text-[9.5px] text-slate-400">Tildar si el concepto incluye cristal instalado</span>
+                            <span className="block text-xs font-bold text-slate-700 dark:text-slate-100">¿Lleva Cristal / Vidrio?</span>
+                            <span className="block text-[9.5px] text-slate-500 dark:text-slate-300">Tildar si el concepto incluye cristal instalado</span>
                           </div>
                         </label>
 
@@ -1850,11 +1988,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                             type="checkbox"
                             checked={manualMaterialIncluded}
                             onChange={(e) => setManualMaterialIncluded(e.target.checked)}
-                            className="rounded text-amber-600 focus:ring-amber-400 bg-white dark:bg-slate-950 border-slate-300 h-4 w-4 mt-0.5"
+                            className="rounded text-amber-600 focus:ring-amber-400 bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-600 h-4 w-4 mt-0.5"
                           />
                           <div>
-                            <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">¿Con material incluido?</span>
-                            <span className="block text-[9.5px] text-slate-400">Desmarcar para cotizar sólo mano de obra o reparación</span>
+                            <span className="block text-xs font-bold text-slate-700 dark:text-slate-100">¿Con material incluido?</span>
+                            <span className="block text-[9.5px] text-slate-500 dark:text-slate-300">Desmarcar para cotizar sólo mano de obra o reparación</span>
                           </div>
                         </label>
                       </div>
@@ -1884,7 +2022,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                             value={manualGlassTone}
                             onChange={(e) => setManualGlassTone(e.target.value)}
                             disabled={!manualHasGlass}
-                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-slate-100 disabled:dark:bg-slate-900 disabled:text-slate-400 disabled:cursor-not-allowed"
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-slate-100 dark:bg-slate-700 disabled:dark:bg-slate-950 disabled:text-slate-400 disabled:cursor-not-allowed"
                           >
                             <option value="Claro">Claro</option>
                             <option value="Filtrasol">Filtrasol</option>
@@ -1898,9 +2036,45 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     </div>
                   </div>
 
+                  {/* Manual Concept Image Upload */}
+                  <div className="mt-3">
+                    <label className="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200 border border-amber-200 dark:border-amber-800/50 rounded-xl px-4 py-3 flex items-center justify-between transition-all">
+                      <div className="flex items-center gap-2">
+                        <ImagePlus size={16} className="text-amber-600 dark:text-amber-400" />
+                        <span className="text-xs font-bold">{designImageUrl ? "Cambiar Imagen de Referencia / Plano" : "Adjuntar Imagen de Referencia / Plano"}</span>
+                      </div>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setDesignImageUrl(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }} 
+                      />
+                    </label>
+                    {designImageUrl && (
+                      <div className="mt-2 relative inline-block">
+                        <img src={designImageUrl} alt="Referencia" className="h-32 object-contain rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" />
+                        <button 
+                          onClick={() => setDesignImageUrl("")} 
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:scale-110 transition"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Optional decorative helper */}
-                  <div className="bg-slate-50 dark:bg-slate-900/20 hover:bg-slate-100/70 py-2.5 px-3.5 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 flex items-start gap-2">
-                    <span className="text-amber-500 font-bold">ℹ️</span>
+                  <div className="mt-3 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 py-2.5 px-3.5 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 dark:text-slate-400 flex items-start gap-2">
+                    <span className="text-blue-500 dark:text-blue-300 font-bold">ℹ️</span>
                     <div>
                       Este concepto se sumará directamente a los subtotales de la cotización actual, respetando los datos de color de aluminio, cristal y tipo de servicio seleccionados para el PDF final.
                     </div>
@@ -1911,9 +2085,9 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
             {/* CONFIGURATION VALIDATION MESSAGES */}
             {isCalculatedMode && validationIssues.length > 0 && (
-              <div className="mt-4 p-3.5 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 space-y-2">
+              <div className="mt-4 p-3.5 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  <AlertCircle size={14} className="text-amber-500" />
+                  <AlertCircle size={14} className="text-blue-500 dark:text-blue-300" />
                   <span>Validación de Aludev ({selectedCategoryLabel})</span>
                 </div>
                 <div className="space-y-1.5">
@@ -1923,7 +2097,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       className={`text-xs p-2.5 rounded-lg flex items-start gap-2 border ${
                         issue.type === "error" 
                           ? "bg-red-50 text-red-905 border-red-100 dark:bg-red-950/25 dark:text-red-300 dark:border-red-900/40 font-semibold" 
-                          : "bg-amber-50 text-amber-905 border-amber-100 dark:bg-amber-950/25 dark:text-amber-300 dark:border-amber-900/40"
+                          : "bg-amber-50 text-amber-905 border-blue-100 dark:bg-amber-950/25 dark:text-amber-300 dark:border-amber-900/40"
                       }`}
                     >
                       <span className="mt-0.5">{issue.type === "error" ? "🛑" : "⚠️"}</span>
@@ -1936,10 +2110,10 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
             {/* PREVIEW SINGLE COST CARD */}
             {previewResult && (
-              <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 items-center gap-4">
-                <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between h-full text-xs">
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-1 sm:grid-cols-2 items-center gap-4">
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between h-full text-xs">
                   <div className="flex justify-between items-center border-b border-slate-200/50 dark:border-slate-800 pb-1.5 mb-2">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase">Cálculo de Cotización</span>
+                    <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Cálculo de Cotización</span>
                     <span className="text-[10px] bg-slate-200 dark:bg-slate-850 text-slate-600 dark:text-slate-300 font-bold px-1.5 py-0.5 rounded-full">Unitario</span>
                   </div>
                   
@@ -1956,17 +2130,20 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       {previewResult.includeIva && (
                         <div className="flex justify-between">
                           <span>Impuestos (IVA 16%):</span>
-                          <strong className="font-mono text-blue-600 dark:text-blue-400">+${Math.round((previewResult.baseCost * (1 + previewResult.profitMarginPercent / 100) * 0.16) / qty).toLocaleString("es-MX")}</strong>
+                          <strong className="font-mono text-blue-600 dark:text-blue-300">+${Math.round((previewResult.baseCost * (1 + previewResult.profitMarginPercent / 100) * 0.16) / qty).toLocaleString("es-MX")}</strong>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <p className="text-[11px] text-slate-500 mb-2">Concepto manual libre con precio establecido directamente.</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Concepto manual libre con precio establecido directamente.</p>
                   )}
 
                   <div className="pt-2 border-t border-slate-200/50 dark:border-slate-800 flex justify-between items-baseline">
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Total Unitario:</span>
-                    <span className="text-2xl font-black text-slate-800 dark:text-slate-50">${Math.round(previewResult.total / qty).toLocaleString("es-MX")} <span className="text-xs font-normal">MXN</span></span>
+                    <span className="text-2xl font-black text-slate-800 dark:text-slate-50">
+                      {previewResult.hasManualOverride && <span className="text-xs text-blue-500 dark:text-blue-300 font-bold mr-1 align-middle">(Manual)</span>}
+                      ${Math.round(previewResult.total / (qty || 1)).toLocaleString("es-MX")} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">MXN</span>
+                    </span>
                   </div>
                 </div>
                 
@@ -1983,7 +2160,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                   <button
                     onClick={handleAddToQuote}
                     disabled={hasValidationError}
-                    className={`mt-3.5 w-full bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold py-2 rounded-lg text-center transition shadow ${isCalculatedMode ? "text-blue-900" : "text-amber-900"}`}
+                    className={`mt-3.5 w-full bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold py-2 rounded-lg text-center transition shadow-sm ${isCalculatedMode ? "text-blue-900 dark:text-blue-100" : "text-amber-900"}`}
                     id="add-item-to-project"
                   >
                     {hasValidationError ? "🛑 Configuración No Válida" : "+ Agregar a Cotización"}
@@ -1995,8 +2172,8 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
           {/* REAL-TIME TECHNICAL MATERIAL BREAKDOWN */}
           {isCalculatedMode && previewResult && (
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-3">
+              <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
                 <Cpu size={14} className="text-indigo-500" />
                 Desglose Físico y Descuentos Asociados (Instantáneo)
               </h3>
@@ -2005,9 +2182,9 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-mono text-slate-400 uppercase">Perfiles de Aluminio</span>
                   {previewResult.profiles.map((p: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center bg-slate-50 py-1.5 px-3 rounded-lg border border-slate-100">
+                    <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 py-1.5 px-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
                       <div>
-                        <p className="text-xs text-slate-800 font-semibold">{p.label}</p>
+                        <p className="text-xs text-slate-800 dark:text-slate-100 font-semibold">{p.label}</p>
                         <p className="text-[10px] text-slate-400 font-mono">
                           {p.name} - Medidas de corte:{" "}
                           <strong>
@@ -2015,7 +2192,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           </strong>
                         </p>
                       </div>
-                      <span className="text-xs font-medium text-slate-700 font-mono">
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-200 font-mono">
                         {p.meters.toFixed(1)}m | ${Math.round(p.cost)}
                       </span>
                     </div>
@@ -2026,9 +2203,9 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                 <div className="space-y-1.5 pt-2">
                   <span className="text-[10px] font-mono text-slate-400 uppercase">Vidriería</span>
                   {previewResult.glasses.map((g: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center bg-slate-50 py-1.5 px-3 rounded-lg border border-slate-100">
+                    <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 py-1.5 px-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
                       <div>
-                        <p className="text-xs text-slate-800 font-semibold">Cristal Espesor {g.thickness}</p>
+                        <p className="text-xs text-slate-800 dark:text-slate-100 font-semibold">Cristal Espesor {g.thickness}</p>
                         <p className="text-[10px] text-slate-400 font-mono">
                           Lámina cortada:{" "}
                           <strong>
@@ -2036,7 +2213,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           </strong>
                         </p>
                       </div>
-                      <span className="text-xs font-medium text-slate-700 font-mono">
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-200 font-mono">
                         {g.areaM2.toFixed(2)}m² | ${Math.round(g.cost)}
                       </span>
                     </div>
@@ -2048,9 +2225,9 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                   <span className="text-[10px] font-mono text-slate-400 uppercase">Herrajes / Accesorios de Montaje</span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {previewResult.accessories.map((acc: any, i: number) => (
-                      <div key={i} className="flex justify-between items-center bg-slate-50 py-1 px-2.5 rounded border border-slate-100">
-                        <span className="text-xs text-slate-700 max-w-[150px] truncate">{acc.name}</span>
-                        <span className="text-xs font-mono font-bold text-slate-600">
+                      <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 py-1 px-2.5 rounded border border-slate-100 dark:border-slate-700/50">
+                        <span className="text-xs text-slate-700 dark:text-slate-200 max-w-[150px] truncate">{acc.name}</span>
+                        <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
                           {acc.qty} pz (${Math.round(acc.cost)})
                         </span>
                       </div>
@@ -2064,12 +2241,12 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
         {/* PROJECT CART BOARD (Col span 2) */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-full min-h-[500px]">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm flex flex-col justify-between h-full min-h-[500px]">
             <div>
               {/* Header with Title and Clear Button */}
-              <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-                <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                  <Grid size={16} className="text-blue-600" />
+              <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100 dark:border-slate-700/50">
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+                  <Grid size={16} className="text-blue-600 dark:text-blue-300" />
                   Proyecto en Cotización ({state.quotes.length} items)
                 </h3>
                 {state.quotes.length > 0 && (
@@ -2085,13 +2262,13 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
 
               {/* Toggle Switch between Venta and Taller modes */}
               {state.quotes.length > 0 && (
-                <div className="flex bg-slate-100 p-1 rounded-xl mb-4 text-xs font-bold gap-1">
+                <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl mb-4 text-xs font-bold gap-1">
                   <button
                     onClick={() => setBasketTab("venta")}
                     className={`flex-1 py-1.5 rounded-lg text-center transition ${
                       basketTab === "venta"
-                        ? "bg-white text-slate-800 shadow"
-                        : "text-slate-500 hover:text-slate-800"
+                        ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100"
                     }`}
                   >
                     Detalle de Venta
@@ -2100,11 +2277,11 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     onClick={() => setBasketTab("taller")}
                     className={`flex-1 py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1.5 ${
                       basketTab === "taller"
-                        ? "bg-white text-slate-800 shadow"
-                        : "text-slate-500 hover:text-slate-800"
+                        ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100"
                     }`}
                   >
-                    <Hammer size={12} className="text-blue-600" />
+                    <Hammer size={12} className="text-blue-600 dark:text-blue-300" />
                     Ficha de Taller ({despieceCuts.length} Cortes)
                   </button>
                 </div>
@@ -2117,7 +2294,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                   {state.quotes.map((q) => (
                     <div
                       key={q.id}
-                      className="p-3.5 bg-slate-50 border border-slate-200/60 rounded-xl relative group hover:border-slate-300 hover:bg-slate-100/50 transition"
+                      className="p-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/60 rounded-xl relative group hover:border-slate-300 dark:border-slate-600 hover:bg-slate-100 transition"
                     >
                       {editingQuoteId !== q.id ? (
                         <>
@@ -2129,7 +2306,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                                 setEditDescription(q.customDescription || "");
                                 setEditQty(q.quantity);
                               }}
-                              className="text-slate-400 hover:text-blue-600 transition"
+                              className="text-slate-400 hover:text-blue-600 dark:text-blue-300 transition"
                               title="Editar texto de cotización"
                             >
                               <Edit2 size={13} />
@@ -2143,7 +2320,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                             </button>
                           </div>
                           <div>
-                            <h4 className="font-semibold text-slate-800 text-xs pr-14 flex items-center gap-1">
+                            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-xs pr-14 flex items-center gap-1">
                               {q.name}
                               {q.customDescription && (
                                 <span className="text-[8px] bg-sky-100 text-sky-700 px-1 rounded font-bold uppercase">
@@ -2157,7 +2334,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                             
                             {/* Saved Custom Description */}
                             {q.customDescription ? (
-                                <div className="mt-2 p-2 bg-sky-50/50 text-slate-600 rounded-lg text-[11px] border border-sky-100/60 leading-relaxed font-sans italic">
+                                <div className="mt-2 p-2 bg-sky-50/50 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] border border-sky-100/60 leading-relaxed font-sans italic">
                                   <span className="font-bold text-sky-800 not-italic block text-[9px] uppercase tracking-wider mb-0.5">Descripción para cliente:</span>
                                   "{q.customDescription}"
                                 </div>
@@ -2167,31 +2344,39 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                               </p>
                             )}
 
+                            {/* Optional Attached Design Image */}
+                            {q.designImageUrl && (
+                              <div className="mt-2.5">
+                                <span className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Referencia Adjunta:</span>
+                                <img src={q.designImageUrl} alt="Plano o Diseño Adjunto" className="h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm opacity-90 hover:opacity-100 hover:scale-[1.02] cursor-pointer transition-all" onClick={() => window.open(q.designImageUrl, '_blank')} />
+                              </div>
+                            )}
+
                             <div className="mt-2.5 flex flex-wrap items-center gap-2">
                               {/* Quantity Stepper Editor */}
-                              <div className="flex items-center bg-slate-200 border border-slate-300 rounded-lg overflow-hidden shrink-0 shadow-sm">
+                              <div className="flex items-center bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg overflow-hidden shrink-0 shadow-sm">
                                 <button
                                   type="button"
                                   onClick={() => changeBasketItemQuantity(q.id, q.quantity - 1)}
-                                  className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-extrabold transition font-mono"
+                                  className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-[11px] font-extrabold transition font-mono"
                                   title="Disminuir cantidad"
                                 >
                                   -
                                 </button>
-                                <span className="px-2.5 py-0.5 text-xs font-bold font-mono text-slate-800">
+                                <span className="px-2.5 py-0.5 text-xs font-bold font-mono text-slate-800 dark:text-slate-100">
                                   {q.quantity} pz
                                 </span>
                                 <button
                                   type="button"
                                   onClick={() => changeBasketItemQuantity(q.id, q.quantity + 1)}
-                                  className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-extrabold transition font-mono"
+                                  className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-[11px] font-extrabold transition font-mono"
                                   title="Aumentar cantidad"
                                 >
                                   +
                                 </button>
                               </div>
 
-                              <span className="text-[9px] bg-blue-105 text-blue-800 px-1.5 py-1 rounded font-mono font-medium">
+                              <span className="text-[9px] bg-blue-105 text-blue-800 dark:text-blue-200 px-1.5 py-1 rounded font-mono font-medium">
                                 {q.calculated.glasses[0]?.id === "glass-none" ? "Sin vidrio" : q.calculated.glasses[0]?.thickness}
                               </span>
                             </div>
@@ -2200,7 +2385,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                       ) : (
                         <div className="space-y-3">
                           <div className="flex justify-between items-center pb-1 border-b border-slate-200/50">
-                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Editando Renglón</span>
+                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 uppercase tracking-wider">Editando Renglón</span>
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => {
@@ -2211,14 +2396,14 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                                   changeBasketItemQuantity(q.id, Number(editQty) || 1);
                                   setEditingQuoteId(null);
                                 }}
-                                className="flex items-center gap-1 text-[10px] bg-emerald-600 hover:bg-emerald-500 text-white py-1 px-2.5 rounded-lg transition font-medium"
+                                className="flex items-center gap-1 text-[10px] bg-emerald-600 hover:bg-emerald-50 dark:bg-emerald-900/400 text-white py-1 px-2.5 rounded-lg transition font-medium"
                               >
                                 <Check size={10} />
                                 Guardar
                               </button>
                               <button
                                 onClick={() => setEditingQuoteId(null)}
-                                className="flex items-center gap-1 text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-700 py-1 px-2.5 rounded-lg transition font-medium"
+                                className="flex items-center gap-1 text-[10px] bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-200 py-1 px-2.5 rounded-lg transition font-medium"
                               >
                                 <X size={10} />
                                 Cancelar
@@ -2229,29 +2414,29 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           <div className="space-y-2">
                             <div className="grid grid-cols-3 gap-2">
                               <div className="col-span-2">
-                                <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Nombre Corto de Pieza</label>
+                                <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Nombre Corto de Pieza</label>
                                 <input
                                   type="text"
                                   value={editName}
                                   onChange={(e) => setEditName(e.target.value)}
-                                  className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-slate-800 dark:text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Cantidad (pz)</label>
+                                <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Cantidad (pz)</label>
                                 <input
                                   type="number"
                                   min="1"
                                   value={editQty}
-                                  onChange={(e) => { const val = e.target.value; setEditQty(val === "" ? "" : Number(val)); }}
-                                  className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 text-xs text-center font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
+                                  onChange={(e) => { const val = e.target.value; setEditQty(val); }}
+                                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-slate-800 dark:text-slate-100 text-xs text-center font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
                                 />
                               </div>
                             </div>
                             
                             <div>
                               <div className="flex justify-between items-center mb-1">
-                                <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Descripción para el Cliente (Sin Tecniscismos)</label>
+                                <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Descripción para el Cliente (Sin Tecniscismos)</label>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -2260,7 +2445,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                                       : `con cristal ${q.calculated.glasses[0]?.thickness.toLowerCase()}`;
                                     setEditDescription(`Cancelería de aluminio en color ${q.color.toLowerCase()} para ${q.name.toLowerCase()} de ${q.widthCm} x ${q.heightCm} cm de alto, ${gText} e instalación premium de taller.`);
                                   }}
-                                  className="text-[9px] text-blue-600 hover:underline font-semibold"
+                                  className="text-[9px] text-blue-600 dark:text-blue-300 hover:underline font-semibold"
                                 >
                                   Sugerir texto simple
                                 </button>
@@ -2269,16 +2454,16 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                                 value={editDescription}
                                 onChange={(e) => setEditDescription(e.target.value)}
                                 placeholder="Escribe la descripción simplificada aquí. Esto ocultará los milímetros y perfiles técnicos al cliente en el PDF."
-                                className="w-full h-16 bg-white border border-slate-200 rounded-lg p-2 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 leading-normal resize-none"
+                                className="w-full h-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-800 dark:text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 leading-normal resize-none"
                               />
                             </div>
                           </div>
                         </div>
                       )}
                       
-                      <div className="mt-2.5 pt-2 border-t border-dashed border-slate-200 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-500">Subtotal con Mano Obra:</span>
-                        <span className="text-xs font-bold text-slate-800 font-mono">
+                      <div className="mt-2.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400">Subtotal con Mano Obra:</span>
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-mono">
                           ${Math.round(q.calculated.total).toLocaleString("es-MX")}
                         </span>
                       </div>
@@ -2299,15 +2484,15 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                 /* WORKSHOP INTEGRATED SHEET & DESPIECE */
                 <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
                   {/* WORKSHOP PROGRESS BAR */}
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60 space-y-2">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200/60 space-y-2">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                        <Scissors size={13} className="text-blue-600" />
+                      <span className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                        <Scissors size={13} className="text-blue-600 dark:text-blue-300" />
                         Progreso de Cortes en Sierra
                       </span>
-                      <span className="font-mono font-bold text-blue-700">{progressPercent}% ({completedCutsCount}/{totalCutsCount})</span>
+                      <span className="font-mono font-bold text-blue-700 dark:text-blue-300">{progressPercent}% ({completedCutsCount}/{totalCutsCount})</span>
                     </div>
-                    <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                       <div 
                         style={{ width: `${progressPercent}%` }} 
                         className="bg-blue-600 h-full transition-all duration-300 rounded-full"
@@ -2316,7 +2501,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     <div className="flex justify-between items-center pt-1">
                       <button
                         onClick={handlePrintWorkshopPlan}
-                        className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 bg-white border border-blue-200 px-2.5 py-1 rounded shadow-sm transition"
+                        className="text-[10px] text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:text-blue-200 font-bold flex items-center gap-1 bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-700/50 px-2.5 py-1 rounded shadow-sm transition"
                       >
                         <Printer size={10} />
                         Imprimir Hoja de Taller
@@ -2328,7 +2513,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                               setCompletedCuts({});
                             }
                           }}
-                          className="text-[9px] text-slate-500 hover:text-red-500 transition"
+                          className="text-[9px] text-slate-500 dark:text-slate-400 hover:text-red-500 transition"
                         >
                           Reiniciar Listado
                         </button>
@@ -2339,21 +2524,21 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                   {/* SECTION 1: CONSOLIDATED MATERIALS LIST */}
                   <div className="space-y-2">
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                      <ShoppingBag size={10} className="text-slate-500" />
+                      <ShoppingBag size={10} className="text-slate-500 dark:text-slate-400" />
                       Plan de Compra de Almacén
                     </h4>
                     
                     {/* Raw profiles list with Bar calculation */}
-                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/60 space-y-2">
-                      <span className="text-[9px] text-slate-500 font-mono block border-b border-slate-200 pb-1 uppercase font-bold">1. Perfiles de Aluminio (Barras 6.1m)</span>
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200/60 space-y-2">
+                      <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono block border-b border-slate-200 dark:border-slate-700 pb-1 uppercase font-bold">1. Perfiles de Aluminio (Barras 6.1m)</span>
                       {Object.values(aggregatedProfiles).map((p, i) => (
                         <div key={i} className="flex justify-between items-start text-xs border-b border-dashed border-slate-150 last:border-none pb-1.5 last:pb-0">
                           <div>
-                            <p className="font-semibold text-slate-800">{p.name}</p>
+                            <p className="font-semibold text-slate-800 dark:text-slate-100">{p.name}</p>
                             <p className="text-[9px] text-slate-400 mt-0.5">{p.line} | {p.color}</p>
                           </div>
                           <div className="text-right">
-                            <span className="font-mono font-black text-slate-800 text-xs">{p.barCount} bar(s)</span>
+                            <span className="font-mono font-black text-slate-800 dark:text-slate-100 text-xs">{p.barCount} bar(s)</span>
                             <span className="block text-[9px] text-slate-400 font-mono">({p.meters.toFixed(1)}m req.)</span>
                           </div>
                         </div>
@@ -2361,15 +2546,15 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     </div>
 
                     {/* Consolidated glasses */}
-                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/60 space-y-2">
-                      <span className="text-[9px] text-slate-500 font-mono block border-b border-slate-200 pb-1 uppercase font-bold">2. Vidriería</span>
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200/60 space-y-2">
+                      <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono block border-b border-slate-200 dark:border-slate-700 pb-1 uppercase font-bold">2. Vidriería</span>
                       {Object.values(aggregatedGlasses).map((g, i) => (
                         <div key={i} className="flex justify-between items-center text-xs">
                           <div>
-                            <p className="font-semibold text-slate-800">{g.thickness}</p>
+                            <p className="font-semibold text-slate-800 dark:text-slate-100">{g.thickness}</p>
                             <p className="text-[9px] text-slate-400">{g.count} pzas de cristal necesarias</p>
                           </div>
-                          <span className="font-mono font-bold text-slate-800">
+                          <span className="font-mono font-bold text-slate-800 dark:text-slate-100">
                             {g.areaM2.toFixed(2)} m²
                           </span>
                         </div>
@@ -2377,13 +2562,13 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     </div>
 
                     {/* Consolidated hardware */}
-                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/60 space-y-2">
-                      <span className="text-[9px] text-slate-500 font-mono block border-b border-slate-200 pb-1 uppercase font-bold">3. Accesorios / Herrajes</span>
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200/60 space-y-2">
+                      <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono block border-b border-slate-200 dark:border-slate-700 pb-1 uppercase font-bold">3. Accesorios / Herrajes</span>
                       <div className="grid grid-cols-1 gap-1.5">
                         {Object.values(aggregatedAccessories).map((a, i) => (
-                          <div key={i} className="flex justify-between text-xs text-slate-700 bg-white px-2 py-1 rounded border border-slate-100">
+                          <div key={i} className="flex justify-between text-xs text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 px-2 py-1 rounded border border-slate-100 dark:border-slate-700/50">
                             <span>{a.name}</span>
-                            <span className="font-mono font-bold text-slate-800">{a.qty} pz</span>
+                            <span className="font-mono font-bold text-slate-800 dark:text-slate-100">{a.qty} pz</span>
                           </div>
                         ))}
                       </div>
@@ -2403,13 +2588,13 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           onClick={() => toggleCutCompleted(c.stableId)}
                           className={`flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer transition select-none ${
                             completedCuts[c.stableId]
-                              ? "bg-slate-100/70 border-slate-300 opacity-60 line-through text-slate-400"
-                              : "bg-white border-slate-200/60 text-slate-800 hover:border-slate-300 hover:bg-slate-50"
+                              ? "bg-slate-100 border-slate-300 dark:border-slate-600 opacity-60 line-through text-slate-400"
+                              : "bg-white dark:bg-slate-900 border-slate-200/60 text-slate-800 dark:text-slate-100 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-800"
                           }`}
                         >
                           <button
                             type="button"
-                            className={`p-0.5 shrink-0 ${completedCuts[c.stableId] ? "text-blue-600" : "text-slate-300"}`}
+                            className={`p-0.5 shrink-0 ${completedCuts[c.stableId] ? "text-blue-600 dark:text-blue-300" : "text-slate-300"}`}
                           >
                             {completedCuts[c.stableId] ? (
                               <CheckSquare size={15} />
@@ -2420,14 +2605,14 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-center">
-                              <span className="font-bold font-mono text-sm tracking-tight text-blue-700">
+                              <span className="font-bold font-mono text-sm tracking-tight text-blue-700 dark:text-blue-300">
                                 {c.sizeCm} cm
                               </span>
-                              <span className={`text-[9px] px-1.5 rounded font-bold font-mono ${c.angle.includes("45") ? "bg-cyan-50 text-cyan-700 border border-cyan-100" : "bg-slate-100 text-slate-600"}`}>
+                              <span className={`text-[9px] px-1.5 rounded font-bold font-mono ${c.angle.includes("45") ? "bg-cyan-50 text-cyan-700 border border-cyan-100" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"}`}>
                                 {c.angle.includes("45") ? "45° Mitra" : "90° Recto"}
                               </span>
                             </div>
-                            <p className="text-[9px] text-slate-500 truncate mt-0.5">
+                            <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
                               {c.quoteName} - {c.label} • <span className="text-[8px] font-mono">{c.color}</span>
                             </p>
                           </div>
@@ -2444,43 +2629,88 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
               <div className="mt-6 pt-4 border-t border-slate-250/80 space-y-4">
                 
                 {/* PDF BRAND CUSTOMIZER CONTROLS */}
-                <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2 text-xs">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 rounded-xl space-y-2 text-xs">
                   <div className="flex items-center gap-1.5 pb-1 border-b border-slate-200/50">
-                    <Download size={12} className="text-blue-600" />
-                    <span className="font-bold text-slate-700 uppercase tracking-wide">Exportación PDF Profesional</span>
+                    <Download size={12} className="text-blue-600 dark:text-blue-300" />
+                    <span className="font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Exportación PDF Profesional</span>
                   </div>
                   
-                  <div className="space-y-2 Pt-1">
+                  <div className="space-y-2 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">Nombre del Cliente</label>
+                        <input
+                          type="text"
+                          value={clientNameForPdf}
+                          onChange={(e) => setClientNameForPdf(e.target.value)}
+                          placeholder="Ej: Ignacio Martínez"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-100 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">Teléfono del Cliente</label>
+                        <input
+                          type="text"
+                          value={clientPhoneForPdf}
+                          onChange={(e) => setClientPhoneForPdf(e.target.value)}
+                          placeholder="Ej: 555-123-4567"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-100 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Nombre del Cliente</label>
+                      <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">Dirección del Cliente</label>
                       <input
                         type="text"
-                        value={clientNameForPdf}
-                        onChange={(e) => setClientNameForPdf(e.target.value)}
-                        placeholder="Ej: Ignacio Martínez"
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        value={clientAddressForPdf}
+                        onChange={(e) => setClientAddressForPdf(e.target.value)}
+                        placeholder="Ej: Calle Reforma 123"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-100 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
                       />
+                    </div>
+                    
+                    <div className="pt-2 border-t border-slate-200/50">
+                      <span className="block text-[10px] font-bold text-slate-600 dark:text-slate-300 mb-2">Datos de la Empresa (Mostrar en PDF)</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">Dirección / Sucursal</label>
+                          <input
+                            type="text"
+                            value={businessAddressForPdf}
+                            onChange={(e) => setBusinessAddressForPdf(e.target.value)}
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-100 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">Teléfono / WhatsApp</label>
+                          <input
+                            type="text"
+                            value={businessPhoneForPdf}
+                            onChange={(e) => setBusinessPhoneForPdf(e.target.value)}
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-100 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Condiciones comerciales / Garantías</label>
+                      <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">Condiciones comerciales / Garantías</label>
                       <textarea
                         value={notesForPdf}
                         onChange={(e) => setNotesForPdf(e.target.value)}
                         placeholder="Condiciones de pago..."
-                        className="w-full h-11 bg-white border border-slate-200 rounded-lg p-2 text-slate-800 text-[10px] focus:ring-1 focus:ring-blue-500 focus:outline-none leading-normal resize-none"
+                        className="w-full h-11 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-800 dark:text-slate-100 text-[10px] focus:ring-1 focus:ring-blue-500 focus:outline-none leading-normal resize-none"
                       />
                     </div>
-
                     <div className="pt-0.5">
                       <label className="flex items-center gap-2 cursor-pointer select-none">
                         <input
                           type="checkbox"
                           checked={simplifyPdf}
                           onChange={(e) => setSimplifyPdf(e.target.checked)}
-                          className="rounded border-slate-200 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                          className="rounded border-slate-200 dark:border-slate-700 text-blue-600 dark:text-blue-300 focus:ring-blue-500 w-3.5 h-3.5"
                         />
-                        <span className="text-[10px] text-slate-600 font-semibold leading-tight">
+                        <span className="text-[10px] text-slate-600 dark:text-slate-300 font-semibold leading-tight">
                           Simplificar PDF (Ocultar cortes y desgloses milimétricos técnicos)
                         </span>
                       </label>
@@ -2489,7 +2719,7 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                       <button
                         onClick={handleDownloadPDF}
-                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11.5px] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-[0.98]"
+                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold text-[11.5px] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-[0.98]"
                         title="Cotización formal en PDF tamaño carta"
                       >
                         <FileText size={13} />
@@ -2501,36 +2731,35 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                         className="w-full py-2.5 bg-slate-850 hover:bg-slate-750 text-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-750 dark:border-slate-700 font-bold text-[11.5px] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-[0.98]"
                         title="Formato simplificado para ticket térmico de 80mm"
                       >
-                        <Printer size={13} className="text-blue-400" />
+                        <Printer size={13} className="text-blue-400 dark:text-blue-300" />
                         Ticket Térmico (80mm)
                       </button>
                     </div>
                   </div>
                 </div>
-
                 <div className="space-y-1 text-xs font-mono pt-1">
-                  <div className="flex justify-between text-slate-500">
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
                     <span>Mano de obra total:</span>
                     <span>${Math.round(totalLaborPrice).toLocaleString("es-MX")}</span>
                   </div>
-                  <div className="flex justify-between text-slate-500">
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
                     <span>Materia prima (aluminio):</span>
                     <span>${Math.round(totalProfilesPrice).toLocaleString("es-MX")}</span>
                   </div>
-                  <div className="flex justify-between text-slate-500">
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
                     <span>Materia prima (vidrios):</span>
                     <span>${Math.round(totalGlassesPrice).toLocaleString("es-MX")}</span>
                   </div>
-                  <div className="flex justify-between text-slate-500">
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
                     <span>Herrajes totales:</span>
                     <span>${Math.round(totalAccessoriesPrice).toLocaleString("es-MX")}</span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-200 flex justify-between items-baseline">
-                  <span className="text-sm font-bold text-slate-700">Importe Proyecto Total:</span>
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between items-baseline">
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Importe Proyecto Total:</span>
                   <div className="text-right">
-                    <span className="text-2xl font-black text-blue-700 font-mono">
+                    <span className="text-2xl font-black text-blue-700 dark:text-blue-300 font-mono">
                       ${Math.round(totalProjectPrice).toLocaleString("es-MX")}
                     </span>
                     <span className="block text-[10px] text-slate-400 font-mono">MXN Neto</span>
@@ -2540,14 +2769,14 @@ export const Cotizador: React.FC<{ setTab: (tab: string) => void; setCutsToOptim
                 <div className="pt-4 grid grid-cols-2 gap-2">
                   <button
                     onClick={exportCutsToPackage}
-                    className="py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition"
+                    className="py-2.5 bg-slate-800 dark:bg-slate-950 hover:bg-slate-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition"
                   >
                     <Scissors size={13} />
                     Extraer Cortes
                   </button>
                   <button
                     onClick={exportToInvoice}
-                    className="py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition"
+                    className="py-2.5 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition"
                   >
                     <FileText size={13} />
                     Hacer Remisión

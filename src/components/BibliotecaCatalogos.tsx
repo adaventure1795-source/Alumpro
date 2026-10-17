@@ -231,20 +231,20 @@ export const BibliotecaCatalogos: React.FC = () => {
       {/* Visual Welcome Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-800 font-sans tracking-tight">
+          <h1 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 font-sans tracking-tight">
             Biblioteca Digital & Centro de Distribución Git
           </h1>
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-500 dark:text-slate-400 text-xs">
             Alimenta tus bases de datos mediante carga de fichas técnicas comerciales y consulta las guías de sincronización del código hacia tu repositorio personal de GitHub.
           </p>
         </div>
 
         {/* Action selector */}
-        <div className="flex bg-slate-100 p-1 rounded-xl shrink-0 border border-slate-200" id="library-tab-nav">
+        <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl shrink-0 border border-slate-200 dark:border-slate-700" id="library-tab-nav">
           <button
             onClick={() => setGithubTabActive(false)}
             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
-              !githubTabActive ? "bg-white text-blue-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+              !githubTabActive ? "bg-white dark:bg-slate-900 text-blue-900 dark:text-blue-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-slate-50"
             }`}
           >
             Bibliotecas & PDFs
@@ -252,7 +252,7 @@ export const BibliotecaCatalogos: React.FC = () => {
           <button
             onClick={() => setGithubTabActive(true)}
             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
-              githubTabActive ? "bg-white text-blue-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+              githubTabActive ? "bg-white dark:bg-slate-900 text-blue-900 dark:text-blue-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-slate-50"
             }`}
           >
             Sincronización GitHub
@@ -270,7 +270,7 @@ export const BibliotecaCatalogos: React.FC = () => {
             <div
               onDragOver={handleDragOver}
               onDrop={handleFileDrop}
-              className="bg-white border-2 border-dashed border-slate-250 p-8 rounded-2xl text-center hover:bg-slate-50/50 hover:border-blue-400 transition cursor-pointer relative"
+              className="bg-white dark:bg-slate-900 border-2 border-dashed border-slate-250 p-8 rounded-2xl text-center hover:bg-slate-50 hover:border-blue-400 transition cursor-pointer relative"
               id="pdf-dropzone"
             >
               <input
@@ -284,17 +284,17 @@ export const BibliotecaCatalogos: React.FC = () => {
                 }}
               />
               <div className="flex flex-col items-center gap-3">
-                <div className="p-3.5 bg-blue-50 text-blue-600 rounded-full">
+                <div className="p-3.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-full">
                   <UploadCloud size={30} className={isUploading ? "animate-bounce" : ""} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-sm">Carga el PDF Técnico de tu Proveedor</h3>
-                  <p className="text-slate-500 text-xs mt-1 max-w-sm mx-auto">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Carga el PDF Técnico de tu Proveedor</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-xs mt-1 max-w-sm mx-auto">
                     Arrastra aquí folletos de perfiles (Cuprum, Indalum, etc.) o haz clic para subir archivo. La base de datos extraerá automáticamente los centímetros de descuento.
                   </p>
                 </div>
                 {isUploading && (
-                  <span className="text-[11px] font-semibold text-blue-600 animate-pulse bg-blue-50 px-3 py-1 rounded">
+                  <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-300 animate-pulse bg-blue-50 dark:bg-blue-900/40 px-3 py-1 rounded">
                     Subiendo archivo y preparando lectura digital...
                   </span>
                 )}
@@ -302,18 +302,18 @@ export const BibliotecaCatalogos: React.FC = () => {
             </div>
 
             {/* Catalog List */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Fichas Técnicas Cargadas (PDF)</h3>
                 
                 {/* Brand Filter */}
-                <div className="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
                   {["todos", "Indalum", "EuroAlum", "EuroVent"].map(b => (
                     <button
                       key={b}
                       onClick={() => setSelectedBrand(b)}
                       className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        selectedBrand === b ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                        selectedBrand === b ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100"
                       }`}
                     >
                       {b.toUpperCase()}
@@ -324,18 +324,18 @@ export const BibliotecaCatalogos: React.FC = () => {
 
               <div className="space-y-3">
                 {filteredDocs.map((doc) => (
-                  <div key={doc.id} className="p-4 bg-slate-50/40 hover:bg-slate-50 border border-slate-200/60 rounded-xl flex items-start gap-3 transition">
-                    <div className="p-2.5 bg-slate-100 text-red-500 rounded-xl font-bold shrink-0">
+                  <div key={doc.id} className="p-4 bg-slate-50 hover:bg-slate-50 dark:bg-slate-800 border border-slate-200/60 rounded-xl flex items-start gap-3 transition">
+                    <div className="p-2.5 bg-slate-100 dark:bg-slate-700 text-red-500 rounded-xl font-bold shrink-0">
                       <FileText size={20} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-2">
-                        <h4 className="font-bold text-slate-800 text-xs truncate">{doc.name}</h4>
-                        <span className="text-[9px] bg-slate-200 text-slate-600 font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0">
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100 text-xs truncate">{doc.name}</h4>
+                        <span className="text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0">
                           {doc.brand}
                         </span>
                       </div>
-                      <p className="text-slate-500 text-[11px] leading-relaxed mt-1 line-clamp-2">{doc.description}</p>
+                      <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed mt-1 line-clamp-2">{doc.description}</p>
                       
                       <div className="flex items-center gap-3 text-[10px] text-slate-400 font-mono mt-3 pt-3 border-t border-slate-200/50">
                         <span>Peso: {doc.fileSize}</span>
@@ -347,7 +347,7 @@ export const BibliotecaCatalogos: React.FC = () => {
                     <div className="flex flex-col gap-1 shrink-0 pl-1">
                       <button
                         onClick={() => triggerAIExtract(doc)}
-                        className="p-1 px-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold rounded-lg flex items-center gap-1 transition shadow-sm"
+                        className="p-1 px-2.5 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white text-[10px] font-bold rounded-lg flex items-center gap-1 transition shadow-sm"
                         title="Extraer fórmulas con IA"
                       >
                         <Sparkles size={11} />
@@ -356,7 +356,7 @@ export const BibliotecaCatalogos: React.FC = () => {
                       
                       <button
                         onClick={() => handleDeleteDoc(doc.id)}
-                        className="p-1.5 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-100 text-slate-400 hover:text-rose-600 rounded-lg transition flex items-center justify-center"
+                        className="p-1.5 bg-white dark:bg-slate-900 hover:bg-rose-50 dark:bg-rose-900/30 border border-slate-200 dark:border-slate-700 hover:border-rose-100 dark:border-rose-800/50 text-slate-400 hover:text-rose-600 rounded-lg transition flex items-center justify-center"
                         title="Eliminar documento"
                       >
                         <Trash2 size={12} />
@@ -366,7 +366,7 @@ export const BibliotecaCatalogos: React.FC = () => {
                 ))}
 
                 {filteredDocs.length === 0 && (
-                  <div className="text-center py-12 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                  <div className="text-center py-12 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50">
                     <p className="text-xs text-slate-450">Ningún catálogo coincide con los filtros de marca seleccionados.</p>
                   </div>
                 )}
@@ -378,9 +378,9 @@ export const BibliotecaCatalogos: React.FC = () => {
           {/* RIGHT SIDE: AI ANALYSIS AND EXTRACTION TARGET (Col span 2) */}
           <div className="lg:col-span-2 space-y-6">
             
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm space-y-4">
               <div className="border-l-4 border-blue-500 pl-2">
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-widest">
                   Panel Técnico Extractor (Gemini Smart Engine)
                 </h3>
               </div>
@@ -389,10 +389,10 @@ export const BibliotecaCatalogos: React.FC = () => {
                 <div className="py-16 text-center space-y-4 flex flex-col items-center">
                   <div className="relative h-12 w-12 flex items-center justify-center">
                     <div className="absolute inset-0 border-4 border-blue-105 border-t-blue-600 rounded-full animate-spin"></div>
-                    <Sparkles className="text-blue-500" size={16} />
+                    <Sparkles className="text-blue-500 dark:text-blue-300" size={16} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-800 text-xs text-center animate-pulse">Analizando estructura geométrica...</h4>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-xs text-center animate-pulse">Analizando estructura geométrica...</h4>
                     <p className="text-slate-400 text-[10px] mt-1 max-w-xs mx-auto">
                       Gemini está evaluando los planos técnicos vectoriales del PDF para calcular los coeficientes de reducción de los batientes.
                     </p>
@@ -400,7 +400,7 @@ export const BibliotecaCatalogos: React.FC = () => {
                 </div>
               ) : extractedResult ? (
                 <div className="space-y-4">
-                  <div className="bg-emerald-50 text-emerald-900 border border-emerald-100 rounded-xl p-3 flex items-start gap-2.5 text-xs">
+                  <div className="bg-emerald-50 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-100 border border-emerald-100 dark:border-emerald-800/40 rounded-xl p-3 flex items-start gap-2.5 text-xs">
                     <CheckCircle className="text-emerald-600 mt-0.5 shrink-0" size={15} />
                     <div>
                       <span className="font-bold block">✓ ¡Se han encontrado 1 diseño calificado!</span>
@@ -409,19 +409,19 @@ export const BibliotecaCatalogos: React.FC = () => {
                   </div>
 
                   {extractedResult.formulas.map((prod: any, idx: number) => (
-                    <div key={idx} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-3">
+                    <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-slate-50 space-y-3">
                       <div>
                         <h4 className="font-bold text-slate-850 text-xs">{prod.name}</h4>
-                        <p className="text-slate-500 text-[10px] mt-0.5 leading-normal">{prod.description}</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5 leading-normal">{prod.description}</p>
                       </div>
 
                       <div className="space-y-2">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Matriz de perfiles de corte:</span>
-                        <div className="space-y-1.5 font-mono text-[10px] text-slate-700 bg-white p-2.5 rounded-lg border border-slate-150">
+                        <div className="space-y-1.5 font-mono text-[10px] text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-150">
                           {prod.profileEquations.map((pEq: any, pIdx: number) => (
                             <div key={pIdx} className="flex justify-between">
                               <span>• {pEq.name}:</span>
-                              <strong className="text-slate-900">{pEq.formula} cm</strong>
+                              <strong className="text-slate-900 dark:text-slate-50">{pEq.formula} cm</strong>
                             </div>
                           ))}
                         </div>
@@ -429,15 +429,15 @@ export const BibliotecaCatalogos: React.FC = () => {
 
                       <div className="space-y-1.5 pt-1">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Cristal descuento evaluado:</span>
-                        <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-white p-2 border border-slate-150 rounded-lg">
-                          <div>Letra Ancho: <strong className="text-blue-700">{prod.glassEquation.formulaWidth}</strong></div>
-                          <div>Letra Alto: <strong className="text-blue-700">{prod.glassEquation.formulaHeight}</strong></div>
+                        <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-white dark:bg-slate-900 p-2 border border-slate-150 rounded-lg">
+                          <div>Letra Ancho: <strong className="text-blue-700 dark:text-blue-300">{prod.glassEquation.formulaWidth}</strong></div>
+                          <div>Letra Alto: <strong className="text-blue-700 dark:text-blue-300">{prod.glassEquation.formulaHeight}</strong></div>
                         </div>
                       </div>
 
                       <button
                         onClick={() => saveExtractedFormula(prod)}
-                        className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition shadow"
+                        className="w-full py-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 dark:bg-slate-950 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition shadow-sm"
                       >
                         <Plus size={13} />
                         Registrar como Fórmula de Taller
@@ -446,7 +446,7 @@ export const BibliotecaCatalogos: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16 text-slate-400 border border-dashed border-slate-200 rounded-xl bg-slate-50/30">
+                <div className="text-center py-16 text-slate-400 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50">
                   <Database size={32} className="mx-auto text-slate-300 mb-2" />
                   <p className="text-xs max-w-xs mx-auto">Selecciona o presiona el botón "Extraer" a la derecha de un PDF para ver el análisis de planos aquí.</p>
                 </div>
@@ -454,7 +454,7 @@ export const BibliotecaCatalogos: React.FC = () => {
             </div>
 
             {/* Quick Informational Tip Card */}
-            <div className="bg-slate-900 text-slate-300 border border-slate-800 p-5 rounded-2xl flex gap-3 shadow-md">
+            <div className="bg-slate-900 dark:bg-slate-950 text-slate-300 border border-slate-800 p-5 rounded-2xl flex gap-3 shadow-md">
               <Info className="text-amber-400 shrink-0" size={18} />
               <div className="text-xs leading-normal">
                 <span className="font-bold text-slate-100 block">Dato de Producción</span>
@@ -469,16 +469,16 @@ export const BibliotecaCatalogos: React.FC = () => {
         </div>
       ) : (
         /* GITHUB REFERENCE SYSTEM BOARD PANEL */
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm max-w-4xl mx-auto space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm max-w-4xl mx-auto space-y-6">
           <div className="flex items-center gap-3 border-b border-slate-105 pb-4">
-            <div className="bg-slate-900 text-white p-2.5 rounded-xl">
+            <div className="bg-slate-900 dark:bg-slate-950 text-white p-2.5 rounded-xl">
               <Github size={24} />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-slate-800 font-sans tracking-tight">
+              <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100 font-sans tracking-tight">
                 ¿Por qué no aparece inicialmente mi código en GitHub?
               </h2>
-              <p className="text-slate-500 text-xs">
+              <p className="text-slate-500 dark:text-slate-400 text-xs">
                 Guía completa sobre el funcionamiento técnico de las exportaciones de código en Google AI Studio.
               </p>
             </div>
@@ -487,42 +487,42 @@ export const BibliotecaCatalogos: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Visual Guide Walkthrough */}
-            <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+            <div className="space-y-4 text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
               <div className="flex gap-3">
-                <div className="bg-blue-50 text-blue-700 font-extrabold h-6 w-6 rounded-full flex items-center justify-center shrink-0">1</div>
+                <div className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-extrabold h-6 w-6 rounded-full flex items-center justify-center shrink-0">1</div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Entorno Virtual Localizado</h4>
-                  <p className="text-slate-500 mt-1">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-50 text-sm">Entorno Virtual Localizado</h4>
+                  <p className="text-slate-500 dark:text-slate-400 mt-1">
                     La web app se ejecuta en un servidor de contenedores de Cloud Run aislado. El código de la aplicación se redacta directamente en este workspace interactivo en la nube y no se empuja automáticamente a tu cuenta privada al instante de escribir.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-3">
-                <div className="bg-blue-50 text-blue-700 font-extrabold h-6 w-6 rounded-full flex items-center justify-center shrink-0">2</div>
+                <div className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-extrabold h-6 w-6 rounded-full flex items-center justify-center shrink-0">2</div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Empuje Directo a Repositorio (Exportar)</h4>
-                  <p className="text-slate-500 mt-1">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-50 text-sm">Empuje Directo a Repositorio (Exportar)</h4>
+                  <p className="text-slate-500 dark:text-slate-400 mt-1">
                     Para ver este software en tu perfil personal de GitHub, haz clic en el botón **"Settings" / "Configuración"** que se encuentra en la parte superior derecha de la interfaz de desarrollo de Google AI Studio, y selecciona **"Export to GitHub"**.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-3">
-                <div className="bg-blue-50 text-blue-700 font-extrabold h-6 w-6 rounded-full flex items-center justify-center shrink-0">3</div>
+                <div className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-extrabold h-6 w-6 rounded-full flex items-center justify-center shrink-0">3</div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Sincronización de Ramas de Desarrollo</h4>
-                  <p className="text-slate-500 mt-1">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-50 text-sm">Sincronización de Ramas de Desarrollo</h4>
+                  <p className="text-slate-500 dark:text-slate-400 mt-1">
                     Al presionar exportar, autorizas los permisos de commit para conectar el repositorio que indiques. Se creará una rama segura donde podrás realizar merge de tus cambios y ver el árbol de directorios intacto.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-3">
-                <div className="bg-blue-50 text-blue-700 font-extrabold h-6 w-6 rounded-full flex items-center justify-center shrink-0">4</div>
+                <div className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-extrabold h-6 w-6 rounded-full flex items-center justify-center shrink-0">4</div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Descarga en ZIP (Alternativa Segura)</h4>
-                  <p className="text-slate-500 mt-1">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-50 text-sm">Descarga en ZIP (Alternativa Segura)</h4>
+                  <p className="text-slate-500 dark:text-slate-400 mt-1">
                     También puedes descargar todo el archivo en un paquete comprimido **.ZIP** mediante el menú. Este ZIP contiene tu `package.json`, configuraciones de Vite y Tailwind, para levantar de forma local un servidor de desarrollo llamando a `npm run dev`.
                   </p>
                 </div>
@@ -530,14 +530,14 @@ export const BibliotecaCatalogos: React.FC = () => {
             </div>
 
             {/* Visual Mock Repository Card */}
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-slate-100 font-mono text-[11px] space-y-4">
+            <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 p-5 rounded-2xl text-slate-100 font-mono text-[11px] space-y-4">
               <div className="flex justify-between items-center bg-slate-850 p-2.5 rounded-xl border border-slate-800">
                 <span className="text-slate-400">git status --short</span>
-                <span className="text-[9px] bg-emerald-500/20 text-emerald-400 font-semibold px-1 py-0.5 rounded uppercase">WORKSPACE LISTO</span>
+                <span className="text-[9px] bg-emerald-50 dark:bg-emerald-900/400/20 text-emerald-400 font-semibold px-1 py-0.5 rounded uppercase">WORKSPACE LISTO</span>
               </div>
 
               <div className="space-y-1.5 scrollbar-none overflow-x-auto max-w-full">
-                <p className="text-blue-400"># Configuración de Archivos del Proyecto</p>
+                <p className="text-blue-400 dark:text-blue-300"># Configuración de Archivos del Proyecto</p>
                 <div className="text-slate-400 pl-4">
                   <p className="text-emerald-400">✓ package.json (Vite v6 + React 19)</p>
                   <p className="text-emerald-400">✓ src/App.tsx (Enrutador de Paneles)</p>
@@ -547,15 +547,15 @@ export const BibliotecaCatalogos: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-slate-850/60 p-3 rounded-xl space-y-2 border border-slate-800">
+              <div className="bg-slate-850 p-3 rounded-xl space-y-2 border border-slate-800">
                 <span className="font-bold text-slate-300">¿Deseas descargar el ZIP ahora mismo?</span>
-                <p className="text-[10px] text-slate-500 leading-normal">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal">
                   Puedes hacerlo desde la consola del desarrollador. Alternativamente, pide a este asistente que te redacte cualquier archivo adicional para su descarga.
                 </p>
               </div>
 
               <div className="flex justify-center pt-2">
-                <span className="text-[10px] text-slate-500 animate-pulse font-sans">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 animate-pulse font-sans">
                   • Server Ingress Port 3000 Operando •
                 </span>
               </div>

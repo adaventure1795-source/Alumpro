@@ -19,6 +19,7 @@ import { PublicInvoiceViewer } from "./components/PublicInvoiceViewer";
 import { DocumentosAludev } from "./components/DocumentosAludev";
 import { GlobalSearch } from "./components/GlobalSearch";
 import { BibliotecaCatalogos } from "./components/BibliotecaCatalogos";
+import { AlbumMuestras } from "./components/AlbumMuestras";
 
 import {
   Wrench,
@@ -37,7 +38,8 @@ import {
   Moon,
   CloudOff,
   Cloud,
-  Download
+  Download,
+  Image as ImageIcon
 } from "lucide-react";
 
 function MainAppContent() {
@@ -151,6 +153,8 @@ function MainAppContent() {
         return <DocumentosAludev />;
       case "biblioteca":
         return <BibliotecaCatalogos />;
+      case "album":
+        return <AlbumMuestras />;
       default:
         return <Dashboard setTab={setActiveTab} />;
     }
@@ -166,11 +170,12 @@ function MainAppContent() {
     { id: "campo", label: "Libreta de Campo", icon: BookOpen },
     { id: "remisiones", label: "Notas de Remisión", icon: FileText },
     { id: "documentos", label: "Contratos & Recibos", icon: Award },
+    { id: "album", label: "Álbum de Muestras", icon: ImageIcon },
     { id: "biblioteca", label: "Biblioteca & Git Sync", icon: Sparkles }
   ];
 
   return (
-    <div className={`min-h-screen flex flex-col md:flex-row font-sans transition-all duration-300 ${isDarkMode ? 'bg-[#0b1329] text-slate-100 dark-theme' : 'bg-[#f8fafc] text-slate-900'}`} id="main-app-container">
+    <div className={`min-h-screen flex flex-col md:flex-row font-sans transition-all duration-300 ${isDarkMode ? 'bg-[#0b1329] text-slate-100 dark-theme' : 'bg-[#f8fafc] text-slate-900 dark:text-slate-50'}`} id="main-app-container">
       
       {/* DESKTOP SIDEBAR PANEL (Hidden on mobile) WITH MATCHING SOLID DARK BG */}
       <aside className="w-64 bg-[#080d1d] border-r border-slate-800/80 text-slate-300 flex-col justify-between shrink-0 hidden md:flex">
@@ -182,7 +187,7 @@ function MainAppContent() {
             </div>
             <div>
               <span className="font-extrabold text-white text-base block tracking-tight">ALUDEV</span>
-              <span className="text-[10px] text-slate-500 font-mono tracking-wider font-semibold font-sans uppercase">Aluminios de Veracruz</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider font-semibold font-sans uppercase">Aluminios de Veracruz</span>
             </div>
           </div>
 
@@ -197,7 +202,7 @@ function MainAppContent() {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition ${
                     isActive
-                      ? "bg-blue-600 text-white shadow"
+                      ? "bg-blue-600 text-white shadow-sm"
                       : "hover:bg-slate-800 hover:text-slate-100"
                   }`}
                   id={`nav-item-${item.id}`}
@@ -221,14 +226,14 @@ function MainAppContent() {
         </div>
 
         {/* User identification section at bottom */}
-        <div className="p-4 border-t border-slate-850 mt-auto bg-slate-950/40">
+        <div className="p-4 border-t border-slate-850 mt-auto bg-slate-950">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 bg-blue-950 border border-blue-900 rounded-full flex items-center justify-center text-xs font-bold text-blue-300">
               U
             </div>
             <div className="truncate">
               <span className="text-xs font-semibold text-slate-300 block leading-none">Administrador</span>
-              <span className="text-[9px] text-slate-500 font-mono">Taller Profesional</span>
+              <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono">Taller Profesional</span>
             </div>
           </div>
         </div>
@@ -246,7 +251,7 @@ function MainAppContent() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setIsOfflineMode(!isOfflineMode)}
-            className={`p-1.5 rounded-lg flex items-center gap-1 transition ${isOfflineMode ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/25 text-emerald-400'}`}
+            className={`p-1.5 rounded-lg flex items-center gap-1 transition ${isOfflineMode ? 'bg-amber-500/20 text-blue-500' : 'bg-emerald-500/25 text-emerald-400'}`}
             title={isOfflineMode ? "Modo Offline Activo" : "Modo Online Activo"}
           >
             {isOfflineMode ? <CloudOff size={14} /> : <Cloud size={14} />}
@@ -273,9 +278,9 @@ function MainAppContent() {
       {/* PRIMARY VIEWS CONTAINER */}
       <main className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
         {/* Global Action Bar with search and business quick details */}
-        <div className={`px-4 sm:px-6 py-3 border-b flex flex-col md:flex-row gap-3 md:gap-4 items-center justify-between text-xs shrink-0 shadow-sm transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-100 text-slate-500'}`}>
+        <div className={`px-4 sm:px-6 py-3 border-b flex flex-col md:flex-row gap-3 md:gap-4 items-center justify-between text-xs shrink-0 shadow-sm transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white dark:bg-slate-800 border-slate-100 text-slate-500 dark:text-slate-400'}`}>
           <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
-            <span>Taller: <strong className={isDarkMode ? 'text-white' : 'text-slate-700'}>{state.businessDetails.name || "Aludev"}</strong></span>
+            <span>Taller: <strong className={isDarkMode ? 'text-white' : 'text-slate-700 dark:text-slate-200'}>{state.businessDetails.name || "Aludev"}</strong></span>
             <span className="hidden md:inline opacity-30">|</span>
             <span className="hidden sm:inline">Unidad: <strong>Métrico</strong></span>
           </div>
@@ -286,14 +291,14 @@ function MainAppContent() {
 
           <div className="hidden lg:flex items-center gap-2 font-mono text-[10px]">
             {/* Toggles */}
-            <button onClick={() => setIsOfflineMode(!isOfflineMode)} className={`p-1.5 rounded-lg flex items-center gap-1 transition ${isOfflineMode ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`} title={isOfflineMode ? "Modo Offline Activo" : "Conectado a la nube"}>
+            <button onClick={() => setIsOfflineMode(!isOfflineMode)} className={`p-1.5 rounded-lg flex items-center gap-1 transition ${isOfflineMode ? 'bg-amber-500/20 text-blue-500' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`} title={isOfflineMode ? "Modo Offline Activo" : "Conectado a la nube"}>
               {isOfflineMode ? <CloudOff size={14} /> : <Cloud size={14} />}
               <span className="font-semibold">{isOfflineMode ? 'Desconectado' : 'Conectado'}</span>
             </button>
             <button onClick={handleInstallApp} className={`p-1.5 rounded-lg flex items-center gap-1 transition hover:bg-blue-500/20 text-blue-500`} title="Descargar App / Instalar PWA">
               <Download size={14} />
             </button>
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-1.5 rounded-lg flex items-center gap-1 transition hover:bg-slate-500/20 ${isDarkMode ? 'text-amber-400' : 'text-slate-500'}`} title="Cambiar Tema">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-1.5 rounded-lg flex items-center gap-1 transition hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-800 ${isDarkMode ? 'text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} title="Cambiar Tema">
               {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
             </button>
           </div>
@@ -315,10 +320,10 @@ function MainAppContent() {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center gap-1.5 px-3 py-1 rounded-xl transition-all duration-300 ${
-                isActive ? "text-blue-600 dark:text-blue-400 scale-105 font-bold" : "hover:text-slate-800 dark:hover:text-slate-100"
+                isActive ? "text-blue-600 dark:text-blue-400 scale-105 font-bold" : "hover:text-slate-800 dark:text-slate-100 dark:hover:text-slate-100"
               }`}
             >
-              <Icon size={18} className={isActive ? "text-blue-600 dark:text-blue-400 stroke-[2.5]" : "text-slate-400 dark:text-slate-500"} />
+              <Icon size={18} className={isActive ? "text-blue-600 dark:text-blue-400 stroke-[2.5]" : "text-slate-400 dark:text-slate-400"} />
               <span>{item.label.split(" ")[0]}</span>
             </button>
           );
@@ -332,10 +337,10 @@ function MainAppContent() {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center gap-1.5 px-3 py-1 rounded-xl transition-all duration-300 ${
-                isActive ? "text-blue-600 dark:text-blue-400 scale-105 font-bold" : "hover:text-slate-800 dark:hover:text-slate-100"
+                isActive ? "text-blue-600 dark:text-blue-400 scale-105 font-bold" : "hover:text-slate-800 dark:text-slate-100 dark:hover:text-slate-100"
               }`}
             >
-              <Icon size={18} className={isActive ? "text-blue-600 dark:text-blue-400 stroke-[2.5]" : "text-slate-400 dark:text-slate-500"} />
+              <Icon size={18} className={isActive ? "text-blue-600 dark:text-blue-400 stroke-[2.5]" : "text-slate-400 dark:text-slate-400"} />
               <span>{item.label.split(" ")[0]}</span>
             </button>
           );

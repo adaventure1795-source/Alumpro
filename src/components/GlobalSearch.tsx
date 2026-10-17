@@ -215,25 +215,25 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
   const getBadgeStyle = (variant: string) => {
     switch (variant) {
       case "blue":
-        return "bg-blue-50 text-blue-700 border border-blue-150";
+        return "bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-150";
       case "emerald":
-        return "bg-emerald-50 text-emerald-700 border border-emerald-150";
+        return "bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 border border-emerald-150";
       case "amber":
         return "bg-amber-50 text-amber-700 border border-amber-150";
       case "rose":
-        return "bg-rose-50 text-rose-700 border border-rose-150 font-semibold";
+        return "bg-rose-50 dark:bg-rose-900/30 text-rose-700 border border-rose-150 font-semibold";
       case "purple":
         return "bg-purple-50 text-purple-700 border border-purple-150";
       case "slate":
       default:
-        return "bg-slate-100 text-slate-700 border border-slate-200";
+        return "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700";
     }
   };
 
   const getIcon = (type: string) => {
     switch (type) {
       case "quote":
-        return <Folder size={14} className="text-blue-600" />;
+        return <Folder size={14} className="text-blue-600 dark:text-blue-300" />;
       case "client_note":
         return <ClipboardList size={14} className="text-emerald-600" />;
       case "client_invoice":
@@ -242,7 +242,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
       case "accessory":
       case "glass":
       default:
-        return <Package size={14} className="text-slate-600" />;
+        return <Package size={14} className="text-slate-600 dark:text-slate-300" />;
     }
   };
 
@@ -260,7 +260,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Buscar canceles, clientes, remisiones, stock..."
-          className="w-full bg-slate-100/80 border border-slate-200 rounded-xl pl-10 pr-9 py-2 text-xs font-medium placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-inner"
+          className="w-full bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-9 py-2 text-xs font-medium placeholder-slate-400 focus:bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-inner"
         />
         {query && (
           <button
@@ -268,7 +268,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
               setQuery("");
               setResults([]);
             }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-300 transition"
           >
             <X size={14} />
           </button>
@@ -277,20 +277,20 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
 
       {/* Instant Matches Dropdown Popover */}
       {isOpen && query && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200/80 rounded-xl shadow-xl z-50 max-h-[350px] overflow-y-auto divide-y divide-slate-100">
+        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-900 border border-slate-200/80 rounded-xl shadow-xl z-50 max-h-[350px] overflow-y-auto divide-y divide-slate-100">
           {results.length > 0 ? (
             results.map((item) => (
               <div
                 key={item.id}
                 onClick={() => handleSelectItem(item)}
-                className="p-3 hover:bg-slate-50 cursor-pointer flex justify-between items-start gap-4 transition"
+                className="p-3 hover:bg-slate-50 dark:bg-slate-800 cursor-pointer flex justify-between items-start gap-4 transition"
               >
                 <div className="flex gap-2.5 items-start min-w-0">
-                  <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg shrink-0 mt-0.5">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 rounded-lg shrink-0 mt-0.5">
                     {getIcon(item.type)}
                   </div>
                   <div className="truncate">
-                    <span className="font-bold text-slate-800 text-xs block leading-tight truncate">
+                    <span className="font-bold text-slate-800 dark:text-slate-100 text-xs block leading-tight truncate">
                       {item.title}
                     </span>
                     <span className="text-[10px] text-slate-400 mt-1 block truncate">
@@ -305,7 +305,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                       {item.badge.text}
                     </span>
                   )}
-                  <span className="text-[9px] font-mono font-bold text-slate-700">
+                  <span className="text-[9px] font-mono font-bold text-slate-700 dark:text-slate-200">
                     {item.extraInfo}
                   </span>
                 </div>
@@ -313,7 +313,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
             ))
           ) : (
             <div className="p-6 text-center text-slate-400 text-xs space-y-1">
-              <p className="font-bold text-slate-700">Sin coincidencias</p>
+              <p className="font-bold text-slate-700 dark:text-slate-200">Sin coincidencias</p>
               <p className="text-[10px]">Verifique el nombre, clave, número de remisión o descripción.</p>
             </div>
           )}
@@ -322,11 +322,11 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
 
       {/* DETAIL MODAL OVERLAY FOR SELECTED SEARCH RESULT */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-slate-150 shadow-2xl p-6 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full border border-slate-150 shadow-2xl p-6 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => setSelectedItem(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:text-slate-300 transition"
             >
               <X size={16} />
             </button>
@@ -339,7 +339,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
             )}
 
             {/* Title */}
-            <h3 className="text-base font-extrabold text-slate-800 tracking-tight mt-2.5">
+            <h3 className="text-base font-extrabold text-slate-800 dark:text-slate-100 tracking-tight mt-2.5">
               {selectedItem.title}
             </h3>
             <p className="text-xs text-slate-400 font-mono mt-1">
@@ -347,25 +347,25 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
             </p>
 
             {/* Body Content based on Item Type */}
-            <div className="my-5 border-t border-b border-slate-100 py-4 text-xs space-y-2.5">
+            <div className="my-5 border-t border-b border-slate-100 dark:border-slate-700/50 py-4 text-xs space-y-2.5">
               {/* Active Cancel Details */}
               {selectedItem.type === "quote" && (
                 <>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Esquema / Línea:</span>
-                    <strong className="text-slate-700">{selectedItem.originalItem.line}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200">{selectedItem.originalItem.line}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Color Solicitado:</span>
-                    <strong className="text-slate-700">{selectedItem.originalItem.color}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200">{selectedItem.originalItem.color}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Cantidad Solicitada:</span>
-                    <strong className="text-slate-700 font-mono">{selectedItem.originalItem.quantity} piezas</strong>
+                    <strong className="text-slate-700 dark:text-slate-200 font-mono">{selectedItem.originalItem.quantity} piezas</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Subtotal Presupuestado:</span>
-                    <strong className="text-slate-700 font-mono">
+                    <strong className="text-slate-700 dark:text-slate-200 font-mono">
                       ${Math.round(selectedItem.originalItem.calculated.total).toLocaleString("es-MX")}
                     </strong>
                   </div>
@@ -377,30 +377,30 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                 <>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Cliente contratado:</span>
-                    <strong className="text-slate-700">{selectedItem.originalItem.clientName}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200">{selectedItem.originalItem.clientName}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Proyecto asignado:</span>
-                    <strong className="text-slate-700">{selectedItem.originalItem.projectName}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200">{selectedItem.originalItem.projectName}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Fecha de captura:</span>
-                    <strong className="text-slate-500 font-mono">{selectedItem.originalItem.date}</strong>
+                    <strong className="text-slate-500 dark:text-slate-400 font-mono">{selectedItem.originalItem.date}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Estatus:</span>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                       selectedItem.originalItem.status === "pendiente" ? "bg-amber-100 text-amber-800" :
-                      selectedItem.originalItem.status === "cotizado" ? "bg-blue-100 text-blue-800" : "bg-slate-100 text-slate-800"
+                      selectedItem.originalItem.status === "cotizado" ? "bg-blue-100 text-blue-800 dark:text-blue-200" : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100"
                     }`}>
                       {selectedItem.originalItem.status.toUpperCase()}
                     </span>
                   </div>
-                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-150 mt-1">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-lg border border-slate-150 mt-1">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">Descripción de Obra:</span>
-                    <p className="text-slate-600 font-mono">{selectedItem.originalItem.text}</p>
+                    <p className="text-slate-600 dark:text-slate-300 font-mono">{selectedItem.originalItem.text}</p>
                     {selectedItem.originalItem.measurements && (
-                      <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between font-mono text-[11px]">
+                      <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between font-mono text-[11px]">
                         <span className="text-slate-400">Medida de campo:</span>
                         <strong className="text-rose-600">{selectedItem.originalItem.measurements}</strong>
                       </div>
@@ -414,35 +414,35 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                 <>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Cliente solicitante:</span>
-                    <strong className="text-slate-700">{selectedItem.originalItem.clientName}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200">{selectedItem.originalItem.clientName}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Teléfono:</span>
-                    <strong className="text-slate-700 font-mono">{selectedItem.originalItem.clientPhone}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200 font-mono">{selectedItem.originalItem.clientPhone}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Estatus de entrega:</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                       selectedItem.originalItem.status === "fabricando" ? "bg-yellow-100 text-yellow-800" :
                       selectedItem.originalItem.status === "atrasado" ? "bg-rose-100 text-rose-800" :
-                      selectedItem.originalItem.status === "entregado" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
+                      selectedItem.originalItem.status === "entregado" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800 dark:text-blue-200"
                     }`}>
                       {selectedItem.originalItem.status.toUpperCase()}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Anticipo realizado:</span>
-                    <strong className="text-slate-700 font-mono">${Math.round(selectedItem.originalItem.advancePayment).toLocaleString("es-MX")}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200 font-mono">${Math.round(selectedItem.originalItem.advancePayment).toLocaleString("es-MX")}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Saldo pendiente:</span>
                     <strong className="text-rose-600 font-mono">${Math.round(selectedItem.originalItem.pendingBalance).toLocaleString("es-MX")}</strong>
                   </div>
-                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-150">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-lg border border-slate-150">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">Conceptos en remisión:</span>
                     <div className="space-y-1">
                       {selectedItem.originalItem.items.map((it: any, idx: number) => (
-                        <div key={idx} className="flex justify-between font-mono text-[10px] text-slate-600">
+                        <div key={idx} className="flex justify-between font-mono text-[10px] text-slate-600 dark:text-slate-300">
                           <span>{it.quantity}x {it.description}</span>
                           <span>${Math.round(it.total).toLocaleString("es-MX")}</span>
                         </div>
@@ -457,15 +457,15 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                 <>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Marca / Extrusora:</span>
-                    <strong className="text-slate-700">{selectedItem.originalItem.brand}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200">{selectedItem.originalItem.brand}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Línea del catálogo:</span>
-                    <strong className="text-slate-700">{selectedItem.originalItem.line}</strong>
+                    <strong className="text-slate-700 dark:text-slate-200">{selectedItem.originalItem.line}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Precio de venta por metro:</span>
-                    <strong className="text-slate-700 font-mono">${selectedItem.originalItem.pricePerMeter} MXN/m</strong>
+                    <strong className="text-slate-700 dark:text-slate-200 font-mono">${selectedItem.originalItem.pricePerMeter} MXN/m</strong>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Disponibilidad en almacén:</span>
@@ -474,7 +474,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                     </strong>
                   </div>
                   {selectedItem.originalItem.stockMeters <= selectedItem.originalItem.minStockMeters && (
-                    <div className="p-2.5 bg-rose-50 border border-rose-100 rounded-lg text-rose-700 flex items-center gap-1.5 text-[10px]">
+                    <div className="p-2.5 bg-rose-50 dark:bg-rose-900/30 border border-rose-100 dark:border-rose-800/50 rounded-lg text-rose-700 flex items-center gap-1.5 text-[10px]">
                       <AlertTriangle size={12} className="shrink-0" />
                       <span>Alarma de Reabastecimiento activada. El inventario se encuentra por debajo de {selectedItem.originalItem.minStockMeters}m.</span>
                     </div>
@@ -487,7 +487,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                 <>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Precio unitario:</span>
-                    <strong className="text-slate-700 font-mono">${selectedItem.originalItem.pricePerUnit} MXN/pz</strong>
+                    <strong className="text-slate-700 dark:text-slate-200 font-mono">${selectedItem.originalItem.pricePerUnit} MXN/pz</strong>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Piezas utilizables:</span>
@@ -496,7 +496,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                     </strong>
                   </div>
                   {selectedItem.originalItem.stockUnits <= selectedItem.originalItem.minStockUnits && (
-                    <div className="p-2.5 bg-rose-50 border border-rose-100 rounded-lg text-rose-700 flex items-center gap-1.5 text-[10px]">
+                    <div className="p-2.5 bg-rose-50 dark:bg-rose-900/30 border border-rose-100 dark:border-rose-800/50 rounded-lg text-rose-700 flex items-center gap-1.5 text-[10px]">
                       <AlertTriangle size={12} className="shrink-0" />
                       <span>Stock inferior al mínimo de seguridad ({selectedItem.originalItem.minStockUnits} pzas). Considere realizar una orden de compra.</span>
                     </div>
@@ -509,7 +509,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                 <>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Precio comercial m²:</span>
-                    <strong className="text-slate-700 font-mono">${selectedItem.originalItem.pricePerM2} MXN/m²</strong>
+                    <strong className="text-slate-700 dark:text-slate-200 font-mono">${selectedItem.originalItem.pricePerM2} MXN/m²</strong>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Área disponible:</span>
@@ -518,7 +518,7 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
                     </strong>
                   </div>
                   {selectedItem.originalItem.stockM2 <= selectedItem.originalItem.minStockM2 && (
-                    <div className="p-2.5 bg-rose-50 border border-rose-150 rounded-lg text-rose-700 flex items-center gap-1.5 text-[10px]">
+                    <div className="p-2.5 bg-rose-50 dark:bg-rose-900/30 border border-rose-150 rounded-lg text-rose-700 flex items-center gap-1.5 text-[10px]">
                       <AlertTriangle size={12} className="shrink-0" />
                       <span>El inventario de vidriería se encuentra por debajo de las tolerancias mínimas globales ({selectedItem.originalItem.minStockM2} m²).</span>
                     </div>
@@ -531,13 +531,13 @@ export function GlobalSearch({ onTabChange }: GlobalSearchProps) {
             <div className="flex justify-end gap-2 text-xs">
               <button
                 onClick={() => setSelectedItem(null)}
-                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                className="px-3.5 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition"
               >
                 Cerrar
               </button>
               <button
                 onClick={() => handleNavigateToResult(selectedItem)}
-                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl flex items-center gap-1.5 transition"
+                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-50 dark:bg-blue-900/400 text-white font-bold rounded-xl flex items-center gap-1.5 transition"
               >
                 Ir a Catálogo
                 <ArrowRight size={12} />
